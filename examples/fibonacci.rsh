@@ -5,3 +5,6 @@ fun fibonacci(n) {
 		_ => return fibonacci(n - 1) + fibonacci(n - 2)
 	}
 }
+
+$ echo {fibonacci(10)}
+

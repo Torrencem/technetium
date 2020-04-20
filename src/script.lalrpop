@@ -1,0 +1,90 @@
+use std::str::FromStr;
+use crate::ast::*;
+use crate::lexer::*;
+
+grammar;
+
+pub Expr: Expr = {
+	"(" <e:Expr> ")" => e,
+	<s: Identifier> => Expr::Variable(s),
+	<l: Literal> => Expr::Literal(l),
+	<l: ListLiteral> => Expr::ListLiteral(l),
+	<t: TupleLiteral> => Expr::TupleLiteral(t),
+	<m: MethodCall> => Expr::MethodCall(m),
+	<f: FuncCall> => Expr::FuncCall(f),
+	<a: AttrLookup> => Expr::AttrLookup(a),
+};
+
+Literal: Literal = {
+	<n:int_lit> => Literal::Integer(n),
+	<f:float_lit> => Literal::Float(f),
+	<s:string_lit> => Literal::Str(s),
+};
+
+ListLiteral: ListLiteral = "[" <v: Comma<Expr>> "]" => ListLiteral { values: v };
+
+TupleLiteral: TupleLiteral = "(" <v: CommaNonEmpty<Expr>> ")" => TupleLiteral { values: v };
+
+Identifier: String = <s:ident> => s.to_owned();
+
+
+MethodCall: MethodCall = <e: Expr> "." <i: Identifier> "(" <args: Comma<Expr>> ")" => MethodCall {
+	parent: Box::new(e),
+	call: FuncCall {
+		fname: i,
+		arguments: args,
+	},
+};
+
+FuncCall: FuncCall = <i: Identifier> "(" <args: Comma<Expr>> ")" => FuncCall {
+	fname: i,
+	arguments: args,
+};
+
+AttrLookup: AttrLookup = <e: Expr> "." <i: Identifier> => AttrLookup {
+	parent: Box::new(e),
+	attribute: i,
+};
+
+Comma<T>: Vec<T> = {
+	<v:(<T> ",")*> <e:T?> => match e {
+		None => v,
+		Some(e) => {
+			let mut v = v;
+			v.push(e);
+			v
+		}
+	}
+};
+
+CommaNonEmpty<T>: Vec<T> = {
+	<v:(<T> ",")+> <e:T?> => match e {
+		None => v,
+		Some(e) => {
+			let mut v = v;
+			v.push(e);
+			v
+		}
+	}
+};
+
+extern {
+	type Location = usize;
+	type Error = ();
+
+	enum Tok {
+		"\n" => Tok::Newline,
+		"[" => Tok::OpenBracket,
+		"]" => Tok::CloseBracket,
+		"{" => Tok::OpenBrace,
+		"}" => Tok::CloseBrace,
+		"(" => Tok::OpenParen,
+		")" => Tok::CloseParen,
+		"," => Tok::Comma,
+		"." => Tok::Dot,
+		ident => Tok::Identifier(<String>),
+		int_lit => Tok::Int(<i64>),
+		float_lit => Tok::Float(<f64>),
+		string_lit => Tok::StringLit(<String>),
+	}
+}

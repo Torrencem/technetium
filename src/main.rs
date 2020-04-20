@@ -5,6 +5,7 @@ lalrpop_mod!(pub script);
 
 pub mod ast; 
 pub mod lexer;
+pub mod core;
 use lexer::Lexer;
 
 fn main() {
@@ -28,6 +29,7 @@ if check("yourself") {
     let ast = script::ProgramParser::new().parse(lexer);
 
     dbg!(ast);
+
 }
 
 fn main_old() {

@@ -4,6 +4,8 @@ use regex::Regex;
 use std::str::CharIndices;
 use std::str::FromStr;
 
+use std::collections::HashMap;
+
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
 
 #[derive(Clone, Debug)]
@@ -17,10 +19,41 @@ pub enum Tok {
     CloseParen,
     Comma,
     Dot,
+    SingleEq,
+    Rarrow,
     Identifier(String),
     Int(i64),
     Float(f64),
     StringLit(String),
+    If,
+    Then,
+    Else,
+    Elif,
+    For,
+    In,
+    While,
+    Case,
+    Of,
+    Func,
+    Return,
+}
+
+pub fn get_keywords() -> HashMap<String, Tok> {
+    let mut res = HashMap::new();
+    
+    res.insert("if".to_string(), Tok::If);
+    res.insert("then".to_string(), Tok::Then);
+    res.insert("else".to_string(), Tok::Else);
+    res.insert("elif".to_string(), Tok::Elif);
+    res.insert("for".to_string(), Tok::For);
+    res.insert("in".to_string(), Tok::In);
+    res.insert("while".to_string(), Tok::While);
+    res.insert("case".to_string(), Tok::Case);
+    res.insert("of".to_string(), Tok::Of);
+    res.insert("func".to_string(), Tok::Func);
+    res.insert("return".to_string(), Tok::Return);
+
+    res
 }
 
 enum ParsedNum {
@@ -74,7 +107,7 @@ impl<'input> Lexer<'input> {
                 None => {return (result, curr_index);},
                 Some((i, c)) => {
                     curr_index = *i;
-                    if c.is_alphabetic() || *c == '_' {
+                    if c.is_alphanumeric() || *c == '_' {
                         result.push(*c);
                         self.chars.next();
                     } else {
@@ -142,17 +175,29 @@ impl<'input> Lexer<'input> {
             }
         }
     }
+
+    fn eat_blank_lines(&mut self) {
+        loop {
+            match self.chars.peek() {
+                Some((_, ' ')) | Some((_, '\t')) | Some((_, '\n')) => {self.chars.next();},
+                _ => return,
+            }
+        }
+    }
 }
 
 impl<'input> Iterator for Lexer<'input> {
     type Item = Spanned<Tok, usize, ()>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        dbg!(self.chars.peek());
         loop {
+            dbg!(&self.chars.peek());
             match self.chars.next() {
                 Some((_, ' ')) | Some((_, '\t')) => continue,
-                Some((i, '\n')) => return Some(Ok((i, Tok::Newline, i + 1))),
+                Some((i, '\n')) => {
+                    self.eat_blank_lines();
+                    return Some(Ok((i, Tok::Newline, i + 1)))
+                },
                 Some((i, '(')) => return Some(Ok((i, Tok::OpenParen, i + 1))),
                 Some((i, ')')) => return Some(Ok((i, Tok::CloseParen, i + 1))),
                 Some((i, '[')) => return Some(Ok((i, Tok::OpenBracket, i + 1))),
@@ -161,6 +206,17 @@ impl<'input> Iterator for Lexer<'input> {
                 Some((i, '}')) => return Some(Ok((i, Tok::CloseBrace, i + 1))),
                 Some((i, ',')) => return Some(Ok((i, Tok::Comma, i + 1))),
                 Some((i, '.')) => return Some(Ok((i, Tok::Dot, i + 1))),
+                Some((i, '=')) => {
+                    match self.chars.peek() {
+                        Some((_, '>')) => {
+                            self.chars.next();
+                            return Some(Ok((i, Tok::Rarrow, i + 2)));
+                        },
+                        _ => {
+                            return Some(Ok((i, Tok::SingleEq, i + 1)));
+                        },
+                    }
+                },
                 Some((i, '"')) => {
                     let lit = self.parse_string_lit();
                     if let Err(_) = lit {
@@ -175,6 +231,11 @@ impl<'input> Iterator for Lexer<'input> {
                 Some((i, c)) => {
                     if c.is_alphabetic() {
                         let (s, i2) = self.parse_ident(c, i);
+                        // Check if the indentifier was a keyword
+                        let keywords = get_keywords();
+                        if let Some(tok) = keywords.get(&s) {
+                            return Some(Ok((i, tok.clone(), i2)));
+                        }
                         return Some(Ok((i, Tok::Identifier(s), i2)));
                     } else if c.is_ascii_digit() {
                         let val = self.parse_num(c, i);

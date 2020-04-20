@@ -4,6 +4,80 @@ use crate::lexer::*;
 
 grammar;
 
+pub Program: StatementList = "\n"? <s: StatementList> => s;
+
+Statement: Statement = {
+	<f: ForLoop> => Statement::ForLoop(f),
+	<f: IfStatement> => Statement::IfStatement(f),
+	<c: CaseOf> => Statement::CaseOf(c),
+//	<r: ReturnStatement> => Statement::ReturnStatement(r),
+//	<f: FuncDefinition> => Statement::FuncDefinition(f),
+//	<a: Assignment> => Statement::Assignment(a),
+	<e: Expr> => Statement::Expr(e),
+};
+
+StatementList: StatementList = <v: Newline<Statement>> => StatementList {
+	statements: v
+};
+
+ForLoop: ForLoop = "for" <n: Identifier> "in" <e: Expr> "\n"? "{" "\n"? <body: StatementList> "}" => ForLoop {
+	binding: Pattern(n),
+	iter: e,
+	body: body,
+};
+
+CaseOf: CaseOf = "case" <e: Expr> "of" "\n"? "{" "\n"? <c: CommaNewline<Case>> "}" => CaseOf {
+	condition: e,
+	cases: c,
+};
+
+Case: (Expr, StatementList) = {
+	<e: Expr> "=>" <s: Statement> => (e, StatementList { statements: vec![s] }),
+	<e: Expr> "=>" "\n"? "{" "\n"? <s: StatementList> "}" => (e, s),
+};
+
+IfStatement: IfStatement = {
+	"if" <e: Expr> "\n"? "{" "\n"? <b1: StatementList> "}" => IfStatement {
+		condition: e,
+		then_body: b1,
+		else_if: None,
+		else_body: None,
+	},
+	"if" <e: Expr> "\n"? "{" "\n"? <b1: StatementList> "}" "else" "\n"? "{" "\n"? <b2: StatementList> "}" => IfStatement {
+		condition: e,
+		then_body: b1,
+		else_if: None,
+		else_body: Some(b2),
+	},
+	"if" <e: Expr> "\n"? "{" "\n"? <b1: StatementList> "}" <etail: ElifTail> => IfStatement {
+		condition: e,
+		then_body: b1,
+		else_if: Some(Box::new(etail)),
+		else_body: None,
+	},
+};
+
+ElifTail: IfStatement = {
+	"elif" <e: Expr> "\n"? "{" "\n"? <b1: StatementList> "}" => IfStatement {
+		condition: e,
+		then_body: b1,
+		else_if: None,
+		else_body: None,
+	},
+	"elif" <e: Expr> "\n"? "{" "\n"? <b1: StatementList> "}" "else" "\n"? "{" "\n"? <b2: StatementList> "}" => IfStatement {
+		condition: e,
+		then_body: b1,
+		else_if: None,
+		else_body: Some(b2),
+	},
+	"elif" <e: Expr> "\n"? "{" "\n"? <b1: StatementList> "}" <etail: ElifTail> => IfStatement {
+		condition: e,
+		then_body: b1,
+		else_if: Some(Box::new(etail)),
+		else_body: None,
+	},
+};
+
 pub Expr: Expr = {
 	"(" <e:Expr> ")" => e,
 	<s: Identifier> => Expr::Variable(s),
@@ -57,6 +131,28 @@ Comma<T>: Vec<T> = {
 	}
 };
 
+Newline<T>: Vec<T> = {
+	<v:(<T> "\n")*> <e:T?> => match e {
+		None => v,
+		Some(e) => {
+			let mut v = v;
+			v.push(e);
+			v
+		}
+	}
+};
+
+CommaNewline<T>: Vec<T> = {
+	<v:(<T> "," "\n")*> <e:T?> => match e {
+		None => v,
+		Some(e) => {
+			let mut v = v;
+			v.push(e);
+			v
+		}
+	}
+};
+
 CommaNonEmpty<T>: Vec<T> = {
 	<v:(<T> ",")+> <e:T?> => match e {
 		None => v,
@@ -82,9 +178,22 @@ extern {
 		")" => Tok::CloseParen,
 		"," => Tok::Comma,
 		"." => Tok::Dot,
+		"=" => Tok::SingleEq,
+		"=>" => Tok::Rarrow,
 		ident => Tok::Identifier(<String>),
 		int_lit => Tok::Int(<i64>),
 		float_lit => Tok::Float(<f64>),
 		string_lit => Tok::StringLit(<String>),
+		"if" => Tok::If,
+		"then" => Tok::Then,
+		"else" => Tok::Else,
+		"elif" => Tok::Elif,
+		"for" => Tok::For,
+		"in" => Tok::In,
+		"while" => Tok::While,
+		"case" => Tok::Case,
+		"of" => Tok::Of,
+		"func" => Tok::Func,
+		"return" => Tok::Return,
 	}
 }

@@ -52,7 +52,7 @@ pub enum Expr {
 }
 
 #[derive(Clone, Debug)]
-pub struct Pattern(String);
+pub struct Pattern(pub String);
 
 #[derive(Clone, Debug)]
 pub struct ForLoop {
@@ -63,33 +63,34 @@ pub struct ForLoop {
 
 #[derive(Clone, Debug)]
 pub struct IfStatement {
-    condition: Expr,
-    then_body: StatementList,
-    else_body: StatementList,
+    pub condition: Expr,
+    pub then_body: StatementList,
+    pub else_if: Option<Box<IfStatement>>,
+    pub else_body: Option<StatementList>,
 }
 
 #[derive(Clone, Debug)]
 pub struct CaseOf {
-    condition: Expr,
-    cases: Vec<(Expr, StatementList)>,
+    pub condition: Expr,
+    pub cases: Vec<(Expr, StatementList)>,
 }
 
 #[derive(Clone, Debug)]
 pub struct FuncDefinition {
-    name: String,
-    args: Vec<String>,
-    body: StatementList,
+    pub name: String,
+    pub args: Vec<String>,
+    pub body: StatementList,
 }
 
 #[derive(Clone, Debug)]
 pub struct ReturnStatement {
-    ret: Expr,
+    pub ret: Expr,
 }
 
 #[derive(Clone, Debug)]
 pub struct Assignment {
-    name: String,
-    val: Expr,
+    pub name: String,
+    pub val: Expr,
 }
 
 #[derive(Clone, Debug)]
@@ -106,5 +107,5 @@ pub enum Statement {
 
 #[derive(Clone, Debug)]
 pub struct StatementList {
-    statements: Vec<Statement>,
+    pub statements: Vec<Statement>,
 }

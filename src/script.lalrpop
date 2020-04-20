@@ -10,14 +10,29 @@ Statement: Statement = {
 	<f: ForLoop> => Statement::ForLoop(f),
 	<f: IfStatement> => Statement::IfStatement(f),
 	<c: CaseOf> => Statement::CaseOf(c),
-//	<r: ReturnStatement> => Statement::ReturnStatement(r),
-//	<f: FuncDefinition> => Statement::FuncDefinition(f),
-//	<a: Assignment> => Statement::Assignment(a),
+	<r: ReturnStatement> => Statement::ReturnStatement(r),
+	<f: FuncDefinition> => Statement::FuncDefinition(f),
+	<a: Assignment> => Statement::Assignment(a),
 	<e: Expr> => Statement::Expr(e),
 };
 
+FuncDefinition: FuncDefinition = "func" <id: Identifier> "(" <args: Comma<Identifier>> ")" "\n"? "{" <body: StatementList> "}" => FuncDefinition {
+	name: id,
+	args: args,
+	body: body,
+};
+
 StatementList: StatementList = <v: Newline<Statement>> => StatementList {
-	statements: v
+	statements: v,
+};
+
+Assignment: Assignment = <n: Identifier> "=" <e: Expr> => Assignment {
+	name: n,
+	val: e,
+};
+
+ReturnStatement: ReturnStatement = "return" <e: Expr> => ReturnStatement {
+	ret: e,
 };
 
 ForLoop: ForLoop = "for" <n: Identifier> "in" <e: Expr> "\n"? "{" "\n"? <body: StatementList> "}" => ForLoop {

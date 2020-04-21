@@ -190,7 +190,6 @@ impl Object for FloatObject {
     }
 }
 
-
 impl Object for String {
     fn clone(&self) -> Result<ObjectRef> {
         Ok(Arc::new(RustClone::clone(self)))

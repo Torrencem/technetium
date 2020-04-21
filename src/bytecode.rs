@@ -6,7 +6,6 @@ use crate::core::*;
 use std::sync::Arc;
 
 use std::clone::Clone as RustClone;
-use std::convert::TryInto;
 
 use crate::builtins;
 
@@ -14,6 +13,7 @@ pub type LocalName = u16;
 pub type GlobalConstantDescriptor = u16;
 
 #[allow(non_camel_case_types)]
+#[derive(Copy, Clone, Debug)]
 /// An operation in the rush virtual machine
 pub enum Op {
     /// Do nothing
@@ -34,7 +34,7 @@ pub enum Op {
     /// Create a shallow (reference) copy of the top of the stack
     dup,
     
-    /// Call the method of the (n + 1)th object on the stack, with arguments the n top objects on
+    /// Call the method of the (n + 2)nd object on the stack, with arguments the n top objects on
     /// the stack
     call_method(u8),
 
@@ -61,6 +61,7 @@ pub enum Op {
     cmp_lt,
     cmp_gt,
     cmp_eq,
+    cmp_neq,
     cmp_leq,
     cmp_geq,
     
@@ -78,12 +79,11 @@ pub enum Op {
 }
 
 pub struct GlobalContext {
-    constant_descriptors: HashMap<GlobalConstantDescriptor, ObjectRef>,
+    pub constant_descriptors: HashMap<GlobalConstantDescriptor, ObjectRef>,
 }
 
 pub struct Frame<'code> {
     global_context: Arc<GlobalContext>,
-    // parent: Option<Box<Frame<'code>>>,
     code: &'code [Op],
     curr_instruction: usize,
     locals: HashMap<LocalName, ObjectRef>,
@@ -93,7 +93,6 @@ impl<'code> Frame<'code> {
     pub fn new(code: &'code [Op], globals: Arc<GlobalContext>) -> Self {
         Frame {
             global_context: globals,
-            // parent: parent,
             code: code,
             curr_instruction: 0,
             locals: HashMap::new(),
@@ -101,8 +100,8 @@ impl<'code> Frame<'code> {
     }
 
     pub fn run(&mut self) -> Result<ObjectRef> {
+        let mut stack: Vec<ObjectRef> = vec![];
         loop {
-            let mut stack: Vec<ObjectRef> = vec![];
             let instr = self.code.get(self.curr_instruction);
             if let None = instr {
                 return Err(RuntimeError::internal_error("Ran off the end of the code!".to_string()));
@@ -289,6 +288,14 @@ impl<'code> Frame<'code> {
                     let a = stack.pop().unwrap();
                     let b = stack.pop().unwrap();
                     stack.push(builtins::cmp_eq(a, b)?)
+                },
+                Op::cmp_neq => {
+                    if stack.len() < 2 {
+                        return Err(RuntimeError::internal_error("Tried to compare less than 2 things!".to_string()));
+                    }
+                    let a = stack.pop().unwrap();
+                    let b = stack.pop().unwrap();
+                    stack.push(builtins::cmp_neq(a, b)?)
                 },
                 Op::cmp_leq => {
                     if stack.len() < 2 {

@@ -35,11 +35,6 @@ pub struct MethodCall {
 }
 
 #[derive(Clone, Debug)]
-pub struct Sh {
-    pub literal: String,
-}
-
-#[derive(Clone, Debug)]
 pub enum Expr {
     Variable(String),
     Literal(Literal),
@@ -48,7 +43,6 @@ pub enum Expr {
     MethodCall(MethodCall),
     FuncCall(FuncCall),
     AttrLookup(AttrLookup),
-    ShDefinition(Sh),
 }
 
 #[derive(Clone, Debug)]
@@ -95,7 +89,6 @@ pub struct Assignment {
 
 #[derive(Clone, Debug)]
 pub enum Statement {
-    ShCall(Sh),
     ForLoop(ForLoop),
     IfStatement(IfStatement),
     CaseOf(CaseOf),

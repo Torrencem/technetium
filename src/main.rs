@@ -1,4 +1,5 @@
 #![allow(unused)]
+#![feature(fn_traits)]
 #[macro_use] extern crate lalrpop_util;
 
 lalrpop_mod!(pub script);
@@ -8,26 +9,40 @@ pub mod lexer;
 pub mod core;
 pub mod bytecode;
 pub mod builtins;
+pub mod compile;
+use compile::*;
 use lexer::Lexer;
+use std::sync::Arc;
 
 fn main() {
     let input =
 r#"
-x = 100 + 150
-if x > 10 {
-    print("x is big!")
-} elif x > 100 {
-    print("x is SUPER HUGE!!!")
+x = 10
+if x + 100 < 15 {
+    return 1
+} else {
+    return 2
 }
-mylist = [("a", b, 3, "abc" + "def", 10 / 5), [[1]]]
-mylist.tell_a_story(arg1, arg2)
 "#;
     let lexer = Lexer::new(input);
 
-    let ast = script::ProgramParser::new().parse(lexer);
+    let ast = script::ProgramParser::new().parse(lexer).expect("temp1");
 
-    dbg!(ast);
+    dbg!(&ast);
 
+    let mut compile_context = CompileContext::new();
+
+    let code = ast.compile(&mut compile_context).expect("temp2");
+
+    dbg!(&code);
+
+    let global_context = bytecode::GlobalContext { constant_descriptors: compile_context.constant_descriptors };
+    
+    let mut frame = bytecode::Frame::new(&code, Arc::new(global_context));
+
+    let computation = frame.run();
+
+    dbg!(computation);
 }
 
 // fn main_old() {

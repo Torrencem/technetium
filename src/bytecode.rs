@@ -41,8 +41,14 @@ pub enum Op {
     sub,
     mul,
     div,
-    mods,
-    invert,
+    not,
+    or,
+    and,
+    cmp_lt,
+    cmp_gt,
+    cmp_eq,
+    cmp_leq,
+    cmp_geq,
     
     /// Push a constant referred to by a global constant descriptor
     push_const(GlobalConstantDescriptor),

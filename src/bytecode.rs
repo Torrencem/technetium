@@ -90,7 +90,7 @@ pub struct Frame<'code> {
 }
 
 impl<'code> Frame<'code> {
-    pub fn new(code: &'code [Op], parent: Option<Box<Frame<'code>>>, globals: Arc<GlobalContext>) -> Self {
+    pub fn new(code: &'code [Op], globals: Arc<GlobalContext>) -> Self {
         Frame {
             global_context: globals,
             // parent: parent,

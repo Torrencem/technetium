@@ -21,6 +21,19 @@ pub enum Tok {
     Dot,
     SingleEq,
     Rarrow,
+    Mult,
+    Divide,
+    Plus,
+    Minus,
+    Greater,
+    Lesser,
+    Neq,
+    Leq,
+    Geq,
+    DoubleEq,
+    Not,
+    Or,
+    And,
     Identifier(String),
     Int(i64),
     Float(f64),
@@ -206,14 +219,78 @@ impl<'input> Iterator for Lexer<'input> {
                 Some((i, '}')) => return Some(Ok((i, Tok::CloseBrace, i + 1))),
                 Some((i, ',')) => return Some(Ok((i, Tok::Comma, i + 1))),
                 Some((i, '.')) => return Some(Ok((i, Tok::Dot, i + 1))),
+                Some((i, '*')) => return Some(Ok((i, Tok::Mult, i + 1))),
+                Some((i, '/')) => return Some(Ok((i, Tok::Divide, i + 1))),
+                Some((i, '+')) => return Some(Ok((i, Tok::Plus, i + 1))),
+                Some((i, '-')) => return Some(Ok((i, Tok::Minus, i + 1))),
+                Some((i, '!')) => return Some(Ok((i, Tok::Not, i + 1))),
                 Some((i, '=')) => {
                     match self.chars.peek() {
                         Some((_, '>')) => {
                             self.chars.next();
                             return Some(Ok((i, Tok::Rarrow, i + 2)));
                         },
+                        Some((_, '=')) => {
+                            self.chars.next();
+                            return Some(Ok((i, Tok::DoubleEq, i + 2)));
+                        },
                         _ => {
                             return Some(Ok((i, Tok::SingleEq, i + 1)));
+                        },
+                    }
+                },
+                Some((i, '<')) => {
+                    match self.chars.peek() {
+                        Some((_, '=')) => {
+                            self.chars.next();
+                            return Some(Ok((i, Tok::Leq, i + 2)));
+                        },
+                        _ => {
+                            return Some(Ok((i, Tok::Lesser, i + 1)));
+                        },
+                    }
+                },
+                Some((i, '>')) => {
+                    match self.chars.peek() {
+                        Some((_, '=')) => {
+                            self.chars.next();
+                            return Some(Ok((i, Tok::Geq, i + 2)));
+                        },
+                        _ => {
+                            return Some(Ok((i, Tok::Greater, i + 1)));
+                        },
+                    }
+                },
+                Some((i, '!')) => {
+                    match self.chars.peek() {
+                        Some((_, '=')) => {
+                            self.chars.next();
+                            return Some(Ok((i, Tok::Neq, i + 2)));
+                        },
+                        _ => {
+                            return Some(Ok((i, Tok::Not, i + 1)));
+                        },
+                    }
+                },
+                Some((i, '|')) => {
+                    match self.chars.peek() {
+                        Some((_, '|')) => {
+                            self.chars.next();
+                            return Some(Ok((i, Tok::Or, i + 2)));
+                        },
+                        _ => {
+                            return Some(Err(()));
+                        },
+                    }
+                },
+                Some((i, '&')) => {
+                    match self.chars.peek() {
+                        Some((_, '&')) => {
+                            self.chars.next();
+                            return Some(Ok((i, Tok::And, i + 2)));
+                        },
+                        _ => {
+                            return Some(Err(()));
                         },
                     }
                 },

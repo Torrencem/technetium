@@ -93,7 +93,77 @@ ElifTail: IfStatement = {
 	},
 };
 
-pub Expr: Expr = {
+Expr: Expr = <e: LogicalExpr> => e;
+
+LogicalExpr: Expr = {
+	<b: Comparison> => b,
+	"!" <s1: Comparison> => Expr::FuncCall(FuncCall {
+		fname: "<not>".to_string(),
+		arguments: vec![s1],
+	}),
+	<s1: Comparison> "||" <s2: Comparison> => Expr::FuncCall(FuncCall {
+		fname: "<or>".to_string(),
+		arguments: vec![s1, s2],
+	}),
+	<s1: Comparison> "&&" <s2: Comparison> => Expr::FuncCall(FuncCall {
+		fname: "<and>".to_string(),
+		arguments: vec![s1, s2],
+	}),
+};
+
+Comparison: Expr = {
+	<b: Sum> => b,
+	<s1: Sum> "<=" <s2: Sum> => Expr::FuncCall(FuncCall {
+		fname: "<leq>".to_string(),
+		arguments: vec![s1, s2],
+	}),
+	<s1: Sum> ">=" <s2: Sum> => Expr::FuncCall(FuncCall {
+		fname: "<geq>".to_string(),
+		arguments: vec![s1, s2],
+	}),
+	<s1: Sum> "<" <s2: Sum> => Expr::FuncCall(FuncCall {
+		fname: "<lt>".to_string(),
+		arguments: vec![s1, s2],
+	}),
+	<s1: Sum> ">" <s2: Sum> => Expr::FuncCall(FuncCall {
+		fname: "<gt>".to_string(),
+		arguments: vec![s1, s2],
+	}),
+	<s1: Sum> "==" <s2: Sum> => Expr::FuncCall(FuncCall {
+		fname: "<eq>".to_string(),
+		arguments: vec![s1, s2],
+	}),
+	<s1: Sum> "!=" <s2: Sum> => Expr::FuncCall(FuncCall {
+		fname: "<neq>".to_string(),
+		arguments: vec![s1, s2],
+	}),
+};
+
+Sum: Expr = {
+	<b: Term> => b,
+	<t1: Term> "+" <t2: Term> => Expr::FuncCall(FuncCall {
+		fname: "<add>".to_string(),
+		arguments: vec![t1, t2],
+	}),
+	<t1: Term> "-" <t2: Term> => Expr::FuncCall(FuncCall {
+		fname: "<sub>".to_string(),
+		arguments: vec![t1, t2],
+	}),
+};
+
+Term: Expr = {
+	<b: BaseExpr> => b,
+	<f1: BaseExpr> "*" <f2: BaseExpr> => Expr::FuncCall(FuncCall {
+		fname: "<mul>".to_string(),
+		arguments: vec![f1, f2],
+	}),
+	<f1: BaseExpr> "/" <f2: BaseExpr> => Expr::FuncCall(FuncCall {
+		fname: "<div>".to_string(),
+		arguments: vec![f1, f2],
+	}),
+};
+
+BaseExpr: Expr = {
 	"(" <e:Expr> ")" => e,
 	<s: Identifier> => Expr::Variable(s),
 	<l: Literal> => Expr::Literal(l),
@@ -117,7 +187,7 @@ TupleLiteral: TupleLiteral = "(" <v: CommaNonEmpty<Expr>> ")" => TupleLiteral { 
 Identifier: String = <s:ident> => s.to_owned();
 
 
-MethodCall: MethodCall = <e: Expr> "." <i: Identifier> "(" <args: Comma<Expr>> ")" => MethodCall {
+MethodCall: MethodCall = <e: BaseExpr> "." <i: Identifier> "(" <args: Comma<Expr>> ")" => MethodCall {
 	parent: Box::new(e),
 	call: FuncCall {
 		fname: i,
@@ -130,7 +200,7 @@ FuncCall: FuncCall = <i: Identifier> "(" <args: Comma<Expr>> ")" => FuncCall {
 	arguments: args,
 };
 
-AttrLookup: AttrLookup = <e: Expr> "." <i: Identifier> => AttrLookup {
+AttrLookup: AttrLookup = <e: BaseExpr> "." <i: Identifier> => AttrLookup {
 	parent: Box::new(e),
 	attribute: i,
 };
@@ -147,14 +217,7 @@ Comma<T>: Vec<T> = {
 };
 
 Newline<T>: Vec<T> = {
-	<v:(<T> "\n")*> <e:T?> => match e {
-		None => v,
-		Some(e) => {
-			let mut v = v;
-			v.push(e);
-			v
-		}
-	}
+	<v:(<T> "\n")*> => v,
 };
 
 CommaNewline<T>: Vec<T> = {
@@ -195,6 +258,19 @@ extern {
 		"." => Tok::Dot,
 		"=" => Tok::SingleEq,
 		"=>" => Tok::Rarrow,
+		"*" => Tok::Mult,
+		"/" => Tok::Divide,
+		"+" => Tok::Plus,
+		"-" => Tok::Minus,
+		">" => Tok::Greater,
+		"<" => Tok::Lesser,
+		"!=" => Tok::Neq,
+		"<=" => Tok::Leq,
+		">=" => Tok::Geq,
+		"==" => Tok::DoubleEq,
+		"!" => Tok::Not,
+		"||" => Tok::Or,
+		"&&" => Tok::And,
 		ident => Tok::Identifier(<String>),
 		int_lit => Tok::Int(<i64>),
 		float_lit => Tok::Float(<f64>),

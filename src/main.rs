@@ -6,6 +6,8 @@ lalrpop_mod!(pub script);
 pub mod ast; 
 pub mod lexer;
 pub mod core;
+pub mod bytecode;
+pub mod builtins;
 use lexer::Lexer;
 
 fn main() {

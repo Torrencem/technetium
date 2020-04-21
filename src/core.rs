@@ -1,8 +1,8 @@
 
 use std::sync::Arc;
 use std::any::Any;
-use std::any::TypeId;
 use std::fmt;
+use std::clone::Clone as RustClone;
 
 pub type ObjectRef = Arc<dyn Object>;
 
@@ -41,7 +41,8 @@ impl fmt::Display for RuntimeError {
 #[derive(Copy, Clone, Debug)]
 pub enum ErrorType {
     TypeError,
-    AttributeError
+    AttributeError,
+    InternalError,
 }
 
 impl RuntimeError {
@@ -58,11 +59,20 @@ impl RuntimeError {
             help: message
         }
     }
+
+    pub fn internal_error(message: String) -> Self {
+        RuntimeError {
+            err: ErrorType::InternalError,
+            help: message
+        }
+    }
 }
 
 pub type Result<T> = std::result::Result<T, RuntimeError>;
 
 pub trait Object : Any + ToAny {
+    fn clone(&self) -> Result<ObjectRef>;
+
     fn rush_type_name(&self) -> String;
 
     fn to_string(&self) -> Result<String> {
@@ -76,6 +86,16 @@ pub trait Object : Any + ToAny {
     fn set_attr(&self, attr: String, val: ObjectRef) -> Result<()> {
         Err(RuntimeError::attribute_error(format!("Cannot set attributes of {}", self.rush_type_name())))
     }
+
+    fn call_method(&self, method: &str, args: &[ObjectRef]) -> Result<ObjectRef> {
+        Err(RuntimeError::attribute_error(format!("Cannot call method of {}", self.rush_type_name())))
+    }
+
+    fn call(&self, args: &[ObjectRef]) -> Result<ObjectRef> {
+        Err(RuntimeError::type_error(format!("Object of type {} is not callable", self.rush_type_name())))
+    }
+
+    fn truthy(&self) -> bool;
 }
 
 impl fmt::Debug for dyn Object {
@@ -84,8 +104,36 @@ impl fmt::Debug for dyn Object {
     }
 }
 
+pub struct BoolObject {
+    pub val: bool,
+}
+
+impl BoolObject {
+    pub fn new(val: bool) -> ObjectRef {
+        Arc::new(BoolObject { val: val })
+    }
+}
+
+impl Object for BoolObject {
+    fn clone(&self) -> Result<ObjectRef> {
+        Ok(BoolObject::new(self.val))
+    }
+
+    fn rush_type_name(&self) -> String {
+        "boolean".to_string()
+    }
+
+    fn to_string(&self) -> Result<String> {
+        Ok(format!("{}", self.val))
+    }
+
+    fn truthy(&self) -> bool {
+        self.val
+    }
+}
+
 pub struct IntObject {
-    val: i64,
+    pub val: i64,
 }
 
 impl IntObject {
@@ -96,39 +144,68 @@ impl IntObject {
 }
 
 impl Object for IntObject {
+    fn clone(&self) -> Result<ObjectRef> {
+        Ok(IntObject::new(self.val))
+    }
+
     fn rush_type_name(&self) -> String {
         "int".to_string()
     }
 
     fn to_string(&self) -> Result<String> {
-        Ok(format!("{}", self.val).to_string())
+        Ok(format!("{}", self.val))
+    }
+
+    fn truthy(&self) -> bool {
+        self.val != 0
     }
 }
 
-pub fn add(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
-    let a_any = a.as_any();
-    let b_any = b.as_any();
-    match (a_any.type_id(), b_any.type_id()) {
-        (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = IntObject::new(int_a.val + int_b.val);
-            Ok(res)
-        },
-        _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.rush_type_name(), b.rush_type_name())))
-        },
+pub struct FloatObject {
+    pub val: f64,
+}
+
+impl FloatObject {
+    pub fn new(val: f64) -> ObjectRef {
+        let res = Arc::new(FloatObject { val: val });
+        res
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+impl Object for FloatObject {
+    fn clone(&self) -> Result<ObjectRef> {
+        Ok(FloatObject::new(self.val))
+    }
 
-    #[test]
-    fn test_basic() {
-        let a = IntObject::new(5);
-        let b = IntObject::new(10);
-        assert!(add(a, b).is_ok());
+    fn rush_type_name(&self) -> String {
+        "int".to_string()
+    }
+
+    fn to_string(&self) -> Result<String> {
+        Ok(format!("{}", self.val))
+    }
+
+    fn truthy(&self) -> bool {
+        self.val != 0.0
     }
 }
+
+
+impl Object for String {
+    fn clone(&self) -> Result<ObjectRef> {
+        Ok(Arc::new(RustClone::clone(self)))
+    }
+
+    fn rush_type_name(&self) -> String {
+        "string".to_string()
+    }
+
+    fn to_string(&self) -> Result<String> {
+        Ok(RustClone::clone(self))
+    }
+
+    fn truthy(&self) -> bool {
+        self != ""
+    }
+}
+

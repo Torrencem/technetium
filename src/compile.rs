@@ -215,6 +215,23 @@ impl Compilable for ForLoop {
     }
 }
 
+impl Compilable for WhileLoop {
+    fn compile(&self, context: &mut CompileContext) -> CompileResult {
+        let mut res = vec![];
+        let mut cond = self.cond.compile(context)?;
+        dbg!(&context.local_index);
+        let mut body = self.body.compile(context)?;
+        dbg!(&context.local_index);
+        let skip_body = Op::cond_jmp(2 + body.len() as i16);
+        let to_beginning = Op::jmp(-(body.len() as i16 + cond.len() as i16 + 1));
+        res.append(&mut cond);
+        res.push(skip_body);
+        res.append(&mut body);
+        res.push(to_beginning);
+        Ok(res)
+    }
+}
+
 impl Compilable for IfStatement {
     fn compile(&self, context: &mut CompileContext) -> CompileResult {
         let mut cond = self.condition.compile(context)?;
@@ -288,10 +305,15 @@ impl Compilable for Assignment {
     fn compile(&self, context: &mut CompileContext) -> CompileResult {
         let mut res = vec![];
         res.append(&mut self.val.compile(context)?);
-        let local_name = context.local_name_gen();
-        context.local_index.insert(RustClone::clone(&self.name), local_name);
-        res.push(Op::store(local_name));
-        Ok(res)
+        if let Some(local_name) = context.local_index.get(&self.name) {
+            res.push(Op::store(*local_name));
+            Ok(res)
+        } else {
+            let local_name = context.local_name_gen();
+            context.local_index.insert(RustClone::clone(&self.name), local_name);
+            res.push(Op::store(local_name));
+            Ok(res)
+        }
     }
 }
 
@@ -299,6 +321,7 @@ impl Compilable for Statement {
     fn compile(&self, context: &mut CompileContext) -> CompileResult {
         match self {
             Statement::ForLoop(f) => f.compile(context),
+            Statement::WhileLoop(w) => w.compile(context),
             Statement::IfStatement(i) => i.compile(context),
             Statement::CaseOf(c) => c.compile(context),
             Statement::ReturnStatement(r) => r.compile(context),
@@ -315,6 +338,7 @@ impl Compilable for StatementList {
         for statement in self.statements.iter() {
             res.append(&mut statement.compile(context)?);
         }
+        dbg!(&res);
         Ok(res)
     }
 }

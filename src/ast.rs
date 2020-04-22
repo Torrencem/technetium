@@ -63,6 +63,12 @@ pub struct ForLoop {
 }
 
 #[derive(Clone, Debug)]
+pub struct WhileLoop {
+    pub cond: Expr,
+    pub body: StatementList,
+}
+
+#[derive(Clone, Debug)]
 pub struct IfStatement {
     pub condition: Expr,
     pub then_body: StatementList,
@@ -97,6 +103,7 @@ pub struct Assignment {
 #[derive(Clone, Debug)]
 pub enum Statement {
     ForLoop(ForLoop),
+    WhileLoop(WhileLoop),
     IfStatement(IfStatement),
     CaseOf(CaseOf),
     ReturnStatement(ReturnStatement),

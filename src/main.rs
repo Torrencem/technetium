@@ -30,13 +30,40 @@ if x + 100 < 15 {
     return hello(incr, 20)
 }
 "#;
+//     let input =
+// r#"
+// sum = 0
+// x = 1
+// sum = sum + x
+// x = x + 1
+// return x
+// "#;
     let input =
 r#"
-func head(s) {
-    return s[0]
+func fib(n) {
+    a = 1
+    b = 1
+    while n > 0 {
+        tmp = b
+        b = a + b
+        a = tmp
+        n = n - 1
+    }
+    return b
+}
+return fib(40)
+"#;
+    let input =
+r#"
+func fib(n, fib) {
+    if n < 2 {
+        return 1
+    } else {
+        return fib(n - 1, fib) + fib(n - 2, fib)
+    }
 }
 
-return head("Hi there!")
+return fib(30, fib)
 "#;
     let lexer = Lexer::new(input);
 
@@ -47,8 +74,6 @@ return head("Hi there!")
     let mut compile_context = CompileContext::new();
 
     let code = ast.compile(&mut compile_context).expect("temp2");
-
-    dbg!(&code);
 
     let global_context = bytecode::GlobalContext { constant_descriptors: compile_context.constant_descriptors };
     

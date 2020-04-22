@@ -8,6 +8,7 @@ pub Program: StatementList = "\n"? <s: StatementList> => s;
 
 Statement: Statement = {
 	<f: ForLoop> => Statement::ForLoop(f),
+	<w: WhileLoop> => Statement::WhileLoop(w),
 	<f: IfStatement> => Statement::IfStatement(f),
 	<c: CaseOf> => Statement::CaseOf(c),
 	<r: ReturnStatement> => Statement::ReturnStatement(r),
@@ -33,6 +34,11 @@ Assignment: Assignment = <n: Identifier> "=" <e: Expr> => Assignment {
 
 ReturnStatement: ReturnStatement = "return" <e: Expr> => ReturnStatement {
 	ret: e,
+};
+
+WhileLoop: WhileLoop = "while" <e: Expr> "\n"? "{" "\n"? <body: StatementList> "}" => WhileLoop {
+	cond: e,
+	body: body,
 };
 
 ForLoop: ForLoop = "for" <n: Identifier> "in" <e: Expr> "\n"? "{" "\n"? <body: StatementList> "}" => ForLoop {

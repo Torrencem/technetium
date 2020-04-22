@@ -9,6 +9,8 @@ use std::clone::Clone as RustClone;
 
 use crate::builtins;
 
+use std::fmt;
+
 pub type LocalName = u16;
 pub type GlobalConstantDescriptor = u16;
 
@@ -226,7 +228,7 @@ impl<'code> Frame<'code> {
                     }
                     let a = stack.pop().unwrap();
                     let b = stack.pop().unwrap();
-                    stack.push(builtins::add(a, b)?)
+                    stack.push(builtins::add(b, a)?)
                 },
                 Op::sub => {
                     if stack.len() < 2 {
@@ -234,7 +236,7 @@ impl<'code> Frame<'code> {
                     }
                     let a = stack.pop().unwrap();
                     let b = stack.pop().unwrap();
-                    stack.push(builtins::sub(a, b)?)
+                    stack.push(builtins::sub(b, a)?)
                 },
                 Op::mul => {
                     if stack.len() < 2 {
@@ -242,7 +244,7 @@ impl<'code> Frame<'code> {
                     }
                     let a = stack.pop().unwrap();
                     let b = stack.pop().unwrap();
-                    stack.push(builtins::mul(a, b)?)
+                    stack.push(builtins::mul(b, a)?)
                 },
                 Op::div => {
                     if stack.len() < 2 {
@@ -250,7 +252,7 @@ impl<'code> Frame<'code> {
                     }
                     let a = stack.pop().unwrap();
                     let b = stack.pop().unwrap();
-                    stack.push(builtins::div(a, b)?)
+                    stack.push(builtins::div(b, a)?)
                 },
                 Op::not => {
                     if stack.len() < 1 {
@@ -265,7 +267,7 @@ impl<'code> Frame<'code> {
                     }
                     let a = stack.pop().unwrap();
                     let b = stack.pop().unwrap();
-                    stack.push(builtins::or(a, b)?)
+                    stack.push(builtins::or(b, a)?)
                 },
                 Op::and => {
                     if stack.len() < 2 {
@@ -273,7 +275,7 @@ impl<'code> Frame<'code> {
                     }
                     let a = stack.pop().unwrap();
                     let b = stack.pop().unwrap();
-                    stack.push(builtins::and(a, b)?)
+                    stack.push(builtins::and(b, a)?)
                 },
                 Op::cmp_lt => {
                     if stack.len() < 2 {

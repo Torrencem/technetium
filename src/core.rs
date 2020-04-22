@@ -6,6 +6,8 @@ use std::clone::Clone as RustClone;
 use crate::bytecode::Op;
 use crate::bytecode;
 use std::cell::RefCell;
+use codespan::{Span, FileId};
+use codespan_reporting::diagnostic::{Diagnostic, Label};
 
 pub type ObjectRef = Arc<dyn Object>;
 
@@ -33,6 +35,7 @@ impl<T: Object> ToAny for T {
 pub struct RuntimeError {
     err: ErrorType,
     help: String,
+    span: Option<Span>,
 }
 
 impl fmt::Display for RuntimeError {
@@ -53,20 +56,43 @@ impl RuntimeError {
         RuntimeError {
             err: ErrorType::TypeError,
             help: message,
+            span: None,
         }
     }
     
     pub fn attribute_error(message: String) -> Self {
         RuntimeError {
             err: ErrorType::AttributeError,
-            help: message
+            help: message,
+            span: None,
         }
     }
 
     pub fn internal_error(message: String) -> Self {
         RuntimeError {
             err: ErrorType::InternalError,
-            help: message
+            help: message,
+            span: None,
+        }
+    }
+
+    pub fn attach_span(self, span: Span) -> Self {
+        RuntimeError {
+            err: self.err,
+            help: self.help,
+            span: Some(span),
+        }
+    }
+    
+    pub fn as_diagnostic<FileId>(&self, fileid: FileId) -> Diagnostic<FileId> {
+        match self.span {
+            Some(span) => Diagnostic::error()
+                .with_message(format!("Runtime Error: {:?}", self.err))
+                .with_labels(vec![
+                    Label::primary(fileid, span).with_message(&self.help),
+                ]),
+            None => Diagnostic::error()
+                .with_message(&self.help),
         }
     }
 }

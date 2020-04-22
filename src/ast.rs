@@ -39,7 +39,7 @@ pub struct TupleLiteral {
 
 #[derive(Clone, Debug)]
 pub struct FuncCall {
-    pub fname: String,
+    pub fname: ASTNode<String>,
     pub arguments: Vec<ASTNode<Expr>>,
 }
 
@@ -63,7 +63,7 @@ pub struct IndexedExpr {
 
 #[derive(Clone, Debug)]
 pub enum Expr {
-    Variable(String),
+    Variable(ASTNode<String>),
     Literal(Literal),
     ListLiteral(ListLiteral),
     TupleLiteral(TupleLiteral),

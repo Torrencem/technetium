@@ -11,8 +11,11 @@ use crate::builtins;
 
 use std::fmt;
 
+use codespan::Span;
+
 pub type LocalName = u16;
 pub type GlobalConstantDescriptor = u16;
+pub type DebugSpanDescriptor = u16;
 
 #[allow(non_camel_case_types)]
 #[derive(Copy, Clone, Debug)]
@@ -92,10 +95,14 @@ pub enum Op {
 
     /// Return the top of the stack from the current function
     ret,
+
+    /// Attach a debug reference to the next instruction in case it errors
+    debug(DebugSpanDescriptor),
 }
 
 pub struct GlobalContext {
     pub constant_descriptors: HashMap<GlobalConstantDescriptor, ObjectRef>,
+    pub debug_descriptors: HashMap<DebugSpanDescriptor, Span>,
 }
 
 pub struct Frame<'code> {
@@ -103,6 +110,22 @@ pub struct Frame<'code> {
     code: &'code [Op],
     curr_instruction: usize,
     pub locals: HashMap<LocalName, ObjectRef>,
+}
+
+macro_rules! try_debug {
+    ($this: expr, $debug_symb: expr, $expr: expr) => {
+        $expr.map_err(|e| match $debug_symb {
+            None => e,
+            Some(debug_symb) => {
+                let span = $this.global_context.debug_descriptors.get(&debug_symb);
+                if let Some(span) = span {
+                    e.attach_span(*span)
+                } else {
+                    e
+                }
+            },
+        })?;
+    };
 }
 
 impl<'code> Frame<'code> {
@@ -117,7 +140,12 @@ impl<'code> Frame<'code> {
 
     pub fn run(&mut self) -> Result<ObjectRef> {
         let mut stack: Vec<ObjectRef> = vec![];
+        let mut stale_debug_symb = false;
+        let mut ds: Option<DebugSpanDescriptor> = None;
         loop {
+            if !stale_debug_symb {
+                stale_debug_symb = true;
+            }
             let instr = self.code.get(self.curr_instruction);
             if let None = instr {
                 return Err(RuntimeError::internal_error("Ran off the end of the code!".to_string()));
@@ -138,8 +166,6 @@ impl<'code> Frame<'code> {
                     if let Some(val) = local {
                         stack.push(Arc::clone(val));
                     } else {
-                        dbg!(&self.locals);
-                        dbg!(&local_name);
                         return Err(RuntimeError::internal_error("Loaded a local that doesn't exist!".to_string()));
                     }
                 },
@@ -176,7 +202,7 @@ impl<'code> Frame<'code> {
                     let obj = stack.pop().unwrap();
                     let name = name.as_any();
                     if let Some(method_name) = name.downcast_ref::<String>() {
-                        let res = obj.call_method(method_name, &args)?;
+                        let res = try_debug!(self, ds, obj.call_method(method_name, &args));
                         stack.push(res);
                     } else {
                         return Err(RuntimeError::internal_error("Method name not a string!".to_string()));
@@ -189,7 +215,7 @@ impl<'code> Frame<'code> {
                     }
                     let args: Vec<ObjectRef> = stack.drain((stack.len() - nargs)..).collect();
                     let func = stack.pop().unwrap();
-                    let res = func.call(&args)?;
+                    let res = try_debug!(self, ds, func.call(&args));
                     stack.push(res);
                 },
                 Op::get_attr => {
@@ -200,7 +226,7 @@ impl<'code> Frame<'code> {
                     let obj = stack.pop().unwrap();
                     let attr = attr.as_any();
                     if let Some(attr_name) = attr.downcast_ref::<String>() {
-                        let res = obj.get_attr(RustClone::clone(attr_name))?;
+                        let res = try_debug!(self, ds, obj.get_attr(RustClone::clone(attr_name)));
                         stack.push(res);
                     } else {
                         return Err(RuntimeError::internal_error("Attribute name not a string!".to_string()));
@@ -215,7 +241,7 @@ impl<'code> Frame<'code> {
                     let obj = stack.pop().unwrap();
                     let attr = attr.as_any();
                     if let Some(attr_name) = attr.downcast_ref::<String>() {
-                        obj.set_attr(RustClone::clone(attr_name), toset)?;
+                        try_debug!(self, ds, obj.set_attr(RustClone::clone(attr_name), toset));
                     } else {
                         return Err(RuntimeError::internal_error("Attribute name not a string!".to_string()));
                     }
@@ -223,7 +249,7 @@ impl<'code> Frame<'code> {
                 Op::to_string => {
                     let obj = stack.pop();
                     if let Some(obj) = obj {
-                        stack.push(Arc::new(obj.to_string()?));
+                        stack.push(Arc::new(try_debug!(self, ds, obj.to_string())));
                     } else {
                         return Err(RuntimeError::internal_error("to_string called on an empty stack!".to_string()));
                     }
@@ -234,7 +260,7 @@ impl<'code> Frame<'code> {
                     }
                     let a = stack.pop().unwrap();
                     let b = stack.pop().unwrap();
-                    stack.push(builtins::add(b, a)?)
+                    stack.push(try_debug!(self, ds, builtins::add(b, a)))
                 },
                 Op::sub => {
                     if stack.len() < 2 {
@@ -242,7 +268,7 @@ impl<'code> Frame<'code> {
                     }
                     let a = stack.pop().unwrap();
                     let b = stack.pop().unwrap();
-                    stack.push(builtins::sub(b, a)?)
+                    stack.push(try_debug!(self, ds, builtins::sub(b, a)))
                 },
                 Op::mul => {
                     if stack.len() < 2 {
@@ -250,7 +276,7 @@ impl<'code> Frame<'code> {
                     }
                     let a = stack.pop().unwrap();
                     let b = stack.pop().unwrap();
-                    stack.push(builtins::mul(b, a)?)
+                    stack.push(try_debug!(self, ds, builtins::mul(b, a)))
                 },
                 Op::div => {
                     if stack.len() < 2 {
@@ -258,14 +284,14 @@ impl<'code> Frame<'code> {
                     }
                     let a = stack.pop().unwrap();
                     let b = stack.pop().unwrap();
-                    stack.push(builtins::div(b, a)?)
+                    stack.push(try_debug!(self, ds, builtins::div(b, a)))
                 },
                 Op::not => {
                     if stack.len() < 1 {
                         return Err(RuntimeError::internal_error("Tried to not nothing!".to_string()));
                     }
                     let a = stack.pop().unwrap();
-                    stack.push(builtins::not(a)?);
+                    stack.push(try_debug!(self, ds, builtins::not(a)));
                 },
                 Op::or => {
                     if stack.len() < 2 {
@@ -273,7 +299,7 @@ impl<'code> Frame<'code> {
                     }
                     let a = stack.pop().unwrap();
                     let b = stack.pop().unwrap();
-                    stack.push(builtins::or(b, a)?)
+                    stack.push(try_debug!(self, ds, builtins::or(b, a)))
                 },
                 Op::and => {
                     if stack.len() < 2 {
@@ -281,7 +307,7 @@ impl<'code> Frame<'code> {
                     }
                     let a = stack.pop().unwrap();
                     let b = stack.pop().unwrap();
-                    stack.push(builtins::and(b, a)?)
+                    stack.push(try_debug!(self, ds, builtins::and(b, a)))
                 },
                 Op::cmp_lt => {
                     if stack.len() < 2 {
@@ -289,7 +315,7 @@ impl<'code> Frame<'code> {
                     }
                     let a = stack.pop().unwrap();
                     let b = stack.pop().unwrap();
-                    stack.push(builtins::cmp_lt(a, b)?)
+                    stack.push(try_debug!(self, ds, builtins::cmp_lt(a, b)))
                 },
                 Op::cmp_gt => {
                     if stack.len() < 2 {
@@ -297,7 +323,7 @@ impl<'code> Frame<'code> {
                     }
                     let a = stack.pop().unwrap();
                     let b = stack.pop().unwrap();
-                    stack.push(builtins::cmp_gt(a, b)?)
+                    stack.push(try_debug!(self, ds, builtins::cmp_gt(a, b)))
                 },
                 Op::cmp_eq => {
                     if stack.len() < 2 {
@@ -305,7 +331,7 @@ impl<'code> Frame<'code> {
                     }
                     let a = stack.pop().unwrap();
                     let b = stack.pop().unwrap();
-                    stack.push(builtins::cmp_eq(a, b)?)
+                    stack.push(try_debug!(self, ds, builtins::cmp_eq(a, b)))
                 },
                 Op::cmp_neq => {
                     if stack.len() < 2 {
@@ -313,7 +339,7 @@ impl<'code> Frame<'code> {
                     }
                     let a = stack.pop().unwrap();
                     let b = stack.pop().unwrap();
-                    stack.push(builtins::cmp_neq(a, b)?)
+                    stack.push(try_debug!(self, ds, builtins::cmp_neq(a, b)))
                 },
                 Op::cmp_leq => {
                     if stack.len() < 2 {
@@ -321,7 +347,7 @@ impl<'code> Frame<'code> {
                     }
                     let a = stack.pop().unwrap();
                     let b = stack.pop().unwrap();
-                    stack.push(builtins::cmp_leq(a, b)?)
+                    stack.push(try_debug!(self, ds, builtins::cmp_leq(a, b)))
                 },
                 Op::cmp_geq => {
                     if stack.len() < 2 {
@@ -329,7 +355,7 @@ impl<'code> Frame<'code> {
                     }
                     let a = stack.pop().unwrap();
                     let b = stack.pop().unwrap();
-                    stack.push(builtins::cmp_geq(a, b)?)
+                    stack.push(try_debug!(self, ds, builtins::cmp_geq(a, b)))
                 },
                 Op::index => {
                     if stack.len() < 2 {
@@ -337,12 +363,12 @@ impl<'code> Frame<'code> {
                     }
                     let a = stack.pop().unwrap();
                     let b = stack.pop().unwrap();
-                    stack.push(builtins::index(b, a)?)
+                    stack.push(try_debug!(self, ds, builtins::index(b, a)))
                 },
                 Op::make_iter => {
                     let val = stack.pop();
                     if let Some(val) = val {
-                        stack.push(val.make_iter()?);
+                        stack.push(try_debug!(self, ds, val.make_iter()));
                     } else {
                         return Err(RuntimeError::internal_error("Tried to call make_iter on nothing!".to_string()));
                     }
@@ -350,7 +376,7 @@ impl<'code> Frame<'code> {
                 Op::take_iter(offset) => {
                     let val = stack.pop();
                     if let Some(val) = val {
-                        let val = val.take_iter()?;
+                        let val = try_debug!(self, ds, val.take_iter());
                         if let Some(val) = val {
                             stack.push(val);
                         } else {
@@ -421,8 +447,15 @@ impl<'code> Frame<'code> {
                         return Err(RuntimeError::internal_error("Returned an empty stack!".to_string()));
                     }
                 },
+                Op::debug(symb) => {
+                    ds = Some(*symb);
+                    stale_debug_symb = false;
+                },
             }
-
+            
+            if stale_debug_symb {
+                ds = None;
+            }
             self.curr_instruction += 1;
         }
     }

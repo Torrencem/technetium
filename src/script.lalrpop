@@ -104,75 +104,75 @@ Expr: ASTNode<Expr> = <l:@L> <e: LogicalExpr> <r:@R> => ASTNode::new(e, l, r);
 
 LogicalExpr: Expr = {
 	<b: Comparison> => b,
-	"!" <l:@L> <s1: Comparison> <r:@R> => Expr::FuncCall(FuncCall {
-		fname: "<not>".to_string(),
+	<op:@L> "!" <l:@L> <s1: Comparison> <r:@R> => Expr::FuncCall(FuncCall {
+		fname: ASTNode::new("<not>".to_string(), op, op + 1),
 		arguments: vec![ASTNode::new(s1, l, r)],
 	}),
-	<l1:@L> <s1: Comparison> <r1:@R> "||" <l2:@L> <s2: Comparison> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: "<or>".to_string(),
+	<l1:@L> <s1: Comparison> <r1:@R> <op:@L> "||" <l2:@L> <s2: Comparison> <r2:@R> => Expr::FuncCall(FuncCall {
+		fname: ASTNode::new("<or>".to_string(), op, op + 2),
 		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
 	}),
-	<l1:@L> <s1: Comparison> <r1:@R> "&&" <l2:@L> <s2: Comparison> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: "<and>".to_string(),
+	<l1:@L> <s1: Comparison> <r1:@R> <op:@L> "&&" <l2:@L> <s2: Comparison> <r2:@R> => Expr::FuncCall(FuncCall {
+		fname: ASTNode::new("<and>".to_string(), op, op + 2),
 		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
 	}),
 };
 
 Comparison: Expr = {
 	<b: Sum> => b,
-	<l1:@L> <s1: Sum> <r1:@R> "<=" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: "<leq>".to_string(),
+	<l1:@L> <s1: Sum> <r1:@R> <op:@L> "<=" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
+		fname: ASTNode::new("<leq>".to_string(), op, op + 2),
 		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
 	}),
-	<l1:@L> <s1: Sum> <r1:@R> ">=" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: "<geq>".to_string(),
+	<l1:@L> <s1: Sum> <r1:@R> <op:@L> ">=" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
+		fname: ASTNode::new("<geq>".to_string(), op, op + 2),
 		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
 	}),
-	<l1:@L> <s1: Sum> <r1:@R> "<" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: "<lt>".to_string(),
+	<l1:@L> <s1: Sum> <r1:@R> <op:@L> "<" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
+		fname: ASTNode::new("<lt>".to_string(), op, op + 1),
 		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
 	}),
-	<l1:@L> <s1: Sum> <r1:@R> ">" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: "<gt>".to_string(),
+	<l1:@L> <s1: Sum> <r1:@R> <op:@L> ">" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
+		fname: ASTNode::new("<gt>".to_string(), op, op + 1),
 		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
 	}),
-	<l1:@L> <s1: Sum> <r1:@R> "==" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: "<eq>".to_string(),
+	<l1:@L> <s1: Sum> <r1:@R> <op:@L> "==" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
+		fname: ASTNode::new("<eq>".to_string(), op, op + 2),
 		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
 	}),
-	<l1:@L> <s1: Sum> <r1:@R> "!=" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: "<neq>".to_string(),
+	<l1:@L> <s1: Sum> <r1:@R> <op:@L> "!=" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
+		fname: ASTNode::new("<neq>".to_string(), op, op + 2),
 		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
 	}),
 };
 
 Sum: Expr = {
 	<b: Term> => b,
-	<l1:@L> <t1: Term> <r1:@R> "+" <l2:@L> <t2: Term> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: "<add>".to_string(),
+	<l1:@L> <t1: Term> <r1:@R> <op:@L> "+" <l2:@L> <t2: Term> <r2:@R> => Expr::FuncCall(FuncCall {
+		fname: ASTNode::new("<add>".to_string(), op, op + 1),
 		arguments: vec![ASTNode::new(t1, l1, r1), ASTNode::new(t2, l2, r2)],
 	}),
-	<l1:@L> <t1: Term> <r1:@R> "-" <l2:@L> <t2: Term> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: "<sub>".to_string(),
+	<l1:@L> <t1: Term> <r1:@R> <op:@L> "-" <l2:@L> <t2: Term> <r2:@R> => Expr::FuncCall(FuncCall {
+		fname: ASTNode::new("<sub>".to_string(), op, op + 1),
 		arguments: vec![ASTNode::new(t1, l1, r1), ASTNode::new(t2, l2, r2)],
 	}),
 };
 
 Term: Expr = {
 	<b: BaseExpr> => b,
-	<l1:@L> <f1: BaseExpr> <r1:@R> "*" <l2:@L> <f2: BaseExpr> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: "<mul>".to_string(),
+	<l1:@L> <f1: BaseExpr> <r1:@R> <op:@L> "*" <l2:@L> <f2: BaseExpr> <r2:@R> => Expr::FuncCall(FuncCall {
+		fname: ASTNode::new("<mul>".to_string(), op, op + 1),
 		arguments: vec![ASTNode::new(f1, l1, r1), ASTNode::new(f2, l2, r2)],
 	}),
-	<l1:@L> <f1: BaseExpr> <r1:@R> "/" <l2:@L> <f2: BaseExpr> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: "<div>".to_string(),
+	<l1:@L> <f1: BaseExpr> <r1:@R> <op:@L> "/" <l2:@L> <f2: BaseExpr> <r2:@R> => Expr::FuncCall(FuncCall {
+		fname: ASTNode::new("<div>".to_string(), op, op + 1),
 		arguments: vec![ASTNode::new(f1, l1, r1), ASTNode::new(f2, l2, r2)],
 	}),
 };
 
 BaseExpr: Expr = {
 	"(" <e:Expr> ")" => e.inner,
-	<s: Identifier> => Expr::Variable(s.inner),
+	<s: Identifier> => Expr::Variable(s),
 	<l: Literal> => Expr::Literal(l),
 	<l: ListLiteral> => Expr::ListLiteral(l),
 	<t: TupleLiteral> => Expr::TupleLiteral(t),
@@ -203,13 +203,13 @@ Identifier: ASTNode<String> = <l:@L> <s:ident> <r:@R> => ASTNode::new(s.to_owned
 MethodCall: MethodCall = <l:@L> <e: BaseExpr> <r:@R> "." <i: Identifier> "(" <args: Comma<Expr>> ")" => MethodCall {
 	parent: Box::new(ASTNode::new(e, l, r)),
 	call: FuncCall {
-		fname: i.inner,
+		fname: i,
 		arguments: args,
 	},
 };
 
 FuncCall: FuncCall = <i: Identifier> "(" <args: Comma<Expr>> ")" => FuncCall {
-	fname: i.inner,
+	fname: i,
 	arguments: args,
 };
 

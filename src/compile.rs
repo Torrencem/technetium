@@ -6,9 +6,12 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::clone::Clone as RustClone;
 use std::result::Result as RustResult;
+use codespan::{Span, FileId};
+use codespan_reporting::diagnostic::{Diagnostic, Label};
 
-type GCDGenerator = Box<dyn FnMut() -> GlobalConstantDescriptor>;
-type LocalNameGenerator = Box<dyn FnMut() -> LocalName>;
+// type GCDGenerator = Box<dyn FnMut() -> GlobalConstantDescriptor>;
+// type LocalNameGenerator = Box<dyn FnMut() -> LocalName>;
+// type DSDGenerator = Box<dyn FnMut() -> DebugSpanDescriptor>;
 
 #[derive(Debug, Clone)]
 pub struct CompileError {
@@ -18,12 +21,22 @@ pub struct CompileError {
 
 #[derive(Debug, Clone)]
 pub enum CompileErrorType {
-    UndefinedVariable,
+    UndefinedVariable(Span),
 }
 
 impl CompileError {
-    fn new(kind: CompileErrorType, help: &str) -> Self {
+    pub fn new(kind: CompileErrorType, help: &str) -> Self {
         CompileError { kind: kind, help: help.to_string() }
+    }
+
+    pub fn as_diagnostic<FileId>(&self, fileid: FileId) -> Diagnostic<FileId> {
+        match self.kind {
+            CompileErrorType::UndefinedVariable(span) => Diagnostic::error()
+                .with_message(self.help.clone())
+                .with_labels(vec![
+                    Label::primary(fileid, span).with_message("Undefined variable"),
+                ]),
+        }
     }
 }
 
@@ -34,6 +47,8 @@ pub struct CompileContext {
     pub constant_descriptors: HashMap<GlobalConstantDescriptor, ObjectRef>,
     local_index_last: LocalName,
     pub local_index: HashMap<String, LocalName>,
+    dcd_last: DebugSpanDescriptor,
+    pub debug_span_descriptors: HashMap<DebugSpanDescriptor, Span>,
 }
 
 impl CompileContext {
@@ -43,6 +58,8 @@ impl CompileContext {
             constant_descriptors: HashMap::new(),
             local_index_last: 0,
             local_index: HashMap::new(),
+            dcd_last: 0,
+            debug_span_descriptors: HashMap::new(),
         }
     }
 
@@ -55,6 +72,12 @@ impl CompileContext {
     pub fn local_name_gen(&mut self) -> LocalName {
         let old = self.local_index_last;
         self.local_index_last += 1;
+        old
+    }
+
+    pub fn dsd_gen(&mut self) -> DebugSpanDescriptor {
+        let old = self.dcd_last;
+        self.dcd_last += 1;
         old
     }
 }
@@ -127,18 +150,18 @@ impl Compilable for FuncCall {
     fn compile(&self, context: &mut CompileContext) -> CompileResult {
         let mut res = vec![];
         let builtins = builtin_functions();
-        if let Some(op) = builtins.get(&self.fname) {
+        if let Some(op) = builtins.get(&self.fname.inner) {
             for arg in self.arguments.iter() {
                 res.append(&mut arg.compile(context)?);
             }
             res.push(*op);
             return Ok(res);
         }
-        let local_name = context.local_index.get(&self.fname);
+        let local_name = context.local_index.get(&self.fname.inner);
         if let Some(local_name) = local_name {
             res.push(Op::load(*local_name));
         } else {
-            return Err(CompileError::new(CompileErrorType::UndefinedVariable, format!("Undefined function: {}", self.fname).as_ref()));
+            return Err(CompileError::new(CompileErrorType::UndefinedVariable(self.fname.span), format!("Undefined function: {}", self.fname.inner).as_ref()));
         }
         for arg in self.arguments.iter() {
             res.append(&mut arg.compile(context)?);
@@ -153,9 +176,15 @@ impl Compilable for AttrLookup {
         let mut res = vec![];
         res.append(&mut self.parent.compile(context)?);
         let const_descr = context.gcd_gen();
-        let name_val = Arc::new(RustClone::clone(&self.attribute));
-        context.constant_descriptors.insert(const_descr, Arc::new(name_val.inner.clone()));
+        let name_val = Arc::new(RustClone::clone(&self.attribute.inner));
+        context.constant_descriptors.insert(const_descr, name_val);
         res.push(Op::push_const(const_descr));
+
+        // Make debug symbol
+        let debug_descr = context.dsd_gen();
+        context.debug_span_descriptors.insert(debug_descr, Span::merge(self.parent.span, self.attribute.span));
+        res.push(Op::debug(debug_descr));
+
         res.push(Op::get_attr);
         Ok(res)
     }
@@ -166,7 +195,7 @@ impl Compilable for MethodCall {
         let mut res = vec![];
         res.append(&mut self.parent.compile(context)?);
         let const_descr = context.gcd_gen();
-        let name_val = Arc::new(RustClone::clone(&self.call.fname));
+        let name_val = Arc::new(RustClone::clone(&self.call.fname.inner));
         context.constant_descriptors.insert(const_descr, name_val);
         res.push(Op::push_const(const_descr));
         for arg in self.call.arguments.iter() {
@@ -181,11 +210,11 @@ impl Compilable for Expr {
     fn compile(&self, context: &mut CompileContext) -> CompileResult {
         match self {
             Expr::Variable(v) => {
-                let local_name = context.local_index.get(v);
+                let local_name = context.local_index.get(&v.inner);
                 if let Some(local_name) = local_name {
                     Ok(vec![Op::load(*local_name)])
                 } else {
-                    return Err(CompileError::new(CompileErrorType::UndefinedVariable, format!("Undefined variable: {}", v).as_ref()));
+                    return Err(CompileError::new(CompileErrorType::UndefinedVariable(v.span), format!("Undefined variable: {}", v.inner).as_ref()));
                 }
             },
             Expr::Literal(l) => l.compile(context),
@@ -295,6 +324,7 @@ impl Compilable for FuncDefinition {
         let code = self.body.compile(&mut sub_context);
         let sub_context = GlobalContext {
             constant_descriptors: sub_context.constant_descriptors,
+            debug_descriptors: sub_context.debug_span_descriptors,
         };
         let function_obj = Function {
             nargs: self.args.len(),

@@ -49,20 +49,22 @@ fn main() {
 
     let ast = script::ProgramParser::new().parse(lexer).expect("temp1");
     
-    if verbose {
-        dbg!(&ast);
-    }
+    dbg!(&ast);
 
-    let mut compile_context = CompileContext::new();
-
-    let code = ast.compile(&mut compile_context).expect("temp2");
-
-    let global_context = bytecode::GlobalContext { constant_descriptors: compile_context.constant_descriptors };
-    
-    let mut frame = bytecode::Frame::new(&code, Arc::new(global_context));
-
-    let computation = frame.run();
-
-    dbg!(computation);
+    // if verbose {
+    //     dbg!(&ast);
+    // }
+    //
+    // let mut compile_context = CompileContext::new();
+    //
+    // let code = ast.compile(&mut compile_context).expect("temp2");
+    //
+    // let global_context = bytecode::GlobalContext { constant_descriptors: compile_context.constant_descriptors };
+    //
+    // let mut frame = bytecode::Frame::new(&code, Arc::new(global_context));
+    //
+    // let computation = frame.run();
+    //
+    // dbg!(computation);
 }
 

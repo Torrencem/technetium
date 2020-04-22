@@ -1,20 +1,21 @@
 use std::str::FromStr;
 use crate::ast::*;
 use crate::lexer::*;
+use codespan::Span;
 
 grammar;
 
-pub Program: StatementList = "\n"? <s: StatementList> => s;
+pub Program: ASTNode<StatementList> = "\n"? <s: StatementList> => s;
 
-Statement: Statement = {
-	<f: ForLoop> => Statement::ForLoop(f),
-	<w: WhileLoop> => Statement::WhileLoop(w),
-	<f: IfStatement> => Statement::IfStatement(f),
-	<c: CaseOf> => Statement::CaseOf(c),
-	<r: ReturnStatement> => Statement::ReturnStatement(r),
-	<f: FuncDefinition> => Statement::FuncDefinition(f),
-	<a: Assignment> => Statement::Assignment(a),
-	<e: Expr> => Statement::Expr(e),
+Statement: ASTNode<Statement> = {
+	<l:@L> <f: ForLoop> <r:@R> => ASTNode::new(Statement::ForLoop(f), l, r),
+	<l:@L> <w: WhileLoop> <r:@R> => ASTNode::new(Statement::WhileLoop(w), l, r),
+	<l:@L> <f: IfStatement> <r:@R> => ASTNode::new(Statement::IfStatement(f), l, r),
+	<l:@L> <c: CaseOf> <r:@R> => ASTNode::new(Statement::CaseOf(c), l, r),
+	<l:@L> <re: ReturnStatement> <r:@R> => ASTNode::new(Statement::ReturnStatement(re), l, r),
+	<l:@L> <f: FuncDefinition> <r:@R> => ASTNode::new(Statement::FuncDefinition(f), l, r),
+	<l:@L> <a: Assignment> <r:@R> => ASTNode::new(Statement::Assignment(a), l, r),
+	<l:@L> <e: Expr> <r:@R> => ASTNode::new(Statement::Expr(e.inner), l, r),
 };
 
 FuncDefinition: FuncDefinition = "func" <id: Identifier> "(" <args: Comma<Identifier>> ")" "\n"? "{" "\n" <body: StatementList> "}" => FuncDefinition {
@@ -23,9 +24,9 @@ FuncDefinition: FuncDefinition = "func" <id: Identifier> "(" <args: Comma<Identi
 	body: body,
 };
 
-StatementList: StatementList = <v: Newline<Statement>> => StatementList {
+StatementList: ASTNode<StatementList> = <l:@L> <v: Newline<Statement>> <r:@R> => ASTNode::new(StatementList {
 	statements: v,
-};
+}, l, r);
 
 Assignment: Assignment = <n: Identifier> "=" <e: Expr> => Assignment {
 	name: n,
@@ -42,7 +43,7 @@ WhileLoop: WhileLoop = "while" <e: Expr> "\n"? "{" "\n"? <body: StatementList> "
 };
 
 ForLoop: ForLoop = "for" <n: Identifier> "in" <e: Expr> "\n"? "{" "\n"? <body: StatementList> "}" => ForLoop {
-	binding: Pattern(n),
+	binding: n,
 	iter: e,
 	body: body,
 };
@@ -52,8 +53,8 @@ CaseOf: CaseOf = "case" <e: Expr> "of" "\n"? "{" "\n"? <c: CommaNewline<Case>> "
 	cases: c,
 };
 
-Case: (Expr, StatementList) = {
-	<e: Expr> "=>" <s: Statement> => (e, StatementList { statements: vec![s] }),
+Case: (ASTNode<Expr>, ASTNode<StatementList>) = {
+	<e: Expr> "=>" <l:@L> <s: Statement> <r:@R> => (e, ASTNode::new(StatementList { statements: vec![s] }, l, r)),
 	<e: Expr> "=>" "\n"? "{" "\n"? <s: StatementList> "}" => (e, s),
 };
 
@@ -99,79 +100,79 @@ ElifTail: IfStatement = {
 	},
 };
 
-Expr: Expr = <e: LogicalExpr> => e;
+Expr: ASTNode<Expr> = <l:@L> <e: LogicalExpr> <r:@R> => ASTNode::new(e, l, r);
 
 LogicalExpr: Expr = {
 	<b: Comparison> => b,
-	"!" <s1: Comparison> => Expr::FuncCall(FuncCall {
+	"!" <l:@L> <s1: Comparison> <r:@R> => Expr::FuncCall(FuncCall {
 		fname: "<not>".to_string(),
-		arguments: vec![s1],
+		arguments: vec![ASTNode::new(s1, l, r)],
 	}),
-	<s1: Comparison> "||" <s2: Comparison> => Expr::FuncCall(FuncCall {
+	<l1:@L> <s1: Comparison> <r1:@R> "||" <l2:@L> <s2: Comparison> <r2:@R> => Expr::FuncCall(FuncCall {
 		fname: "<or>".to_string(),
-		arguments: vec![s1, s2],
+		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
 	}),
-	<s1: Comparison> "&&" <s2: Comparison> => Expr::FuncCall(FuncCall {
+	<l1:@L> <s1: Comparison> <r1:@R> "&&" <l2:@L> <s2: Comparison> <r2:@R> => Expr::FuncCall(FuncCall {
 		fname: "<and>".to_string(),
-		arguments: vec![s1, s2],
+		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
 	}),
 };
 
 Comparison: Expr = {
 	<b: Sum> => b,
-	<s1: Sum> "<=" <s2: Sum> => Expr::FuncCall(FuncCall {
+	<l1:@L> <s1: Sum> <r1:@R> "<=" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
 		fname: "<leq>".to_string(),
-		arguments: vec![s1, s2],
+		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
 	}),
-	<s1: Sum> ">=" <s2: Sum> => Expr::FuncCall(FuncCall {
+	<l1:@L> <s1: Sum> <r1:@R> ">=" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
 		fname: "<geq>".to_string(),
-		arguments: vec![s1, s2],
+		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
 	}),
-	<s1: Sum> "<" <s2: Sum> => Expr::FuncCall(FuncCall {
+	<l1:@L> <s1: Sum> <r1:@R> "<" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
 		fname: "<lt>".to_string(),
-		arguments: vec![s1, s2],
+		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
 	}),
-	<s1: Sum> ">" <s2: Sum> => Expr::FuncCall(FuncCall {
+	<l1:@L> <s1: Sum> <r1:@R> ">" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
 		fname: "<gt>".to_string(),
-		arguments: vec![s1, s2],
+		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
 	}),
-	<s1: Sum> "==" <s2: Sum> => Expr::FuncCall(FuncCall {
+	<l1:@L> <s1: Sum> <r1:@R> "==" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
 		fname: "<eq>".to_string(),
-		arguments: vec![s1, s2],
+		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
 	}),
-	<s1: Sum> "!=" <s2: Sum> => Expr::FuncCall(FuncCall {
+	<l1:@L> <s1: Sum> <r1:@R> "!=" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
 		fname: "<neq>".to_string(),
-		arguments: vec![s1, s2],
+		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
 	}),
 };
 
 Sum: Expr = {
 	<b: Term> => b,
-	<t1: Term> "+" <t2: Term> => Expr::FuncCall(FuncCall {
+	<l1:@L> <t1: Term> <r1:@R> "+" <l2:@L> <t2: Term> <r2:@R> => Expr::FuncCall(FuncCall {
 		fname: "<add>".to_string(),
-		arguments: vec![t1, t2],
+		arguments: vec![ASTNode::new(t1, l1, r1), ASTNode::new(t2, l2, r2)],
 	}),
-	<t1: Term> "-" <t2: Term> => Expr::FuncCall(FuncCall {
+	<l1:@L> <t1: Term> <r1:@R> "-" <l2:@L> <t2: Term> <r2:@R> => Expr::FuncCall(FuncCall {
 		fname: "<sub>".to_string(),
-		arguments: vec![t1, t2],
+		arguments: vec![ASTNode::new(t1, l1, r1), ASTNode::new(t2, l2, r2)],
 	}),
 };
 
 Term: Expr = {
 	<b: BaseExpr> => b,
-	<f1: BaseExpr> "*" <f2: BaseExpr> => Expr::FuncCall(FuncCall {
+	<l1:@L> <f1: BaseExpr> <r1:@R> "*" <l2:@L> <f2: BaseExpr> <r2:@R> => Expr::FuncCall(FuncCall {
 		fname: "<mul>".to_string(),
-		arguments: vec![f1, f2],
+		arguments: vec![ASTNode::new(f1, l1, r1), ASTNode::new(f2, l2, r2)],
 	}),
-	<f1: BaseExpr> "/" <f2: BaseExpr> => Expr::FuncCall(FuncCall {
+	<l1:@L> <f1: BaseExpr> <r1:@R> "/" <l2:@L> <f2: BaseExpr> <r2:@R> => Expr::FuncCall(FuncCall {
 		fname: "<div>".to_string(),
-		arguments: vec![f1, f2],
+		arguments: vec![ASTNode::new(f1, l1, r1), ASTNode::new(f2, l2, r2)],
 	}),
 };
 
 BaseExpr: Expr = {
-	"(" <e:Expr> ")" => e,
-	<s: Identifier> => Expr::Variable(s),
+	"(" <e:Expr> ")" => e.inner,
+	<s: Identifier> => Expr::Variable(s.inner),
 	<l: Literal> => Expr::Literal(l),
 	<l: ListLiteral> => Expr::ListLiteral(l),
 	<t: TupleLiteral> => Expr::TupleLiteral(t),
@@ -181,8 +182,8 @@ BaseExpr: Expr = {
 	<i: IndexedExpr> => Expr::IndexedExpr(i),
 };
 
-IndexedExpr: IndexedExpr = <b: BaseExpr> "[" <i: Expr> "]" => IndexedExpr {
-	parent: Box::new(b),
+IndexedExpr: IndexedExpr = <l:@L> <b: BaseExpr> <r:@R> "[" <i: Expr> "]" => IndexedExpr {
+	parent: Box::new(ASTNode::new(b, l, r)),
 	index: Box::new(i),
 };
 
@@ -196,24 +197,24 @@ ListLiteral: ListLiteral = "[" <v: Comma<Expr>> "]" => ListLiteral { values: v }
 
 TupleLiteral: TupleLiteral = "(" <v: CommaNonEmpty<Expr>> ")" => TupleLiteral { values: v };
 
-Identifier: String = <s:ident> => s.to_owned();
+Identifier: ASTNode<String> = <l:@L> <s:ident> <r:@R> => ASTNode::new(s.to_owned(), l, r);
 
 
-MethodCall: MethodCall = <e: BaseExpr> "." <i: Identifier> "(" <args: Comma<Expr>> ")" => MethodCall {
-	parent: Box::new(e),
+MethodCall: MethodCall = <l:@L> <e: BaseExpr> <r:@R> "." <i: Identifier> "(" <args: Comma<Expr>> ")" => MethodCall {
+	parent: Box::new(ASTNode::new(e, l, r)),
 	call: FuncCall {
-		fname: i,
+		fname: i.inner,
 		arguments: args,
 	},
 };
 
 FuncCall: FuncCall = <i: Identifier> "(" <args: Comma<Expr>> ")" => FuncCall {
-	fname: i,
+	fname: i.inner,
 	arguments: args,
 };
 
-AttrLookup: AttrLookup = <e: BaseExpr> "." <i: Identifier> => AttrLookup {
-	parent: Box::new(e),
+AttrLookup: AttrLookup = <l1:@L> <e: BaseExpr> <r1:@R> "." <i: Identifier> => AttrLookup {
+	parent: Box::new(ASTNode::new(e, l1, r1)),
 	attribute: i,
 };
 

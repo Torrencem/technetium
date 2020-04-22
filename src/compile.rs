@@ -27,7 +27,7 @@ impl CompileError {
     }
 }
 
-type CompileResult = RustResult<Vec<Op>, CompileError>;
+pub type CompileResult = RustResult<Vec<Op>, CompileError>;
 
 pub struct CompileContext {
     gcd_last: GlobalConstantDescriptor,
@@ -154,7 +154,7 @@ impl Compilable for AttrLookup {
         res.append(&mut self.parent.compile(context)?);
         let const_descr = context.gcd_gen();
         let name_val = Arc::new(RustClone::clone(&self.attribute));
-        context.constant_descriptors.insert(const_descr, name_val);
+        context.constant_descriptors.insert(const_descr, Arc::new(name_val.inner.clone()));
         res.push(Op::push_const(const_descr));
         res.push(Op::get_attr);
         Ok(res)
@@ -219,7 +219,7 @@ impl Compilable for ForLoop {
         
         // Override any variable of the appropriate name
         let local_name = context.local_name_gen();
-        context.local_index.insert(self.binding.0.clone(), local_name);
+        context.local_index.insert(self.binding.inner.clone(), local_name);
 
         let mut body = self.body.compile(context)?;
         
@@ -290,7 +290,7 @@ impl Compilable for FuncDefinition {
         let mut sub_context = CompileContext::new();
         for arg in self.args.iter() {
             let name = sub_context.local_name_gen();
-            sub_context.local_index.insert(arg.clone(), name);
+            sub_context.local_index.insert(arg.inner.clone(), name);
         }
         let code = self.body.compile(&mut sub_context);
         let sub_context = GlobalContext {
@@ -298,14 +298,14 @@ impl Compilable for FuncDefinition {
         };
         let function_obj = Function {
             nargs: self.args.len(),
-            name: self.name.clone(),
+            name: self.name.inner.clone(),
             context: Arc::new(sub_context),
             code: code?,
         };
         let my_descr = context.gcd_gen();
         context.constant_descriptors.insert(my_descr, Arc::new(function_obj));
         let my_local = context.local_name_gen();
-        context.local_index.insert(self.name.clone(), my_local);
+        context.local_index.insert(self.name.inner.clone(), my_local);
         let mut res = vec![];
         res.push(Op::push_const(my_descr));
         res.push(Op::store(my_local));
@@ -326,12 +326,12 @@ impl Compilable for Assignment {
     fn compile(&self, context: &mut CompileContext) -> CompileResult {
         let mut res = vec![];
         res.append(&mut self.val.compile(context)?);
-        if let Some(local_name) = context.local_index.get(&self.name) {
+        if let Some(local_name) = context.local_index.get(&self.name.inner) {
             res.push(Op::store(*local_name));
             Ok(res)
         } else {
             let local_name = context.local_name_gen();
-            context.local_index.insert(RustClone::clone(&self.name), local_name);
+            context.local_index.insert(RustClone::clone(&self.name.inner), local_name);
             res.push(Op::store(local_name));
             Ok(res)
         }

@@ -204,7 +204,6 @@ impl<'input> Iterator for Lexer<'input> {
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
-            dbg!(&self.chars.peek());
             match self.chars.next() {
                 Some((_, ' ')) | Some((_, '\t')) => continue,
                 Some((i, '\n')) => {

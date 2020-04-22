@@ -84,13 +84,23 @@ impl Compilable for Literal {
 
 impl Compilable for ListLiteral {
     fn compile(&self, context: &mut CompileContext) -> CompileResult {
-        unimplemented!()
+        let mut res = vec![];
+        for item in self.values.iter() {
+            res.append(&mut item.compile(context)?);
+        }
+        res.push(Op::mklist(self.values.len() as u16));
+        Ok(res)
     }
 }
 
 impl Compilable for TupleLiteral {
     fn compile(&self, context: &mut CompileContext) -> CompileResult {
-        unimplemented!()
+        let mut res = vec![];
+        for item in self.values.iter() {
+            res.append(&mut item.compile(context)?);
+        }
+        res.push(Op::mktuple(self.values.len() as u16));
+        Ok(res)
     }
 }
 
@@ -227,7 +237,29 @@ impl Compilable for CaseOf {
 
 impl Compilable for FuncDefinition {
     fn compile(&self, context: &mut CompileContext) -> CompileResult {
-        unimplemented!()
+        let mut sub_context = CompileContext::new();
+        for arg in self.args.iter() {
+            let name = sub_context.local_name_gen();
+            sub_context.local_index.insert(arg.clone(), name);
+        }
+        let code = self.body.compile(&mut sub_context);
+        let sub_context = GlobalContext {
+            constant_descriptors: sub_context.constant_descriptors,
+        };
+        let function_obj = Function {
+            nargs: self.args.len(),
+            name: self.name.clone(),
+            context: Arc::new(sub_context),
+            code: code?,
+        };
+        let my_descr = context.gcd_gen();
+        context.constant_descriptors.insert(my_descr, Arc::new(function_obj));
+        let my_local = context.local_name_gen();
+        context.local_index.insert(self.name.clone(), my_local);
+        let mut res = vec![];
+        res.push(Op::push_const(my_descr));
+        res.push(Op::store(my_local));
+        Ok(res)
     }
 }
 

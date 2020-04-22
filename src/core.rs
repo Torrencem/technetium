@@ -3,6 +3,8 @@ use std::sync::Arc;
 use std::any::Any;
 use std::fmt;
 use std::clone::Clone as RustClone;
+use crate::bytecode::Op;
+use crate::bytecode;
 
 pub type ObjectRef = Arc<dyn Object>;
 
@@ -71,7 +73,7 @@ impl RuntimeError {
 pub type Result<T> = std::result::Result<T, RuntimeError>;
 
 pub trait Object : Any + ToAny {
-    fn clone(&self) -> Result<ObjectRef>;
+    fn rush_clone(&self) -> Result<ObjectRef>;
 
     fn rush_type_name(&self) -> String;
 
@@ -115,7 +117,7 @@ impl BoolObject {
 }
 
 impl Object for BoolObject {
-    fn clone(&self) -> Result<ObjectRef> {
+    fn rush_clone(&self) -> Result<ObjectRef> {
         Ok(BoolObject::new(self.val))
     }
 
@@ -144,7 +146,7 @@ impl IntObject {
 }
 
 impl Object for IntObject {
-    fn clone(&self) -> Result<ObjectRef> {
+    fn rush_clone(&self) -> Result<ObjectRef> {
         Ok(IntObject::new(self.val))
     }
 
@@ -173,7 +175,7 @@ impl FloatObject {
 }
 
 impl Object for FloatObject {
-    fn clone(&self) -> Result<ObjectRef> {
+    fn rush_clone(&self) -> Result<ObjectRef> {
         Ok(FloatObject::new(self.val))
     }
 
@@ -191,7 +193,7 @@ impl Object for FloatObject {
 }
 
 impl Object for String {
-    fn clone(&self) -> Result<ObjectRef> {
+    fn rush_clone(&self) -> Result<ObjectRef> {
         Ok(Arc::new(RustClone::clone(self)))
     }
 
@@ -208,3 +210,111 @@ impl Object for String {
     }
 }
 
+pub struct Function {
+    pub nargs: usize,
+    pub name: String,
+    pub context: Arc<bytecode::GlobalContext>,
+    pub code: Vec<Op>,
+}
+
+impl Object for Function {
+    fn rush_clone(&self) -> Result<ObjectRef> {
+        Err(RuntimeError::type_error("Error: cannot clone a function".to_string()))
+    }
+
+    fn rush_type_name(&self) -> String {
+        "function".to_string()
+    }
+
+    fn truthy(&self) -> bool {
+        true
+    }
+    
+    fn call(&self, args: &[ObjectRef]) -> Result<ObjectRef> {
+        if args.len() != self.nargs {
+            return Err(RuntimeError::type_error(format!("Incorrect number of arguments given to {}: expected {}, got {}", self.name, self.nargs, args.len())));
+        }
+        let mut frame = bytecode::Frame::new(&self.code, Arc::clone(&self.context));
+        let mut local_name = 0;
+        for arg in args {
+            frame.locals.insert(local_name, Arc::clone(arg));
+            local_name += 1;
+        }
+        frame.run()
+    }
+}
+
+
+pub struct List {
+    pub contents: Vec<ObjectRef>,
+}
+
+impl Object for List {
+    fn rush_clone(&self) -> Result<ObjectRef> {
+        let mut res_contents = vec![];
+        for val in self.contents.iter() {
+            res_contents.push(val.rush_clone()?);
+        }
+        Ok(Arc::new(List { contents: res_contents }))
+    }
+
+    fn rush_type_name(&self) -> String {
+        "list".to_string()
+    }
+
+    fn truthy(&self) -> bool {
+        self.contents.len() != 0
+    }
+
+    fn call_method(&self, method: &str, args: &[ObjectRef]) -> Result<ObjectRef> {
+       match method {
+            "length" => {
+                if args.len() > 0 {
+                    Err(RuntimeError::type_error("length expects 0 args".to_string()))
+                } else {
+                    Ok(IntObject::new(self.contents.len() as i64))
+                }
+            },
+            _ => {
+                Err(RuntimeError::type_error(format!("list has no method {}", method)))
+            },
+       }
+    }
+}
+
+pub struct Tuple {
+    pub contents: Vec<ObjectRef>,
+}
+
+impl Object for Tuple {
+    fn rush_clone(&self) -> Result<ObjectRef> {
+        let mut res_contents = vec![];
+        for val in self.contents.iter() {
+            res_contents.push(val.rush_clone()?);
+        }
+        Ok(Arc::new(Tuple { contents: res_contents }))
+    }
+
+    fn rush_type_name(&self) -> String {
+        "list".to_string()
+    }
+
+    fn truthy(&self) -> bool {
+        self.contents.len() != 0
+    }
+
+    fn call_method(&self, method: &str, args: &[ObjectRef]) -> Result<ObjectRef> {
+       match method {
+            "length" => {
+                if args.len() > 0 {
+                    Err(RuntimeError::type_error("length expects 0 args".to_string()))
+                } else {
+                    Ok(IntObject::new(self.contents.len() as i64))
+                }
+            },
+            _ => {
+                Err(RuntimeError::type_error(format!("list has no method {}", method)))
+            },
+       }
+    }
+}

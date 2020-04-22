@@ -64,6 +64,11 @@ pub enum Op {
     cmp_neq,
     cmp_leq,
     cmp_geq,
+
+    /// Take the top n elements of the stack and put them in a list
+    mklist(u16),
+
+    mktuple(u16),
     
     /// Push a constant referred to by a global constant descriptor
     push_const(GlobalConstantDescriptor),
@@ -86,7 +91,7 @@ pub struct Frame<'code> {
     global_context: Arc<GlobalContext>,
     code: &'code [Op],
     curr_instruction: usize,
-    locals: HashMap<LocalName, ObjectRef>,
+    pub locals: HashMap<LocalName, ObjectRef>,
 }
 
 impl<'code> Frame<'code> {
@@ -122,6 +127,8 @@ impl<'code> Frame<'code> {
                     if let Some(val) = local {
                         stack.push(Arc::clone(val));
                     } else {
+                        dbg!(&self.locals);
+                        dbg!(&local_name);
                         return Err(RuntimeError::internal_error("Loaded a local that doesn't exist!".to_string()));
                     }
                 },
@@ -312,6 +319,16 @@ impl<'code> Frame<'code> {
                     let a = stack.pop().unwrap();
                     let b = stack.pop().unwrap();
                     stack.push(builtins::cmp_geq(a, b)?)
+                },
+                Op::mklist(len) => {
+                    let len = *len as usize;
+                    let objs: Vec<ObjectRef> = stack.drain((stack.len() - len)..).collect();
+                    stack.push(Arc::new(List { contents: objs } ));
+                },
+                Op::mktuple(len) => {
+                    let len = *len as usize;
+                    let objs: Vec<ObjectRef> = stack.drain((stack.len() - len)..).collect();
+                    stack.push(Arc::new(Tuple { contents: objs } ));
                 },
                 Op::push_const(const_descr) => {
                     let obj = self.global_context.constant_descriptors.get(const_descr);

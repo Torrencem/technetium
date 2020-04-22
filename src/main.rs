@@ -17,11 +17,17 @@ use std::sync::Arc;
 fn main() {
     let input =
 r#"
+func incr(x) {
+    return x + 1
+}
+func hello(f, b) {
+    return f(b)
+}
 x = 10
 if x + 100 < 15 {
-    return 1
+    return [1, 2, 3, 4, "no", 100].length()
 } else {
-    return 2
+    return hello(incr, 20)
 }
 "#;
     let lexer = Lexer::new(input);

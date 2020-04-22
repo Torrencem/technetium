@@ -16,7 +16,7 @@ Statement: Statement = {
 	<e: Expr> => Statement::Expr(e),
 };
 
-FuncDefinition: FuncDefinition = "func" <id: Identifier> "(" <args: Comma<Identifier>> ")" "\n"? "{" <body: StatementList> "}" => FuncDefinition {
+FuncDefinition: FuncDefinition = "func" <id: Identifier> "(" <args: Comma<Identifier>> ")" "\n"? "{" "\n" <body: StatementList> "}" => FuncDefinition {
 	name: id,
 	args: args,
 	body: body,

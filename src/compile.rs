@@ -119,6 +119,7 @@ fn builtin_functions() -> HashMap<String, Op> {
     res.insert("<and>".to_string(), Op::and);
     res.insert("<or>".to_string(), Op::or);
     res.insert("<not>".to_string(), Op::not);
+    res.insert("<index>".to_string(), Op::index);
     res
 }
 
@@ -193,7 +194,18 @@ impl Compilable for Expr {
             Expr::MethodCall(m) => m.compile(context),
             Expr::FuncCall(f) => f.compile(context),
             Expr::AttrLookup(a) => a.compile(context),
+            Expr::IndexedExpr(i) => i.compile(context),
         }
+    }
+}
+
+impl Compilable for IndexedExpr {
+    fn compile(&self, context: &mut CompileContext) -> CompileResult {
+        let mut res = vec![];
+        res.append(&mut self.parent.compile(context)?);
+        res.append(&mut self.index.compile(context)?);
+        res.push(Op::index);
+        Ok(res)
     }
 }
 

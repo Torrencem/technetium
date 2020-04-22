@@ -65,6 +65,9 @@ pub enum Op {
     cmp_leq,
     cmp_geq,
 
+    /// Take the 2nd object on the stack, and take the 1st object as an index
+    index,
+
     /// Take the top n elements of the stack and put them in a list
     mklist(u16),
 
@@ -319,6 +322,14 @@ impl<'code> Frame<'code> {
                     let a = stack.pop().unwrap();
                     let b = stack.pop().unwrap();
                     stack.push(builtins::cmp_geq(a, b)?)
+                },
+                Op::index => {
+                    if stack.len() < 2 {
+                        return Err(RuntimeError::internal_error("Tried to index less than 2 things!".to_string()));
+                    }
+                    let a = stack.pop().unwrap();
+                    let b = stack.pop().unwrap();
+                    stack.push(builtins::index(b, a)?)
                 },
                 Op::mklist(len) => {
                     let len = *len as usize;

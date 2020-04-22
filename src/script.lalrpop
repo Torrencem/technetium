@@ -172,6 +172,12 @@ BaseExpr: Expr = {
 	<m: MethodCall> => Expr::MethodCall(m),
 	<f: FuncCall> => Expr::FuncCall(f),
 	<a: AttrLookup> => Expr::AttrLookup(a),
+	<i: IndexedExpr> => Expr::IndexedExpr(i),
+};
+
+IndexedExpr: IndexedExpr = <b: BaseExpr> "[" <i: Expr> "]" => IndexedExpr {
+	parent: Box::new(b),
+	index: Box::new(i),
 };
 
 Literal: Literal = {

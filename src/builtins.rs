@@ -376,6 +376,39 @@ pub fn cmp_geq(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     }
 }
 
+pub fn index(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
+    let a_any = a.as_any();
+    let b_any = b.as_any();
+    match (a_any.type_id(), b_any.type_id()) {
+        (a, b) if a == TypeId::of::<List>() && b == TypeId::of::<IntObject>() => {
+            let int_a = a_any.downcast_ref::<List>().unwrap();
+            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
+            if int_b.val < 0 {
+                return Err(RuntimeError::type_error("Negative index".to_string()));
+            }
+            let res = Arc::clone(&int_a.contents[int_b.val as u64 as usize]);
+            Ok(res)
+        },
+        (a, b) if a == TypeId::of::<String>() && b == TypeId::of::<IntObject>() => {
+            let int_a = a_any.downcast_ref::<String>().unwrap();
+            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
+            if int_b.val < 0 {
+                return Err(RuntimeError::type_error("Negative index".to_string()));
+            }
+            let c = int_a.chars().nth(int_b.val as u64 as usize);
+            if let Some(c) = c {
+                let s = format!("{}", c);
+                Ok(Arc::new(s))
+            } else {
+                Err(RuntimeError::type_error(format!("Index out of bounds")))
+            }
+        },
+        _ => {
+            Err(RuntimeError::type_error(format!("Cannot index type {} with type {}", a.marsh_type_name(), b.marsh_type_name())))
+        },
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

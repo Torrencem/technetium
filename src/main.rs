@@ -30,6 +30,14 @@ if x + 100 < 15 {
     return hello(incr, 20)
 }
 "#;
+    let input =
+r#"
+func head(s) {
+    return s[0]
+}
+
+return head("Hi there!")
+"#;
     let lexer = Lexer::new(input);
 
     let ast = script::ProgramParser::new().parse(lexer).expect("temp1");

@@ -35,6 +35,12 @@ pub struct MethodCall {
 }
 
 #[derive(Clone, Debug)]
+pub struct IndexedExpr {
+    pub parent: Box<Expr>,
+    pub index: Box<Expr>,
+}
+
+#[derive(Clone, Debug)]
 pub enum Expr {
     Variable(String),
     Literal(Literal),
@@ -43,6 +49,7 @@ pub enum Expr {
     MethodCall(MethodCall),
     FuncCall(FuncCall),
     AttrLookup(AttrLookup),
+    IndexedExpr(IndexedExpr),
 }
 
 #[derive(Clone, Debug)]

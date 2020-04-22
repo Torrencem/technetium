@@ -55,15 +55,12 @@ return fib(40)
 "#;
     let input =
 r#"
-func fib(n, fib) {
-    if n < 2 {
-        return 1
-    } else {
-        return fib(n - 1, fib) + fib(n - 2, fib)
-    }
+result = 0
+for i in [1, 2, 3, 2] {
+    result = result + i
 }
 
-return fib(30, fib)
+return result
 "#;
     let lexer = Lexer::new(input);
 

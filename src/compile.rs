@@ -211,7 +211,30 @@ impl Compilable for IndexedExpr {
 
 impl Compilable for ForLoop {
     fn compile(&self, context: &mut CompileContext) -> CompileResult {
-        unimplemented!()
+        let mut res = vec![];
+        // Evaluate the expression for the iterator
+        res.append(&mut self.iter.compile(context)?);
+        // Turn it into an iterator
+        res.push(Op::make_iter);
+        
+        // Override any variable of the appropriate name
+        let local_name = context.local_name_gen();
+        context.local_index.insert(self.binding.0.clone(), local_name);
+
+        let mut body = self.body.compile(context)?;
+        
+        res.push(Op::dup);
+        let skip_body_offset = body.len() as u16 as i16 + 3;
+        let back_to_dup_offset = -(body.len() as u16 as i16) - 3;
+        res.push(Op::take_iter(skip_body_offset));
+
+        res.push(Op::store(local_name));
+
+        res.append(&mut body);
+
+        res.push(Op::jmp(back_to_dup_offset));
+        
+        Ok(res)
     }
 }
 

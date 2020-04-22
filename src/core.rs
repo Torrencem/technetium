@@ -5,6 +5,7 @@ use std::fmt;
 use std::clone::Clone as RustClone;
 use crate::bytecode::Op;
 use crate::bytecode;
+use std::cell::RefCell;
 
 pub type ObjectRef = Arc<dyn Object>;
 
@@ -73,7 +74,9 @@ impl RuntimeError {
 pub type Result<T> = std::result::Result<T, RuntimeError>;
 
 pub trait Object : Any + ToAny {
-    fn marsh_clone(&self) -> Result<ObjectRef>;
+    fn marsh_clone(&self) -> Result<ObjectRef> {
+        Err(RuntimeError::type_error(format!("{} can not be cloned", self.marsh_type_name())))
+    }
 
     fn marsh_type_name(&self) -> String;
 
@@ -97,7 +100,17 @@ pub trait Object : Any + ToAny {
         Err(RuntimeError::type_error(format!("Object of type {} is not callable", self.marsh_type_name())))
     }
 
-    fn truthy(&self) -> bool;
+    fn make_iter(&self) -> Result<ObjectRef> {
+        Err(RuntimeError::type_error(format!("Object of type {} cannot be made into an iterator", self.marsh_type_name())))
+    }
+    
+    fn take_iter(&self) -> Result<Option<ObjectRef>> {
+        Err(RuntimeError::type_error(format!("Object of type {} cannot be iterated", self.marsh_type_name())))
+    }
+
+    fn truthy(&self) -> bool {
+        true
+    }
 }
 
 impl fmt::Debug for dyn Object {
@@ -279,6 +292,37 @@ impl Object for List {
                 Err(RuntimeError::type_error(format!("list has no method {}", method)))
             },
        }
+    }
+
+    fn make_iter(&self) -> Result<ObjectRef> {
+        let iter = ListIterator {
+            contents: self.contents.iter().map(|val| Arc::clone(val)).collect(),
+            index: RefCell::new(0),
+        };
+
+        Ok(Arc::new(iter))
+    }
+}
+
+pub struct ListIterator {
+    pub contents: Vec<ObjectRef>,
+    pub index: RefCell<usize>,
+}
+
+impl Object for ListIterator {
+    fn marsh_type_name(&self) -> String {
+        "iterator(list)".to_string()
+    }
+
+    fn take_iter(&self) -> Result<Option<ObjectRef>> {
+        let mut index = self.index.borrow_mut();
+        if *index >= self.contents.len() {
+            Ok(None)
+        } else {
+            let old = *index;
+            *index += 1;
+            Ok(Some(Arc::clone(&self.contents[old])))
+        }
     }
 }
 

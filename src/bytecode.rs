@@ -69,6 +69,12 @@ pub enum Op {
 
     /// Take the 2nd object on the stack, and take the 1st object as an index
     index,
+    
+    /// Transform the object on the top of the stack into an interator object
+    make_iter,
+
+    /// Take the next element from the iterator on top of the stack. Jump if empty
+    take_iter(i16),
 
     /// Take the top n elements of the stack and put them in a list
     mklist(u16),
@@ -332,6 +338,35 @@ impl<'code> Frame<'code> {
                     let a = stack.pop().unwrap();
                     let b = stack.pop().unwrap();
                     stack.push(builtins::index(b, a)?)
+                },
+                Op::make_iter => {
+                    let val = stack.pop();
+                    if let Some(val) = val {
+                        stack.push(val.make_iter()?);
+                    } else {
+                        return Err(RuntimeError::internal_error("Tried to call make_iter on nothing!".to_string()));
+                    }
+                },
+                Op::take_iter(offset) => {
+                    let val = stack.pop();
+                    if let Some(val) = val {
+                        let val = val.take_iter()?;
+                        if let Some(val) = val {
+                            stack.push(val);
+                        } else {
+                            // Jump
+                            if *offset > 0 {
+                                let offset: usize = *offset as u16 as usize;
+                                self.curr_instruction += offset;
+                            } else {
+                                let offset: usize = (-offset) as u16 as usize;
+                                self.curr_instruction -= offset;
+                            }
+                            continue;
+                        }
+                    } else {
+                        return Err(RuntimeError::internal_error("Tried to call make_iter on nothing!".to_string()));
+                    }
                 },
                 Op::mklist(len) => {
                     let len = *len as usize;

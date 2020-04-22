@@ -1,6 +1,4 @@
 
-use regex::Regex;
-
 use std::str::CharIndices;
 use std::str::FromStr;
 

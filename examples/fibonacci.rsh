@@ -1,11 +1,14 @@
 
-fun fibonacci(n) {
-	case n of {
-		1 => return 1
-		2 => return 1
-		_ => return fibonacci(n - 1) + fibonacci(n - 2)
-	}
+func fib(n) {
+    a = 1
+    b = 1
+    while n > 0 {
+        tmp = b
+        b = a + b
+        a = tmp
+        n = n - 1
+    }
+    return b
 }
 
-$ echo {fibonacci(10)}
-
+return fib(40)

@@ -242,9 +242,7 @@ impl Compilable for WhileLoop {
     fn compile(&self, context: &mut CompileContext) -> CompileResult {
         let mut res = vec![];
         let mut cond = self.cond.compile(context)?;
-        dbg!(&context.local_index);
         let mut body = self.body.compile(context)?;
-        dbg!(&context.local_index);
         let skip_body = Op::cond_jmp(2 + body.len() as i16);
         let to_beginning = Op::jmp(-(body.len() as i16 + cond.len() as i16 + 1));
         res.append(&mut cond);
@@ -361,7 +359,6 @@ impl Compilable for StatementList {
         for statement in self.statements.iter() {
             res.append(&mut statement.compile(context)?);
         }
-        dbg!(&res);
         Ok(res)
     }
 }

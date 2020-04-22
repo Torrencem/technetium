@@ -14,59 +14,44 @@ use compile::*;
 use lexer::Lexer;
 use std::sync::Arc;
 
-fn main() {
-    let input =
-r#"
-func incr(x) {
-    return x + 1
-}
-func hello(f, b) {
-    return f(b)
-}
-x = 10
-if x + 100 < 15 {
-    return [1, 2, 3, 4, "no", 100].length()
-} else {
-    return hello(incr, 20)
-}
-"#;
-//     let input =
-// r#"
-// sum = 0
-// x = 1
-// sum = sum + x
-// x = x + 1
-// return x
-// "#;
-    let input =
-r#"
-func fib(n) {
-    a = 1
-    b = 1
-    while n > 0 {
-        tmp = b
-        b = a + b
-        a = tmp
-        n = n - 1
-    }
-    return b
-}
-return fib(40)
-"#;
-    let input =
-r#"
-result = 0
-for i in [1, 2, 3, 2] {
-    result = result + i
-}
+extern crate clap;
+use clap::{Arg, App, SubCommand};
+use std::io::{self, Read};
 
-return result
-"#;
-    let lexer = Lexer::new(input);
+fn main() {
+    let matches = App::new("marsh")
+        .version(env!("CARGO_PKG_VERSION"))
+        .author(env!("CARGO_PKG_AUTHORS"))
+        .about(env!("CARGO_PKG_DESCRIPTION"))
+        .arg(Arg::with_name("INPUT")
+             .help("Run file as a script (if not given, will read from stdin)")
+             .index(1))
+        .arg(Arg::with_name("verbose")
+             .short("v")
+             .long("verbose")
+             .help("Emit bytecode and debug information"))
+        .get_matches();
+
+    let input: String = match matches.value_of("INPUT") {
+        Some(file_name) => {
+            std::fs::read_to_string(file_name).expect("Error reading file")
+        },
+        None => {
+            let mut buffer = String::new();
+            io::stdin().read_to_string(&mut buffer).expect("Error reading stdin");
+            buffer
+        },
+    };
+
+    let verbose = matches.is_present("verbose");
+
+    let lexer = Lexer::new(input.as_ref());
 
     let ast = script::ProgramParser::new().parse(lexer).expect("temp1");
-
-    dbg!(&ast);
+    
+    if verbose {
+        dbg!(&ast);
+    }
 
     let mut compile_context = CompileContext::new();
 
@@ -81,11 +66,3 @@ return result
     dbg!(computation);
 }
 
-// fn main_old() {
-//     let input = "[1,(a,\"pizza\"), object.method(), a.attr, fib(10, s, i)]";
-//     let lexer = Lexer::new(input);
-//
-//     let ast = script::ExprParser::new().parse(lexer);
-//
-//     dbg!(ast);
-// }

@@ -1,3 +1,2 @@
 # Marsh
-A sleek, modern shell / scripting language
-
+Note: still in progress, check in soon

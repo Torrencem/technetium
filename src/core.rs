@@ -73,28 +73,28 @@ impl RuntimeError {
 pub type Result<T> = std::result::Result<T, RuntimeError>;
 
 pub trait Object : Any + ToAny {
-    fn rush_clone(&self) -> Result<ObjectRef>;
+    fn marsh_clone(&self) -> Result<ObjectRef>;
 
-    fn rush_type_name(&self) -> String;
+    fn marsh_type_name(&self) -> String;
 
     fn to_string(&self) -> Result<String> {
-        Err(RuntimeError::type_error(format!("{} can not be converted into a string", self.rush_type_name())))
+        Err(RuntimeError::type_error(format!("{} can not be converted into a string", self.marsh_type_name())))
     }
 
     fn get_attr(&self, attr: String) -> Result<ObjectRef> {
-        Err(RuntimeError::attribute_error(format!("{} has no attributes", self.rush_type_name())))
+        Err(RuntimeError::attribute_error(format!("{} has no attributes", self.marsh_type_name())))
     }
 
     fn set_attr(&self, attr: String, val: ObjectRef) -> Result<()> {
-        Err(RuntimeError::attribute_error(format!("Cannot set attributes of {}", self.rush_type_name())))
+        Err(RuntimeError::attribute_error(format!("Cannot set attributes of {}", self.marsh_type_name())))
     }
 
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> Result<ObjectRef> {
-        Err(RuntimeError::attribute_error(format!("Cannot call method of {}", self.rush_type_name())))
+        Err(RuntimeError::attribute_error(format!("Cannot call method of {}", self.marsh_type_name())))
     }
 
     fn call(&self, args: &[ObjectRef]) -> Result<ObjectRef> {
-        Err(RuntimeError::type_error(format!("Object of type {} is not callable", self.rush_type_name())))
+        Err(RuntimeError::type_error(format!("Object of type {} is not callable", self.marsh_type_name())))
     }
 
     fn truthy(&self) -> bool;
@@ -117,11 +117,11 @@ impl BoolObject {
 }
 
 impl Object for BoolObject {
-    fn rush_clone(&self) -> Result<ObjectRef> {
+    fn marsh_clone(&self) -> Result<ObjectRef> {
         Ok(BoolObject::new(self.val))
     }
 
-    fn rush_type_name(&self) -> String {
+    fn marsh_type_name(&self) -> String {
         "boolean".to_string()
     }
 
@@ -146,11 +146,11 @@ impl IntObject {
 }
 
 impl Object for IntObject {
-    fn rush_clone(&self) -> Result<ObjectRef> {
+    fn marsh_clone(&self) -> Result<ObjectRef> {
         Ok(IntObject::new(self.val))
     }
 
-    fn rush_type_name(&self) -> String {
+    fn marsh_type_name(&self) -> String {
         "int".to_string()
     }
 
@@ -175,11 +175,11 @@ impl FloatObject {
 }
 
 impl Object for FloatObject {
-    fn rush_clone(&self) -> Result<ObjectRef> {
+    fn marsh_clone(&self) -> Result<ObjectRef> {
         Ok(FloatObject::new(self.val))
     }
 
-    fn rush_type_name(&self) -> String {
+    fn marsh_type_name(&self) -> String {
         "int".to_string()
     }
 
@@ -193,11 +193,11 @@ impl Object for FloatObject {
 }
 
 impl Object for String {
-    fn rush_clone(&self) -> Result<ObjectRef> {
+    fn marsh_clone(&self) -> Result<ObjectRef> {
         Ok(Arc::new(RustClone::clone(self)))
     }
 
-    fn rush_type_name(&self) -> String {
+    fn marsh_type_name(&self) -> String {
         "string".to_string()
     }
 
@@ -218,11 +218,11 @@ pub struct Function {
 }
 
 impl Object for Function {
-    fn rush_clone(&self) -> Result<ObjectRef> {
+    fn marsh_clone(&self) -> Result<ObjectRef> {
         Err(RuntimeError::type_error("Error: cannot clone a function".to_string()))
     }
 
-    fn rush_type_name(&self) -> String {
+    fn marsh_type_name(&self) -> String {
         "function".to_string()
     }
 
@@ -250,15 +250,15 @@ pub struct List {
 }
 
 impl Object for List {
-    fn rush_clone(&self) -> Result<ObjectRef> {
+    fn marsh_clone(&self) -> Result<ObjectRef> {
         let mut res_contents = vec![];
         for val in self.contents.iter() {
-            res_contents.push(val.rush_clone()?);
+            res_contents.push(val.marsh_clone()?);
         }
         Ok(Arc::new(List { contents: res_contents }))
     }
 
-    fn rush_type_name(&self) -> String {
+    fn marsh_type_name(&self) -> String {
         "list".to_string()
     }
 
@@ -287,15 +287,15 @@ pub struct Tuple {
 }
 
 impl Object for Tuple {
-    fn rush_clone(&self) -> Result<ObjectRef> {
+    fn marsh_clone(&self) -> Result<ObjectRef> {
         let mut res_contents = vec![];
         for val in self.contents.iter() {
-            res_contents.push(val.rush_clone()?);
+            res_contents.push(val.marsh_clone()?);
         }
         Ok(Arc::new(Tuple { contents: res_contents }))
     }
 
-    fn rush_type_name(&self) -> String {
+    fn marsh_type_name(&self) -> String {
         "list".to_string()
     }
 

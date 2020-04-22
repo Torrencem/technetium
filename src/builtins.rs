@@ -18,7 +18,7 @@ pub fn add(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.rush_type_name(), b.rush_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.marsh_type_name(), b.marsh_type_name())))
         },
     }
 }
@@ -40,7 +40,7 @@ pub fn sub(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.rush_type_name(), b.rush_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.marsh_type_name(), b.marsh_type_name())))
         },
     }
 }
@@ -62,7 +62,7 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.rush_type_name(), b.rush_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.marsh_type_name(), b.marsh_type_name())))
         },
     }
 }
@@ -84,7 +84,7 @@ pub fn div(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.rush_type_name(), b.rush_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.marsh_type_name(), b.marsh_type_name())))
         },
     }
 }
@@ -130,7 +130,7 @@ pub fn cmp_lt(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.rush_type_name(), b.rush_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.marsh_type_name(), b.marsh_type_name())))
         },
     }
 }
@@ -152,7 +152,7 @@ pub fn cmp_gt(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.rush_type_name(), b.rush_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.marsh_type_name(), b.marsh_type_name())))
         },
     }
 }
@@ -174,7 +174,7 @@ pub fn cmp_eq(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.rush_type_name(), b.rush_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.marsh_type_name(), b.marsh_type_name())))
         },
     }
 }
@@ -196,7 +196,7 @@ pub fn cmp_neq(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.rush_type_name(), b.rush_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.marsh_type_name(), b.marsh_type_name())))
         },
     }
 }
@@ -218,7 +218,7 @@ pub fn cmp_leq(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.rush_type_name(), b.rush_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.marsh_type_name(), b.marsh_type_name())))
         },
     }
 }
@@ -240,7 +240,7 @@ pub fn cmp_geq(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.rush_type_name(), b.rush_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.marsh_type_name(), b.marsh_type_name())))
         },
     }
 }

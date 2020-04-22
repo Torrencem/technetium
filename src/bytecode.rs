@@ -14,7 +14,7 @@ pub type GlobalConstantDescriptor = u16;
 
 #[allow(non_camel_case_types)]
 #[derive(Copy, Clone, Debug)]
-/// An operation in the rush virtual machine
+/// An operation in the marsh virtual machine
 pub enum Op {
     /// Do nothing
     nop,

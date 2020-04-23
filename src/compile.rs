@@ -170,6 +170,11 @@ impl Compilable for FuncCall {
         for arg in self.arguments.iter() {
             res.append(&mut arg.compile(context)?);
         }
+
+        let debug_descr = context.dsd_gen();
+        context.debug_span_descriptors.insert(debug_descr, self.fname.span);
+        res.push(Op::weak_debug(debug_descr));
+
         res.push(Op::call_function(self.arguments.len() as u8));
         Ok(res)
     }
@@ -207,7 +212,7 @@ impl Compilable for MethodCall {
         
         let debug_descr = context.dsd_gen();
         context.debug_span_descriptors.insert(debug_descr, Span::merge(self.parent.span, self.call.fname.span));
-        res.push(Op::debug(debug_descr));
+        res.push(Op::weak_debug(debug_descr));
 
         res.push(Op::call_method(self.call.arguments.len() as u8));
         Ok(res)

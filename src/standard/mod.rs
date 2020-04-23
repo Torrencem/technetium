@@ -21,3 +21,44 @@ lazy_static! {
         res
     };
 }
+
+#[macro_export]
+macro_rules! func_object_void {
+    ($id:ident, $args_range:tt, $args:ident -> $call:block) => {
+        pub struct $id;
+
+        impl Object for $id {
+            fn marsh_type_name(&self) -> String {
+                "builtin func".to_string()
+            }
+
+            fn call(&self, $args: &[ObjectRef]) -> Result<ObjectRef> {
+                if !$args_range.contains(&$args.len()) {
+                    return Err(RuntimeError::type_error(format!("Incorrect number of arguments: expected {:?}, got {}", $args_range, $args.len())));
+                }
+                $call
+                Ok(VoidObject::new())
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! func_object {
+    ($id:ident, $args_range:tt, $args:ident -> $call:block) => {
+        pub struct $id;
+
+        impl Object for $id {
+            fn marsh_type_name(&self) -> String {
+                "builtin func".to_string()
+            }
+
+            fn call(&self, $args: &[ObjectRef]) -> Result<ObjectRef> {
+                if !$args_range.contains(&$args.len()) {
+                    return Err(RuntimeError::type_error(format!("Incorrect number of arguments: expected {:?}, got {}", $args_range, $args.len())));
+                }
+                $call
+            }
+        }
+    };
+}

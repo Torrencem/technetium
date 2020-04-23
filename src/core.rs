@@ -92,6 +92,25 @@ impl RuntimeError {
             span: Some(span),
         }
     }
+
+    pub fn weak_attach_span(self, span: Span) -> Self {
+        match self.span {
+            Some(val) => {
+                RuntimeError {
+                    err: self.err,
+                    help: self.help,
+                    span: Some(val),
+                }
+            },
+            None => {
+                RuntimeError {
+                    err: self.err,
+                    help: self.help,
+                    span: Some(span),
+                }
+            }
+        }
+    }
     
     pub fn as_diagnostic<FileId>(&self, fileid: FileId) -> Diagnostic<FileId> {
         match self.span {

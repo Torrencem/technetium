@@ -74,7 +74,9 @@ fn main() {
 
     let mut compile_context = CompileContext::new();
 
-    let code = ast.compile(&mut compile_context);
+    let manager = CompileManager {};
+
+    let code = manager.compile_statement_list(&ast, &mut compile_context);
 
     if verbose {
         dbg!(&code);

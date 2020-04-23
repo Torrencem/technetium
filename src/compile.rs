@@ -83,51 +83,6 @@ impl CompileContext {
     }
 }
 
-pub trait Compilable {
-    fn compile(&self, context: &mut CompileContext) -> CompileResult;
-}
-
-impl Compilable for Literal {
-    fn compile(&self, context: &mut CompileContext) -> CompileResult {
-        let descr = context.gcd_gen();
-        let constant: ObjectRef = match self {
-            Literal::Integer(val, _) => {
-                IntObject::new(*val)
-            },
-            Literal::Float(val, _) => {
-                FloatObject::new(*val)
-            },
-            Literal::Str(val, _) => {
-                Arc::new(RustClone::clone(val))
-            },
-        };
-        context.constant_descriptors.insert(descr, constant);
-        Ok(vec![Op::push_const(descr)])
-    }
-}
-
-impl Compilable for ListLiteral {
-    fn compile(&self, context: &mut CompileContext) -> CompileResult {
-        let mut res = vec![];
-        for item in self.values.iter() {
-            res.append(&mut item.compile(context)?);
-        }
-        res.push(Op::mklist(self.values.len() as u16));
-        Ok(res)
-    }
-}
-
-impl Compilable for TupleLiteral {
-    fn compile(&self, context: &mut CompileContext) -> CompileResult {
-        let mut res = vec![];
-        for item in self.values.iter() {
-            res.append(&mut item.compile(context)?);
-        }
-        res.push(Op::mktuple(self.values.len() as u16));
-        Ok(res)
-    }
-}
-
 fn builtin_functions() -> HashMap<String, Op> {
     let mut res = HashMap::new();
     res.insert("<add>".to_string(), Op::add);
@@ -148,80 +103,113 @@ fn builtin_functions() -> HashMap<String, Op> {
     res
 }
 
-impl Compilable for FuncCall {
-    fn compile(&self, context: &mut CompileContext) -> CompileResult {
+
+pub struct CompileManager {
+}
+
+impl CompileManager {
+    pub fn compile_literal(&self, ast: &Literal, context: &mut CompileContext) -> CompileResult {
+        let descr = context.gcd_gen();
+        let constant: ObjectRef = match ast {
+            Literal::Integer(val, _) => {
+                IntObject::new(*val)
+            },
+            Literal::Float(val, _) => {
+                FloatObject::new(*val)
+            },
+            Literal::Str(val, _) => {
+                Arc::new(RustClone::clone(val))
+            },
+        };
+        context.constant_descriptors.insert(descr, constant);
+        Ok(vec![Op::push_const(descr)])
+    }
+
+    pub fn compile_list_literal(&self, ast: &ListLiteral, context: &mut CompileContext) -> CompileResult {
+        let mut res = vec![];
+        for item in ast.values.iter() {
+            res.append(&mut self.compile_expr(item, context)?);
+        }
+        res.push(Op::mklist(ast.values.len() as u16));
+        Ok(res)
+    }
+    
+    pub fn compile_tuple_literal(&self, ast: &TupleLiteral, context: &mut CompileContext) -> CompileResult {
+        let mut res = vec![];
+        for item in ast.values.iter() {
+            res.append(&mut self.compile_expr(item, context)?);
+        }
+        res.push(Op::mktuple(ast.values.len() as u16));
+        Ok(res)
+    }
+
+    pub fn compile_func_call(&self, ast: &FuncCall, context: &mut CompileContext) -> CompileResult {
         let mut res = vec![];
         let builtins = builtin_functions();
-        if let Some(op) = builtins.get(&self.fname.name) {
-            for arg in self.arguments.iter() {
-                res.append(&mut arg.compile(context)?);
+        if let Some(op) = builtins.get(&ast.fname.name) {
+            for arg in ast.arguments.iter() {
+                res.append(&mut self.compile_expr(arg, context)?);
             }
             res.push(*op);
             return Ok(res);
         }
-        let local_name = context.local_index.get(&self.fname.name);
+        let local_name = context.local_index.get(&ast.fname.name);
         if let Some(local_name) = local_name {
             res.push(Op::load(*local_name));
-        } else if let Some(global_name) = Default_Namespace_Descriptors.get(&self.fname.name) {
+        } else if let Some(global_name) = Default_Namespace_Descriptors.get(&ast.fname.name) {
             res.push(Op::push_global_default(*global_name));
         } else {
-            return Err(CompileError::new(CompileErrorType::UndefinedVariable(self.fname.span), format!("Undefined function: {}", self.fname.name).as_ref()));
+            return Err(CompileError::new(CompileErrorType::UndefinedVariable(ast.fname.span), format!("Undefined function: {}", ast.fname.name).as_ref()));
         }
-        for arg in self.arguments.iter() {
-            res.append(&mut arg.compile(context)?);
+        for arg in ast.arguments.iter() {
+            res.append(&mut self.compile_expr(arg, context)?);
         }
 
         let debug_descr = context.dsd_gen();
-        context.debug_span_descriptors.insert(debug_descr, self.span);
+        context.debug_span_descriptors.insert(debug_descr, ast.span);
         res.push(Op::weak_debug(debug_descr));
 
-        res.push(Op::call_function(self.arguments.len() as u8));
+        res.push(Op::call_function(ast.arguments.len() as u8));
         Ok(res)
     }
-}
 
-impl Compilable for AttrLookup {
-    fn compile(&self, context: &mut CompileContext) -> CompileResult {
+    pub fn compile_attr_lookup(&self, ast: &AttrLookup, context: &mut CompileContext) -> CompileResult {
         let mut res = vec![];
-        res.append(&mut self.parent.compile(context)?);
+        res.append(&mut self.compile_expr(&*ast.parent, context)?);
         let const_descr = context.gcd_gen();
-        let name_val = Arc::new(RustClone::clone(&self.attribute.name));
+        let name_val = Arc::new(RustClone::clone(&ast.attribute.name));
         context.constant_descriptors.insert(const_descr, name_val);
         res.push(Op::push_const(const_descr));
 
         let debug_descr = context.dsd_gen();
-        context.debug_span_descriptors.insert(debug_descr, self.span);
+        context.debug_span_descriptors.insert(debug_descr, ast.span);
         res.push(Op::debug(debug_descr));
 
         res.push(Op::get_attr);
         Ok(res)
     }
-}
 
-impl Compilable for MethodCall {
-    fn compile(&self, context: &mut CompileContext) -> CompileResult {
+    pub fn compile_method_call(&self, ast: &MethodCall, context: &mut CompileContext) -> CompileResult {
         let mut res = vec![];
-        res.append(&mut self.parent.compile(context)?);
+        res.append(&mut self.compile_expr(&*ast.parent, context)?);
         let const_descr = context.gcd_gen();
-        let name_val = Arc::new(RustClone::clone(&self.fname.name));
+        let name_val = Arc::new(RustClone::clone(&ast.fname.name));
         context.constant_descriptors.insert(const_descr, name_val);
         res.push(Op::push_const(const_descr));
-        for arg in self.arguments.iter() {
-            res.append(&mut arg.compile(context)?);
+        for arg in ast.arguments.iter() {
+            res.append(&mut self.compile_expr(arg, context)?);
         }
         
         let debug_descr = context.dsd_gen();
-        context.debug_span_descriptors.insert(debug_descr, self.span);
+        context.debug_span_descriptors.insert(debug_descr, ast.span);
         res.push(Op::weak_debug(debug_descr));
 
-        res.push(Op::call_method(self.arguments.len() as u8));
+        res.push(Op::call_method(ast.arguments.len() as u8));
         Ok(res)
     }
-}
 
-impl Compilable for Expr {
-    fn compile(&self, context: &mut CompileContext) -> CompileResult {
-        match self {
+    pub fn compile_expr(&self, ast: &Expr, context: &mut CompileContext) -> CompileResult {
+        match ast {
             Expr::Variable(v) => {
                 let global_name = Default_Namespace_Descriptors.get(&v.name);
                 if let Some(global_name) = global_name {
@@ -235,40 +223,36 @@ impl Compilable for Expr {
                     }
                 }
             },
-            Expr::Literal(l) => l.compile(context),
-            Expr::ListLiteral(l) => l.compile(context),
-            Expr::TupleLiteral(t) => t.compile(context),
-            Expr::MethodCall(m) => m.compile(context),
-            Expr::FuncCall(f) => f.compile(context),
-            Expr::AttrLookup(a) => a.compile(context),
-            Expr::IndexedExpr(i) => i.compile(context),
+            Expr::Literal(l) => self.compile_literal(l, context),
+            Expr::ListLiteral(l) => self.compile_list_literal(l, context),
+            Expr::TupleLiteral(t) => self.compile_tuple_literal(t, context),
+            Expr::MethodCall(m) => self.compile_method_call(m, context),
+            Expr::FuncCall(f) => self.compile_func_call(f, context),
+            Expr::AttrLookup(a) => self.compile_attr_lookup(a, context),
+            Expr::IndexedExpr(i) => self.compile_indexed_expr(i, context),
         }
     }
-}
 
-impl Compilable for IndexedExpr {
-    fn compile(&self, context: &mut CompileContext) -> CompileResult {
+    pub fn compile_indexed_expr(&self, ast: &IndexedExpr, context: &mut CompileContext) -> CompileResult {
         let mut res = vec![];
-        res.append(&mut self.parent.compile(context)?);
-        res.append(&mut self.index.compile(context)?);
+        res.append(&mut self.compile_expr(&*ast.parent, context)?);
+        res.append(&mut self.compile_expr(&*ast.index, context)?);
 
         let debug_descr = context.dsd_gen();
-        context.debug_span_descriptors.insert(debug_descr, self.span);
+        context.debug_span_descriptors.insert(debug_descr, ast.span);
         res.push(Op::debug(debug_descr));
 
         res.push(Op::index);
         Ok(res)
     }
-}
 
-impl Compilable for ForLoop {
-    fn compile(&self, context: &mut CompileContext) -> CompileResult {
+    pub fn compile_for_loop(&self, ast: &ForLoop, context: &mut CompileContext) -> CompileResult {
         let mut res = vec![];
         // Evaluate the expression for the iterator
-        res.append(&mut self.iter.compile(context)?);
+        res.append(&mut self.compile_expr(&ast.iter, context)?);
 
         let debug_descr = context.dsd_gen();
-        context.debug_span_descriptors.insert(debug_descr, self.iter.span());
+        context.debug_span_descriptors.insert(debug_descr, ast.iter.span());
         res.push(Op::debug(debug_descr));
 
         // Turn it into an iterator
@@ -276,9 +260,9 @@ impl Compilable for ForLoop {
         
         // Override any variable of the appropriate name
         let local_name = context.local_name_gen();
-        context.local_index.insert(self.binding.name.clone(), local_name);
+        context.local_index.insert(ast.binding.name.clone(), local_name);
 
-        let mut body = self.body.compile(context)?;
+        let mut body = self.compile_statement_list(&ast.body, context)?;
         
         res.push(Op::dup);
         let skip_body_offset = body.len() as u16 as i16 + 3;
@@ -294,13 +278,11 @@ impl Compilable for ForLoop {
         
         Ok(res)
     }
-}
 
-impl Compilable for WhileLoop {
-    fn compile(&self, context: &mut CompileContext) -> CompileResult {
+    pub fn compile_while_loop(&self, ast: &WhileLoop, context: &mut CompileContext) -> CompileResult {
         let mut res = vec![];
-        let mut cond = self.cond.compile(context)?;
-        let mut body = self.body.compile(context)?;
+        let mut cond = self.compile_expr(&ast.cond, context)?;
+        let mut body = self.compile_statement_list(&ast.body, context)?;
         let skip_body = Op::cond_jmp(2 + body.len() as i16);
         let to_beginning = Op::jmp(-(body.len() as i16 + cond.len() as i16 + 1));
         res.append(&mut cond);
@@ -309,18 +291,16 @@ impl Compilable for WhileLoop {
         res.push(to_beginning);
         Ok(res)
     }
-}
 
-impl Compilable for IfStatement {
-    fn compile(&self, context: &mut CompileContext) -> CompileResult {
-        let mut cond = self.condition.compile(context)?;
-        let mut body1 = self.then_body.compile(context)?;
-        let mut body2 = match self.tail {
+    pub fn compile_if_statement(&self, ast: &IfStatement, context: &mut CompileContext) -> CompileResult {
+        let mut cond = self.compile_expr(&ast.condition, context)?;
+        let mut body1 = self.compile_statement_list(&ast.then_body, context)?;
+        let mut body2 = match ast.tail {
             Some(IfTail::ElseIf(ref ifstmt)) => {
-                ifstmt.compile(context)?
+                self.compile_if_statement(ifstmt, context)?
             },
             Some(IfTail::Else(ref stmtlist)) => {
-                stmtlist.compile(context)?
+                self.compile_statement_list(stmtlist, context)?
             },
             None => {
                 vec![]
@@ -336,88 +316,76 @@ impl Compilable for IfStatement {
         res.append(&mut body2);
         Ok(res)
     }
-}
 
-impl Compilable for CaseOf {
-    fn compile(&self, context: &mut CompileContext) -> CompileResult {
+    pub fn compile_case_of(&self, ast: &CaseOf, context: &mut CompileContext) -> CompileResult {
         unimplemented!()
     }
-}
 
-impl Compilable for FuncDefinition {
-    fn compile(&self, context: &mut CompileContext) -> CompileResult {
+    pub fn compile_func_definition(&self, ast: &FuncDefinition, context: &mut CompileContext) -> CompileResult {
         let mut sub_context = CompileContext::new();
-        for arg in self.args.iter() {
+        for arg in ast.args.iter() {
             let name = sub_context.local_name_gen();
             sub_context.local_index.insert(arg.name.clone(), name);
         }
-        let code = self.body.compile(&mut sub_context);
+        let code = self.compile_statement_list(&ast.body, &mut sub_context);
         let sub_context = GlobalContext {
             constant_descriptors: sub_context.constant_descriptors,
             debug_descriptors: sub_context.debug_span_descriptors,
         };
         let function_obj = Function {
-            nargs: self.args.len(),
-            name: self.name.name.clone(),
+            nargs: ast.args.len(),
+            name: ast.name.name.clone(),
             context: Arc::new(sub_context),
             code: code?,
         };
         let my_descr = context.gcd_gen();
         context.constant_descriptors.insert(my_descr, Arc::new(function_obj));
         let my_local = context.local_name_gen();
-        context.local_index.insert(self.name.name.clone(), my_local);
+        context.local_index.insert(ast.name.name.clone(), my_local);
         let mut res = vec![];
         res.push(Op::push_const(my_descr));
         res.push(Op::store(my_local));
         Ok(res)
     }
-}
 
-impl Compilable for ReturnStatement {
-    fn compile(&self, context: &mut CompileContext) -> CompileResult {
+    pub fn compile_return_statement(&self, ast: &ReturnStatement, context: &mut CompileContext) -> CompileResult {
         let mut res = vec![];
-        res.append(&mut self.ret.compile(context)?);
+        res.append(&mut self.compile_expr(&ast.ret, context)?);
         res.push(Op::ret);
         Ok(res)
     }
-}
 
-impl Compilable for Assignment {
-    fn compile(&self, context: &mut CompileContext) -> CompileResult {
+    pub fn compile_assignment(&self, ast: &Assignment, context: &mut CompileContext) -> CompileResult {
         let mut res = vec![];
-        res.append(&mut self.val.compile(context)?);
-        if let Some(local_name) = context.local_index.get(&self.name.name) {
+        res.append(&mut self.compile_expr(&ast.val, context)?);
+        if let Some(local_name) = context.local_index.get(&ast.name.name) {
             res.push(Op::store(*local_name));
             Ok(res)
         } else {
             let local_name = context.local_name_gen();
-            context.local_index.insert(RustClone::clone(&self.name.name), local_name);
+            context.local_index.insert(RustClone::clone(&ast.name.name), local_name);
             res.push(Op::store(local_name));
             Ok(res)
         }
     }
-}
 
-impl Compilable for Statement {
-    fn compile(&self, context: &mut CompileContext) -> CompileResult {
-        match self {
-            Statement::ForLoop(f) => f.compile(context),
-            Statement::WhileLoop(w) => w.compile(context),
-            Statement::IfStatement(i) => i.compile(context),
-            Statement::CaseOf(c) => c.compile(context),
-            Statement::ReturnStatement(r) => r.compile(context),
-            Statement::FuncDefinition(f) => f.compile(context),
-            Statement::Assignment(a) => a.compile(context),
-            Statement::Expr(e) => e.compile(context),
+    pub fn compile_statement(&self, ast: &Statement, context: &mut CompileContext) -> CompileResult {
+        match ast {
+            Statement::ForLoop(f) => self.compile_for_loop(f, context),
+            Statement::WhileLoop(w) => self.compile_while_loop(w, context),
+            Statement::IfStatement(i) => self.compile_if_statement(i, context),
+            Statement::CaseOf(c) => self.compile_case_of(c, context),
+            Statement::ReturnStatement(r) => self.compile_return_statement(r, context),
+            Statement::FuncDefinition(f) => self.compile_func_definition(f, context),
+            Statement::Assignment(a) => self.compile_assignment(a, context),
+            Statement::Expr(e) => self.compile_expr(e, context),
         }
     }
-}
 
-impl Compilable for StatementList {
-    fn compile(&self, context: &mut CompileContext) -> CompileResult {
+    pub fn compile_statement_list(&self, ast: &StatementList, context: &mut CompileContext) -> CompileResult {
         let mut res = vec![];
-        for statement in self.statements.iter() {
-            res.append(&mut statement.compile(context)?);
+        for statement in ast.statements.iter() {
+            res.append(&mut self.compile_statement(statement, context)?);
         }
         Ok(res)
     }

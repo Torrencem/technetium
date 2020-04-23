@@ -28,9 +28,38 @@ StatementList: ASTNode<StatementList> = <l:@L> <v: Newline<Statement>> <r:@R> =>
 	statements: v,
 }, l, r);
 
-Assignment: Assignment = <n: Identifier> "=" <e: Expr> => Assignment {
-	name: n,
-	val: e,
+Assignment: Assignment = {
+	<n: Identifier> "=" <e: Expr> => Assignment {
+		name: n, val: e,
+	},
+	<l:@L> <n: Identifier> <r:@R> <op:@L> "+=" <el:@L> <e: Expr> <er:@R> => Assignment {
+		name: n.clone(),
+		val: ASTNode::new(Expr::FuncCall(FuncCall {
+			fname: ASTNode::new("<add>".to_string(), op, op + 2),
+			arguments: vec![ASTNode::new(Expr::Variable(ASTNode::new(n.inner, l, r)), l, er), e],
+		}), el, er),
+	},
+	<l:@L> <n: Identifier> <r:@R> <op:@L> "-=" <el:@L> <e: Expr> <er:@R> => Assignment {
+		name: n.clone(),
+		val: ASTNode::new(Expr::FuncCall(FuncCall {
+			fname: ASTNode::new("<sub>".to_string(), op, op + 2),
+			arguments: vec![ASTNode::new(Expr::Variable(ASTNode::new(n.inner, l, r)), l, er), e],
+		}), el, er),
+	},
+	<l:@L> <n: Identifier> <r:@R> <op:@L> "*=" <el:@L> <e: Expr> <er:@R> => Assignment {
+		name: n.clone(),
+		val: ASTNode::new(Expr::FuncCall(FuncCall {
+			fname: ASTNode::new("<mul>".to_string(), op, op + 2),
+			arguments: vec![ASTNode::new(Expr::Variable(ASTNode::new(n.inner, l, r)), l, er), e],
+		}), el, er),
+	},
+	<l:@L> <n: Identifier> <r:@R> <op:@L> "/=" <el:@L> <e: Expr> <er:@R> => Assignment {
+		name: n.clone(),
+		val: ASTNode::new(Expr::FuncCall(FuncCall {
+			fname: ASTNode::new("<div>".to_string(), op, op + 2),
+			arguments: vec![ASTNode::new(Expr::Variable(ASTNode::new(n.inner, l, r)), l, er), e],
+		}), el, er),
+	},
 };
 
 ReturnStatement: ReturnStatement = "return" <e: Expr> => ReturnStatement {
@@ -288,6 +317,10 @@ extern {
 		"!" => Tok::Not,
 		"||" => Tok::Or,
 		"&&" => Tok::And,
+		"+=" => Tok::AddAssign,
+		"-=" => Tok::SubAssign,
+		"*=" => Tok::MulAssign,
+		"/=" => Tok::DivAssign,
 		ident => Tok::Identifier(<String>),
 		int_lit => Tok::Int(<i64>),
 		float_lit => Tok::Float(<f64>),

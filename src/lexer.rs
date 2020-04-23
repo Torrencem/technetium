@@ -32,6 +32,10 @@ pub enum Tok {
     Not,
     Or,
     And,
+    AddAssign,
+    SubAssign,
+    MulAssign,
+    DivAssign,
     Identifier(String),
     Int(i64),
     Float(f64),
@@ -216,10 +220,50 @@ impl<'input> Iterator for Lexer<'input> {
                 Some((i, '}')) => return Some(Ok((i, Tok::CloseBrace, i + 1))),
                 Some((i, ',')) => return Some(Ok((i, Tok::Comma, i + 1))),
                 Some((i, '.')) => return Some(Ok((i, Tok::Dot, i + 1))),
-                Some((i, '*')) => return Some(Ok((i, Tok::Mult, i + 1))),
-                Some((i, '/')) => return Some(Ok((i, Tok::Divide, i + 1))),
-                Some((i, '+')) => return Some(Ok((i, Tok::Plus, i + 1))),
-                Some((i, '-')) => return Some(Ok((i, Tok::Minus, i + 1))),
+                Some((i, '+')) => {
+                    match self.chars.peek() {
+                        Some((_, '=')) => {
+                            self.chars.next();
+                            return Some(Ok((i, Tok::AddAssign, i + 2)));
+                        },
+                        _ => {
+                            return Some(Ok((i, Tok::Plus, i + 1)));
+                        },
+                    }
+                },
+                Some((i, '-')) => {
+                    match self.chars.peek() {
+                        Some((_, '=')) => {
+                            self.chars.next();
+                            return Some(Ok((i, Tok::SubAssign, i + 2)));
+                        },
+                        _ => {
+                            return Some(Ok((i, Tok::Minus, i + 1)));
+                        },
+                    }
+                },
+                Some((i, '*')) => {
+                    match self.chars.peek() {
+                        Some((_, '=')) => {
+                            self.chars.next();
+                            return Some(Ok((i, Tok::MulAssign, i + 2)));
+                        },
+                        _ => {
+                            return Some(Ok((i, Tok::Mult, i + 1)));
+                        },
+                    }
+                },
+                Some((i, '/')) => {
+                    match self.chars.peek() {
+                        Some((_, '=')) => {
+                            self.chars.next();
+                            return Some(Ok((i, Tok::DivAssign, i + 2)));
+                        },
+                        _ => {
+                            return Some(Ok((i, Tok::Divide, i + 1)));
+                        },
+                    }
+                },
                 Some((i, '!')) => return Some(Ok((i, Tok::Not, i + 1))),
                 Some((i, '=')) => {
                     match self.chars.peek() {

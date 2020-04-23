@@ -7,8 +7,9 @@ func fib(n) {
         b = a + b
         a = tmp
         n = n - 1
+	print(b)
     }
     return b
 }
 
-return fib(40)
+return fib(10)

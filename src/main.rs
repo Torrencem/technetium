@@ -1,6 +1,8 @@
 #![allow(unused)]
+#![allow(non_upper_case_globals)]
 #![feature(fn_traits)]
 #[macro_use] extern crate lalrpop_util;
+#[macro_use] extern crate lazy_static;
 
 lalrpop_mod!(pub script);
 
@@ -10,6 +12,7 @@ pub mod core;
 pub mod bytecode;
 pub mod builtins;
 pub mod compile;
+pub mod standard;
 use compile::*;
 use lexer::Lexer;
 use std::sync::Arc;

@@ -8,6 +8,7 @@ use std::sync::Arc;
 use std::clone::Clone as RustClone;
 
 use crate::builtins;
+use crate::standard::Default_Namespace;
 
 use std::fmt;
 
@@ -87,6 +88,9 @@ pub enum Op {
     
     /// Push a constant referred to by a global constant descriptor
     push_const(GlobalConstantDescriptor),
+    
+    /// Push a constant built in object / default (see: standard)
+    push_global_default(GlobalConstantDescriptor),
 
     /// Jump to a relative offset in the instructions
     jmp(i16),
@@ -418,6 +422,14 @@ impl<'code> Frame<'code> {
                         stack.push(Arc::clone(obj));
                     } else {
                         return Err(RuntimeError::internal_error("Reference to constant that doesn't exist!".to_string()));
+                    }
+                },
+                Op::push_global_default(const_descr) => {
+                    let obj = Default_Namespace.get(const_descr);
+                    if let Some(obj) = obj {
+                        stack.push(Arc::clone(obj));
+                    } else {
+                        return Err(RuntimeError::internal_error("Reference to a global default that doesn't exist!".to_string()));
                     }
                 },
                 Op::jmp(offset) => {

@@ -5,7 +5,7 @@ use std::fmt;
 use std::clone::Clone as RustClone;
 use crate::bytecode::Op;
 use crate::bytecode;
-use std::cell::RefCell;
+use std::sync::Mutex;
 use codespan::{Span, FileId};
 use codespan_reporting::diagnostic::{Diagnostic, Label};
 
@@ -108,7 +108,7 @@ impl RuntimeError {
 
 pub type Result<T> = std::result::Result<T, RuntimeError>;
 
-pub trait Object : Any + ToAny {
+pub trait Object : Any + ToAny + Send + Sync {
     fn marsh_clone(&self) -> Result<ObjectRef> {
         Err(RuntimeError::type_error(format!("{} can not be cloned", self.marsh_type_name())))
     }
@@ -332,7 +332,7 @@ impl Object for List {
     fn make_iter(&self) -> Result<ObjectRef> {
         let iter = ListIterator {
             contents: self.contents.iter().map(|val| Arc::clone(val)).collect(),
-            index: RefCell::new(0),
+            index: Mutex::new(0),
         };
 
         Ok(Arc::new(iter))
@@ -341,7 +341,7 @@ impl Object for List {
 
 pub struct ListIterator {
     pub contents: Vec<ObjectRef>,
-    pub index: RefCell<usize>,
+    pub index: Mutex<usize>,
 }
 
 impl Object for ListIterator {
@@ -350,7 +350,7 @@ impl Object for ListIterator {
     }
 
     fn take_iter(&self) -> Result<Option<ObjectRef>> {
-        let mut index = self.index.borrow_mut();
+        let mut index = self.index.lock().unwrap();
         if *index >= self.contents.len() {
             Ok(None)
         } else {
@@ -395,5 +395,23 @@ impl Object for Tuple {
                 Err(RuntimeError::type_error(format!("list has no method {}", method)))
             },
        }
+    }
+}
+
+pub struct VoidObject;
+
+impl VoidObject {
+    pub fn new() -> ObjectRef {
+        Arc::new(VoidObject)
+    }
+}
+
+impl Object for VoidObject {
+    fn marsh_type_name(&self) -> String {
+        "void".to_string()
+    }
+
+    fn truthy(&self) -> bool {
+        false
     }
 }

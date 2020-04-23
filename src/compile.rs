@@ -2,6 +2,7 @@
 use crate::ast::*;
 use crate::core::*;
 use crate::bytecode::*;
+use crate::standard::Default_Namespace_Descriptors;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::clone::Clone as RustClone;
@@ -161,6 +162,8 @@ impl Compilable for FuncCall {
         let local_name = context.local_index.get(&self.fname.inner);
         if let Some(local_name) = local_name {
             res.push(Op::load(*local_name));
+        } else if let Some(global_name) = Default_Namespace_Descriptors.get(&self.fname.inner) {
+            res.push(Op::push_global_default(*global_name));
         } else {
             return Err(CompileError::new(CompileErrorType::UndefinedVariable(self.fname.span), format!("Undefined function: {}", self.fname.inner).as_ref()));
         }
@@ -215,11 +218,16 @@ impl Compilable for Expr {
     fn compile(&self, context: &mut CompileContext) -> CompileResult {
         match self {
             Expr::Variable(v) => {
-                let local_name = context.local_index.get(&v.inner);
-                if let Some(local_name) = local_name {
-                    Ok(vec![Op::load(*local_name)])
+                let global_name = Default_Namespace_Descriptors.get(&v.inner);
+                if let Some(global_name) = global_name {
+                    Ok(vec![Op::push_global_default(*global_name)])
                 } else {
-                    return Err(CompileError::new(CompileErrorType::UndefinedVariable(v.span), format!("Undefined variable: {}", v.inner).as_ref()));
+                    let local_name = context.local_index.get(&v.inner);
+                    if let Some(local_name) = local_name {
+                        Ok(vec![Op::load(*local_name)])
+                    } else {
+                        return Err(CompileError::new(CompileErrorType::UndefinedVariable(v.span), format!("Undefined variable: {}", v.inner).as_ref()));
+                    }
                 }
             },
             Expr::Literal(l) => l.compile(context),

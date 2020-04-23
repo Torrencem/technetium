@@ -5,206 +5,200 @@ use codespan::Span;
 
 grammar;
 
-pub Program: ASTNode<StatementList> = "\n"? <s: StatementList> => s;
+pub Program: StatementList = "\n"? <s: StatementList> => s;
 
-Statement: ASTNode<Statement> = {
-	<l:@L> <f: ForLoop> <r:@R> => ASTNode::new(Statement::ForLoop(f), l, r),
-	<l:@L> <w: WhileLoop> <r:@R> => ASTNode::new(Statement::WhileLoop(w), l, r),
-	<l:@L> <f: IfStatement> <r:@R> => ASTNode::new(Statement::IfStatement(f), l, r),
-	<l:@L> <c: CaseOf> <r:@R> => ASTNode::new(Statement::CaseOf(c), l, r),
-	<l:@L> <re: ReturnStatement> <r:@R> => ASTNode::new(Statement::ReturnStatement(re), l, r),
-	<l:@L> <f: FuncDefinition> <r:@R> => ASTNode::new(Statement::FuncDefinition(f), l, r),
-	<l:@L> <a: Assignment> <r:@R> => ASTNode::new(Statement::Assignment(a), l, r),
-	<l:@L> <e: Expr> <r:@R> => ASTNode::new(Statement::Expr(e.inner), l, r),
+Statement: Statement = {
+	<f: ForLoop> => Statement::ForLoop(f),
+	<w: WhileLoop> => Statement::WhileLoop(w),
+	<f: IfStatement>  => Statement::IfStatement(f),
+	<c: CaseOf>  => Statement::CaseOf(c),
+	<re: ReturnStatement>  => Statement::ReturnStatement(re),
+	<f: FuncDefinition>  => Statement::FuncDefinition(f),
+	<a: Assignment>  => Statement::Assignment(a),
+	<e: Expr>  => Statement::Expr(e),
 };
 
-FuncDefinition: FuncDefinition = "func" <id: Identifier> "(" <args: Comma<Identifier>> ")" "\n"? "{" "\n" <body: StatementList> "}" => FuncDefinition {
-	name: id,
-	args: args,
-	body: body,
-};
+FuncDefinition: FuncDefinition = <l:@L> "func" <id: Identifier> "(" <args: Comma<Identifier>> ")" "\n"? "{" "\n" <body: StatementList> "}" <r:@R> => FuncDefinition::new(
+	id,
+	args,
+	body,
+	l,
+	r,
+);
 
-StatementList: ASTNode<StatementList> = <l:@L> <v: Newline<Statement>> <r:@R> => ASTNode::new(StatementList {
-	statements: v,
-}, l, r);
+StatementList: StatementList = <l:@L> <v: Newline<Statement>> <r:@R> => StatementList::new(
+	v,
+	l,
+	r,
+);
 
 Assignment: Assignment = {
-	<n: Identifier> "=" <e: Expr> => Assignment {
-		name: n, val: e,
-	},
-	<l:@L> <n: Identifier> <r:@R> <op:@L> "+=" <el:@L> <e: Expr> <er:@R> => Assignment {
-		name: n.clone(),
-		val: ASTNode::new(Expr::FuncCall(FuncCall {
-			fname: ASTNode::new("<add>".to_string(), op, op + 2),
-			arguments: vec![ASTNode::new(Expr::Variable(ASTNode::new(n.inner, l, r)), l, er), e],
-		}), el, er),
-	},
-	<l:@L> <n: Identifier> <r:@R> <op:@L> "-=" <el:@L> <e: Expr> <er:@R> => Assignment {
-		name: n.clone(),
-		val: ASTNode::new(Expr::FuncCall(FuncCall {
-			fname: ASTNode::new("<sub>".to_string(), op, op + 2),
-			arguments: vec![ASTNode::new(Expr::Variable(ASTNode::new(n.inner, l, r)), l, er), e],
-		}), el, er),
-	},
-	<l:@L> <n: Identifier> <r:@R> <op:@L> "*=" <el:@L> <e: Expr> <er:@R> => Assignment {
-		name: n.clone(),
-		val: ASTNode::new(Expr::FuncCall(FuncCall {
-			fname: ASTNode::new("<mul>".to_string(), op, op + 2),
-			arguments: vec![ASTNode::new(Expr::Variable(ASTNode::new(n.inner, l, r)), l, er), e],
-		}), el, er),
-	},
-	<l:@L> <n: Identifier> <r:@R> <op:@L> "/=" <el:@L> <e: Expr> <er:@R> => Assignment {
-		name: n.clone(),
-		val: ASTNode::new(Expr::FuncCall(FuncCall {
-			fname: ASTNode::new("<div>".to_string(), op, op + 2),
-			arguments: vec![ASTNode::new(Expr::Variable(ASTNode::new(n.inner, l, r)), l, er), e],
-		}), el, er),
-	},
+	<l: @L> <n: Identifier> "=" <e: Expr> <r:@R> => Assignment::new(n, e, l, r),
+	<l: @L> <n: Identifier> "+=" <e: Expr> <r:@R> => Assignment::new(
+		n.clone(),
+		Expr::FuncCall(FuncCall::new(
+			Identifier::new("<add>".to_string(), l, r),
+			vec![Expr::Variable(n), e],
+			l, r
+		)),
+		l, r
+	),
+	<l: @L> <n: Identifier> "-=" <e: Expr> <r:@R> => Assignment::new(
+		n.clone(),
+		Expr::FuncCall(FuncCall::new(
+			Identifier::new("<sub>".to_string(), l, r),
+			vec![Expr::Variable(n), e],
+			l, r
+		)),
+		l, r
+	),
+	<l: @L> <n: Identifier> "*=" <e: Expr> <r:@R> => Assignment::new(
+		n.clone(),
+		Expr::FuncCall(FuncCall::new(
+			Identifier::new("<mul>".to_string(), l, r),
+			vec![Expr::Variable(n), e],
+			l, r
+		)),
+		l, r
+	),
+	<l: @L> <n: Identifier> "/=" <e: Expr> <r:@R> => Assignment::new(
+		n.clone(),
+		Expr::FuncCall(FuncCall::new(
+			Identifier::new("<div>".to_string(), l, r),
+			vec![Expr::Variable(n), e],
+			l, r
+		)),
+		l, r
+	),
 };
 
-ReturnStatement: ReturnStatement = "return" <e: Expr> => ReturnStatement {
-	ret: e,
-};
+ReturnStatement: ReturnStatement = <l:@L> "return" <e: Expr> <r:@R> => ReturnStatement::new(e, l, r);
 
-WhileLoop: WhileLoop = "while" <e: Expr> "\n"? "{" "\n"? <body: StatementList> "}" => WhileLoop {
-	cond: e,
-	body: body,
-};
+WhileLoop: WhileLoop = <l:@L> "while" <e: Expr> "\n"? "{" "\n"? <body: StatementList> "}" <r:@R> => WhileLoop::new(e, body, l, r);
 
-ForLoop: ForLoop = "for" <n: Identifier> "in" <e: Expr> "\n"? "{" "\n"? <body: StatementList> "}" => ForLoop {
-	binding: n,
-	iter: e,
-	body: body,
-};
+ForLoop: ForLoop = <l:@L> "for" <n: Identifier> "in" <e: Expr> "\n"? "{" "\n"? <body: StatementList> "}" <r:@R> => ForLoop::new(n, e, body, l, r);
 
-CaseOf: CaseOf = "case" <e: Expr> "of" "\n"? "{" "\n"? <c: CommaNewline<Case>> "}" => CaseOf {
-	condition: e,
-	cases: c,
-};
+CaseOf: CaseOf = <l:@L> "case" <e: Expr> "of" "\n"? "{" "\n"? <c: CommaNewline<Case>> "}" <r:@R> => CaseOf::new(e, c, l, r);
 
-Case: (ASTNode<Expr>, ASTNode<StatementList>) = {
-	<e: Expr> "=>" <l:@L> <s: Statement> <r:@R> => (e, ASTNode::new(StatementList { statements: vec![s] }, l, r)),
+Case: (Expr, StatementList) = {
+	<l:@L> <e: Expr> "=>" <s: Statement> <r:@R> => (e, StatementList::new(vec![s], l, r)),
 	<e: Expr> "=>" "\n"? "{" "\n"? <s: StatementList> "}" => (e, s),
 };
 
 IfStatement: IfStatement = {
-	"if" <e: Expr> "\n"? "{" "\n"? <b1: StatementList> "}" => IfStatement {
-		condition: e,
-		then_body: b1,
-		else_if: None,
-		else_body: None,
-	},
-	"if" <e: Expr> "\n"? "{" "\n"? <b1: StatementList> "}" "else" "\n"? "{" "\n"? <b2: StatementList> "}" => IfStatement {
-		condition: e,
-		then_body: b1,
-		else_if: None,
-		else_body: Some(b2),
-	},
-	"if" <e: Expr> "\n"? "{" "\n"? <b1: StatementList> "}" <etail: ElifTail> => IfStatement {
-		condition: e,
-		then_body: b1,
-		else_if: Some(Box::new(etail)),
-		else_body: None,
-	},
+	<l:@L> "if" <e: Expr> "\n"? "{" "\n"? <b1: StatementList> "}" <r:@R> => IfStatement::new(
+		e, b1, None, l, r,
+	),
+	<l:@L> "if" <e: Expr> "\n"? "{" "\n"? <b1: StatementList> "}" "else" "\n"? "{" "\n"? <b2: StatementList> "}" <r:@R> => IfStatement::new(
+		e, b1, Some(IfTail::Else(b2)), l, r,
+	),
+	<l:@L> "if" <e: Expr> "\n"? "{" "\n"? <b1: StatementList> "}" <etail: ElifTail> <r:@R> => IfStatement::new(
+		e, b1, Some(IfTail::ElseIf(Box::new(etail))), l, r,
+	),
 };
 
 ElifTail: IfStatement = {
-	"elif" <e: Expr> "\n"? "{" "\n"? <b1: StatementList> "}" => IfStatement {
-		condition: e,
-		then_body: b1,
-		else_if: None,
-		else_body: None,
-	},
-	"elif" <e: Expr> "\n"? "{" "\n"? <b1: StatementList> "}" "else" "\n"? "{" "\n"? <b2: StatementList> "}" => IfStatement {
-		condition: e,
-		then_body: b1,
-		else_if: None,
-		else_body: Some(b2),
-	},
-	"elif" <e: Expr> "\n"? "{" "\n"? <b1: StatementList> "}" <etail: ElifTail> => IfStatement {
-		condition: e,
-		then_body: b1,
-		else_if: Some(Box::new(etail)),
-		else_body: None,
-	},
+	<l:@L> "elif" <e: Expr> "\n"? "{" "\n"? <b1: StatementList> "}" <r:@R> => IfStatement::new(
+		e, b1, None, l, r,
+	),
+	<l:@L> "elif" <e: Expr> "\n"? "{" "\n"? <b1: StatementList> "}" "else" "\n"? "{" "\n"? <b2: StatementList> "}" <r:@R> => IfStatement::new(
+		e, b1, Some(IfTail::Else(b2)), l, r,
+	),
+	<l:@L> "elif" <e: Expr> "\n"? "{" "\n"? <b1: StatementList> "}" <etail: ElifTail> <r:@R> => IfStatement::new(
+		e, b1, Some(IfTail::ElseIf(Box::new(etail))), l, r,
+	),
 };
 
-Expr: ASTNode<Expr> = <l:@L> <e: LogicalExpr> <r:@R> => ASTNode::new(e, l, r);
+Expr: Expr =  <e: LogicalExpr> => e;
 
 LogicalExpr: Expr = {
 	<b: Comparison> => b,
-	<op:@L> "!" <l:@L> <s1: Comparison> <r:@R> => Expr::FuncCall(FuncCall {
-		fname: ASTNode::new("<not>".to_string(), op, op + 1),
-		arguments: vec![ASTNode::new(s1, l, r)],
-	}),
-	<l1:@L> <s1: Comparison> <r1:@R> <op:@L> "||" <l2:@L> <s2: Comparison> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: ASTNode::new("<or>".to_string(), op, op + 2),
-		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
-	}),
-	<l1:@L> <s1: Comparison> <r1:@R> <op:@L> "&&" <l2:@L> <s2: Comparison> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: ASTNode::new("<and>".to_string(), op, op + 2),
-		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
-	}),
+	<l:@L> "!" <s1: Comparison> <r:@R> => Expr::FuncCall(FuncCall::new(
+		Identifier::new("<not>".to_string(), l, r),
+		vec![s1],
+		l, r,
+	)),
+	<l:@L> <s1: Comparison> "||" <s2: Comparison> <r:@R> => Expr::FuncCall(FuncCall::new(
+		Identifier::new("<or>".to_string(), l, r),
+		vec![s1, s2],
+		l, r,
+	)),
+	<l:@L> <s1: Comparison> "&&" <s2: Comparison> <r:@R> => Expr::FuncCall(FuncCall::new(
+		Identifier::new("<and>".to_string(), l, r),
+		vec![s1, s2],
+		l, r,
+	)),
 };
 
 Comparison: Expr = {
 	<b: Sum> => b,
-	<l1:@L> <s1: Sum> <r1:@R> <op:@L> "<=" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: ASTNode::new("<leq>".to_string(), op, op + 2),
-		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
-	}),
-	<l1:@L> <s1: Sum> <r1:@R> <op:@L> ">=" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: ASTNode::new("<geq>".to_string(), op, op + 2),
-		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
-	}),
-	<l1:@L> <s1: Sum> <r1:@R> <op:@L> "<" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: ASTNode::new("<lt>".to_string(), op, op + 1),
-		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
-	}),
-	<l1:@L> <s1: Sum> <r1:@R> <op:@L> ">" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: ASTNode::new("<gt>".to_string(), op, op + 1),
-		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
-	}),
-	<l1:@L> <s1: Sum> <r1:@R> <op:@L> "==" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: ASTNode::new("<eq>".to_string(), op, op + 2),
-		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
-	}),
-	<l1:@L> <s1: Sum> <r1:@R> <op:@L> "!=" <l2:@L> <s2: Sum> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: ASTNode::new("<neq>".to_string(), op, op + 2),
-		arguments: vec![ASTNode::new(s1, l1, r1), ASTNode::new(s2, l2, r2)],
-	}),
+	<l:@L> <s1: Sum> "<=" <s2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
+		Identifier::new("<leq>".to_string(), l, r),
+		vec![s1, s2],
+		l, r,
+	)),
+	<l:@L> <s1: Sum> ">=" <s2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
+		Identifier::new("<geq>".to_string(), l, r),
+		vec![s1, s2],
+		l, r,
+	)),
+	<l:@L> <s1: Sum> "<" <s2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
+		Identifier::new("<lt>".to_string(), l, r),
+		vec![s1, s2],
+		l, r,
+	)),
+	<l:@L> <s1: Sum> ">" <s2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
+		Identifier::new("<gt>".to_string(), l, r),
+		vec![s1, s2],
+		l, r,
+	)),
+	<l:@L> <s1: Sum> "==" <s2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
+		Identifier::new("<eq>".to_string(), l, r),
+		vec![s1, s2],
+		l, r,
+	)),
+	<l:@L> <s1: Sum> "!=" <s2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
+		Identifier::new("<neq>".to_string(), l, r),
+		vec![s1, s2],
+		l, r,
+	)),
 };
 
 Sum: Expr = {
 	<b: Term> => b,
-	<l1:@L> <t1: Term> <r1:@R> <op:@L> "+" <l2:@L> <t2: Term> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: ASTNode::new("<add>".to_string(), op, op + 1),
-		arguments: vec![ASTNode::new(t1, l1, r1), ASTNode::new(t2, l2, r2)],
-	}),
-	<l1:@L> <t1: Term> <r1:@R> <op:@L> "-" <l2:@L> <t2: Term> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: ASTNode::new("<sub>".to_string(), op, op + 1),
-		arguments: vec![ASTNode::new(t1, l1, r1), ASTNode::new(t2, l2, r2)],
-	}),
-	<op:@L> "-" <l:@L> <t: Term> <r:@R> => Expr::FuncCall(FuncCall {
-		fname: ASTNode::new("<neg>".to_string(), op, op + 1),
-		arguments: vec![ASTNode::new(t, l, r)],
-	}),
+	<l:@L> <t1: Term> "+" <t2: Term> <r:@R> => Expr::FuncCall(FuncCall::new(
+		Identifier::new("<add>".to_string(), l, r),
+		vec![t1, t2],
+		l, r,
+	)),
+	<l:@L> <t1: Term> "-" <t2: Term> <r:@R> => Expr::FuncCall(FuncCall::new(
+		Identifier::new("<sub>".to_string(), l, r),
+		vec![t1, t2],
+		l, r,
+	)),
+	<l:@L> "-" <t: Term> <r:@R> => Expr::FuncCall(FuncCall::new(
+		Identifier::new("<neg>".to_string(), l, r),
+		vec![t],
+		l, r,
+	)),
 };
 
 Term: Expr = {
 	<b: BaseExpr> => b,
-	<l1:@L> <f1: BaseExpr> <r1:@R> <op:@L> "*" <l2:@L> <f2: BaseExpr> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: ASTNode::new("<mul>".to_string(), op, op + 1),
-		arguments: vec![ASTNode::new(f1, l1, r1), ASTNode::new(f2, l2, r2)],
-	}),
-	<l1:@L> <f1: BaseExpr> <r1:@R> <op:@L> "/" <l2:@L> <f2: BaseExpr> <r2:@R> => Expr::FuncCall(FuncCall {
-		fname: ASTNode::new("<div>".to_string(), op, op + 1),
-		arguments: vec![ASTNode::new(f1, l1, r1), ASTNode::new(f2, l2, r2)],
-	}),
+	<l:@L> <f1: BaseExpr> "*" <f2: BaseExpr> <r:@R> => Expr::FuncCall(FuncCall::new(
+		Identifier::new("<mul>".to_string(), l, r),
+		vec![f1, f2],
+		l, r,
+	)),
+	<l:@L> <f1: BaseExpr> "/" <f2: BaseExpr> <r:@R> => Expr::FuncCall(FuncCall::new(
+		Identifier::new("<div>".to_string(), l, r),
+		vec![f1, f2],
+		l, r,
+	)),
 };
 
 BaseExpr: Expr = {
-	"(" <e:Expr> ")" => e.inner,
+	"(" <e:Expr> ")" => e,
 	<s: Identifier> => Expr::Variable(s),
 	<l: Literal> => Expr::Literal(l),
 	<l: ListLiteral> => Expr::ListLiteral(l),
@@ -215,41 +209,26 @@ BaseExpr: Expr = {
 	<i: IndexedExpr> => Expr::IndexedExpr(i),
 };
 
-IndexedExpr: IndexedExpr = <l:@L> <b: BaseExpr> <r:@R> "[" <i: Expr> "]" => IndexedExpr {
-	parent: Box::new(ASTNode::new(b, l, r)),
-	index: Box::new(i),
-};
+IndexedExpr: IndexedExpr = <l:@L> <b: BaseExpr> "[" <i: Expr> "]" <r:@R> => IndexedExpr::new(b, i, l, r);
 
 Literal: Literal = {
-	<n:int_lit> => Literal::Integer(n),
-	<f:float_lit> => Literal::Float(f),
-	<s:string_lit> => Literal::Str(s),
+	<l:@L> <n:int_lit> <r:@R> => Literal::Integer(n, Span::new(l as u32, r as u32)),
+	<l:@L> <f:float_lit> <r:@R> => Literal::Float(f, Span::new(l as u32, r as u32)),
+	<l:@L> <s:string_lit> <r:@R> => Literal::Str(s, Span::new(l as u32, r as u32)),
 };
 
-ListLiteral: ListLiteral = "[" <v: Comma<Expr>> "]" => ListLiteral { values: v };
+ListLiteral: ListLiteral = <l:@L> "[" <v: Comma<Expr>> "]" <r:@R> => ListLiteral::new(v, l, r);
 
-TupleLiteral: TupleLiteral = "(" <v: CommaNonEmpty<Expr>> ")" => TupleLiteral { values: v };
+TupleLiteral: TupleLiteral = <l:@L> "(" <v: CommaNonEmpty<Expr>> ")" <r:@R> => TupleLiteral::new(v, l, r);
 
-Identifier: ASTNode<String> = <l:@L> <s:ident> <r:@R> => ASTNode::new(s.to_owned(), l, r);
+Identifier: Identifier = <l:@L> <s:ident> <r:@R> => Identifier::new(s.to_owned(), l, r);
 
 
-MethodCall: MethodCall = <l:@L> <e: BaseExpr> <r:@R> "." <i: Identifier> "(" <args: Comma<Expr>> ")" => MethodCall {
-	parent: Box::new(ASTNode::new(e, l, r)),
-	call: FuncCall {
-		fname: i,
-		arguments: args,
-	},
-};
+MethodCall: MethodCall = <l:@L> <e: BaseExpr> "." <i: Identifier> "(" <args: Comma<Expr>> ")" <r:@R> => MethodCall::new(e, i, args, l, r);
 
-FuncCall: FuncCall = <i: Identifier> "(" <args: Comma<Expr>> ")" => FuncCall {
-	fname: i,
-	arguments: args,
-};
+FuncCall: FuncCall = <l:@L> <i: Identifier> "(" <args: Comma<Expr>> ")" <r:@R> => FuncCall::new(i, args, l, r);
 
-AttrLookup: AttrLookup = <l1:@L> <e: BaseExpr> <r1:@R> "." <i: Identifier> => AttrLookup {
-	parent: Box::new(ASTNode::new(e, l1, r1)),
-	attribute: i,
-};
+AttrLookup: AttrLookup = <l:@L> <e: BaseExpr>  "." <i: Identifier> <r:@R> => AttrLookup::new(e, i, l, r);
 
 Comma<T>: Vec<T> = {
 	<v:(<T> ",")*> <e:T?> => match e {

@@ -500,7 +500,7 @@ impl<'code> Frame<'code> {
                 ds = None;
             }
             if stale_weak_debug_symb {
-                ds = None;
+                dsw = None;
             }
             self.curr_instruction += 1;
         }

@@ -75,6 +75,10 @@ fn main() {
     let mut compile_context = CompileContext::new();
 
     let code = ast.compile(&mut compile_context);
+
+    if verbose {
+        dbg!(&code);
+    }
     
     let code = code.unwrap_or_else(|e| {
         let writer = StandardStream::stderr(ColorChoice::Always);

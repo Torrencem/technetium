@@ -91,13 +91,13 @@ impl Compilable for Literal {
     fn compile(&self, context: &mut CompileContext) -> CompileResult {
         let descr = context.gcd_gen();
         let constant: ObjectRef = match self {
-            Literal::Integer(val) => {
+            Literal::Integer(val, _) => {
                 IntObject::new(*val)
             },
-            Literal::Float(val) => {
+            Literal::Float(val, _) => {
                 FloatObject::new(*val)
             },
-            Literal::Str(val) => {
+            Literal::Str(val, _) => {
                 Arc::new(RustClone::clone(val))
             },
         };
@@ -152,27 +152,27 @@ impl Compilable for FuncCall {
     fn compile(&self, context: &mut CompileContext) -> CompileResult {
         let mut res = vec![];
         let builtins = builtin_functions();
-        if let Some(op) = builtins.get(&self.fname.inner) {
+        if let Some(op) = builtins.get(&self.fname.name) {
             for arg in self.arguments.iter() {
                 res.append(&mut arg.compile(context)?);
             }
             res.push(*op);
             return Ok(res);
         }
-        let local_name = context.local_index.get(&self.fname.inner);
+        let local_name = context.local_index.get(&self.fname.name);
         if let Some(local_name) = local_name {
             res.push(Op::load(*local_name));
-        } else if let Some(global_name) = Default_Namespace_Descriptors.get(&self.fname.inner) {
+        } else if let Some(global_name) = Default_Namespace_Descriptors.get(&self.fname.name) {
             res.push(Op::push_global_default(*global_name));
         } else {
-            return Err(CompileError::new(CompileErrorType::UndefinedVariable(self.fname.span), format!("Undefined function: {}", self.fname.inner).as_ref()));
+            return Err(CompileError::new(CompileErrorType::UndefinedVariable(self.fname.span), format!("Undefined function: {}", self.fname.name).as_ref()));
         }
         for arg in self.arguments.iter() {
             res.append(&mut arg.compile(context)?);
         }
 
         let debug_descr = context.dsd_gen();
-        context.debug_span_descriptors.insert(debug_descr, self.fname.span);
+        context.debug_span_descriptors.insert(debug_descr, self.span);
         res.push(Op::weak_debug(debug_descr));
 
         res.push(Op::call_function(self.arguments.len() as u8));
@@ -185,12 +185,12 @@ impl Compilable for AttrLookup {
         let mut res = vec![];
         res.append(&mut self.parent.compile(context)?);
         let const_descr = context.gcd_gen();
-        let name_val = Arc::new(RustClone::clone(&self.attribute.inner));
+        let name_val = Arc::new(RustClone::clone(&self.attribute.name));
         context.constant_descriptors.insert(const_descr, name_val);
         res.push(Op::push_const(const_descr));
 
         let debug_descr = context.dsd_gen();
-        context.debug_span_descriptors.insert(debug_descr, Span::merge(self.parent.span, self.attribute.span));
+        context.debug_span_descriptors.insert(debug_descr, self.span);
         res.push(Op::debug(debug_descr));
 
         res.push(Op::get_attr);
@@ -203,18 +203,18 @@ impl Compilable for MethodCall {
         let mut res = vec![];
         res.append(&mut self.parent.compile(context)?);
         let const_descr = context.gcd_gen();
-        let name_val = Arc::new(RustClone::clone(&self.call.fname.inner));
+        let name_val = Arc::new(RustClone::clone(&self.fname.name));
         context.constant_descriptors.insert(const_descr, name_val);
         res.push(Op::push_const(const_descr));
-        for arg in self.call.arguments.iter() {
+        for arg in self.arguments.iter() {
             res.append(&mut arg.compile(context)?);
         }
         
         let debug_descr = context.dsd_gen();
-        context.debug_span_descriptors.insert(debug_descr, Span::merge(self.parent.span, self.call.fname.span));
+        context.debug_span_descriptors.insert(debug_descr, self.span);
         res.push(Op::weak_debug(debug_descr));
 
-        res.push(Op::call_method(self.call.arguments.len() as u8));
+        res.push(Op::call_method(self.arguments.len() as u8));
         Ok(res)
     }
 }
@@ -223,15 +223,15 @@ impl Compilable for Expr {
     fn compile(&self, context: &mut CompileContext) -> CompileResult {
         match self {
             Expr::Variable(v) => {
-                let global_name = Default_Namespace_Descriptors.get(&v.inner);
+                let global_name = Default_Namespace_Descriptors.get(&v.name);
                 if let Some(global_name) = global_name {
                     Ok(vec![Op::push_global_default(*global_name)])
                 } else {
-                    let local_name = context.local_index.get(&v.inner);
+                    let local_name = context.local_index.get(&v.name);
                     if let Some(local_name) = local_name {
                         Ok(vec![Op::load(*local_name)])
                     } else {
-                        return Err(CompileError::new(CompileErrorType::UndefinedVariable(v.span), format!("Undefined variable: {}", v.inner).as_ref()));
+                        return Err(CompileError::new(CompileErrorType::UndefinedVariable(v.span), format!("Undefined variable: {}", v.name).as_ref()));
                     }
                 }
             },
@@ -253,7 +253,7 @@ impl Compilable for IndexedExpr {
         res.append(&mut self.index.compile(context)?);
 
         let debug_descr = context.dsd_gen();
-        context.debug_span_descriptors.insert(debug_descr, self.index.span);
+        context.debug_span_descriptors.insert(debug_descr, self.span);
         res.push(Op::debug(debug_descr));
 
         res.push(Op::index);
@@ -268,7 +268,7 @@ impl Compilable for ForLoop {
         res.append(&mut self.iter.compile(context)?);
 
         let debug_descr = context.dsd_gen();
-        context.debug_span_descriptors.insert(debug_descr, self.iter.span);
+        context.debug_span_descriptors.insert(debug_descr, self.iter.span());
         res.push(Op::debug(debug_descr));
 
         // Turn it into an iterator
@@ -276,7 +276,7 @@ impl Compilable for ForLoop {
         
         // Override any variable of the appropriate name
         let local_name = context.local_name_gen();
-        context.local_index.insert(self.binding.inner.clone(), local_name);
+        context.local_index.insert(self.binding.name.clone(), local_name);
 
         let mut body = self.body.compile(context)?;
         
@@ -315,15 +315,16 @@ impl Compilable for IfStatement {
     fn compile(&self, context: &mut CompileContext) -> CompileResult {
         let mut cond = self.condition.compile(context)?;
         let mut body1 = self.then_body.compile(context)?;
-        let has_elif = self.else_if.is_some();
-        let has_else = self.else_body.is_some();
-        assert!(!(has_else && has_elif));
-        let mut body2 = if let Some(ref ifstmt) = self.else_if {
-            ifstmt.compile(context)?
-        } else if let Some(ref stmtlist) = self.else_body {
-            stmtlist.compile(context)?
-        } else {
-            unreachable!()
+        let mut body2 = match self.tail {
+            Some(IfTail::ElseIf(ref ifstmt)) => {
+                ifstmt.compile(context)?
+            },
+            Some(IfTail::Else(ref stmtlist)) => {
+                stmtlist.compile(context)?
+            },
+            None => {
+                vec![]
+            }
         };
         let skip_body1_offset = body1.len() + 2;
         let skip_body2_offset = body2.len() + 1;
@@ -348,7 +349,7 @@ impl Compilable for FuncDefinition {
         let mut sub_context = CompileContext::new();
         for arg in self.args.iter() {
             let name = sub_context.local_name_gen();
-            sub_context.local_index.insert(arg.inner.clone(), name);
+            sub_context.local_index.insert(arg.name.clone(), name);
         }
         let code = self.body.compile(&mut sub_context);
         let sub_context = GlobalContext {
@@ -357,14 +358,14 @@ impl Compilable for FuncDefinition {
         };
         let function_obj = Function {
             nargs: self.args.len(),
-            name: self.name.inner.clone(),
+            name: self.name.name.clone(),
             context: Arc::new(sub_context),
             code: code?,
         };
         let my_descr = context.gcd_gen();
         context.constant_descriptors.insert(my_descr, Arc::new(function_obj));
         let my_local = context.local_name_gen();
-        context.local_index.insert(self.name.inner.clone(), my_local);
+        context.local_index.insert(self.name.name.clone(), my_local);
         let mut res = vec![];
         res.push(Op::push_const(my_descr));
         res.push(Op::store(my_local));
@@ -385,12 +386,12 @@ impl Compilable for Assignment {
     fn compile(&self, context: &mut CompileContext) -> CompileResult {
         let mut res = vec![];
         res.append(&mut self.val.compile(context)?);
-        if let Some(local_name) = context.local_index.get(&self.name.inner) {
+        if let Some(local_name) = context.local_index.get(&self.name.name) {
             res.push(Op::store(*local_name));
             Ok(res)
         } else {
             let local_name = context.local_name_gen();
-            context.local_index.insert(RustClone::clone(&self.name.inner), local_name);
+            context.local_index.insert(RustClone::clone(&self.name.name), local_name);
             res.push(Op::store(local_name));
             Ok(res)
         }

@@ -156,6 +156,10 @@ Sum: Expr = {
 		fname: ASTNode::new("<sub>".to_string(), op, op + 1),
 		arguments: vec![ASTNode::new(t1, l1, r1), ASTNode::new(t2, l2, r2)],
 	}),
+	<op:@L> "-" <l:@L> <t: Term> <r:@R> => Expr::FuncCall(FuncCall {
+		fname: ASTNode::new("<neg>".to_string(), op, op + 1),
+		arguments: vec![ASTNode::new(t, l, r)],
+	}),
 };
 
 Term: Expr = {

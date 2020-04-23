@@ -142,6 +142,7 @@ fn builtin_functions() -> HashMap<String, Op> {
     res.insert("<and>".to_string(), Op::and);
     res.insert("<or>".to_string(), Op::or);
     res.insert("<not>".to_string(), Op::not);
+    res.insert("<neg>".to_string(), Op::neg);
     res.insert("<index>".to_string(), Op::index);
     res
 }
@@ -180,7 +181,6 @@ impl Compilable for AttrLookup {
         context.constant_descriptors.insert(const_descr, name_val);
         res.push(Op::push_const(const_descr));
 
-        // Make debug symbol
         let debug_descr = context.dsd_gen();
         context.debug_span_descriptors.insert(debug_descr, Span::merge(self.parent.span, self.attribute.span));
         res.push(Op::debug(debug_descr));
@@ -201,6 +201,11 @@ impl Compilable for MethodCall {
         for arg in self.call.arguments.iter() {
             res.append(&mut arg.compile(context)?);
         }
+        
+        let debug_descr = context.dsd_gen();
+        context.debug_span_descriptors.insert(debug_descr, Span::merge(self.parent.span, self.call.fname.span));
+        res.push(Op::debug(debug_descr));
+
         res.push(Op::call_method(self.call.arguments.len() as u8));
         Ok(res)
     }
@@ -233,6 +238,11 @@ impl Compilable for IndexedExpr {
         let mut res = vec![];
         res.append(&mut self.parent.compile(context)?);
         res.append(&mut self.index.compile(context)?);
+
+        let debug_descr = context.dsd_gen();
+        context.debug_span_descriptors.insert(debug_descr, self.index.span);
+        res.push(Op::debug(debug_descr));
+
         res.push(Op::index);
         Ok(res)
     }
@@ -243,6 +253,11 @@ impl Compilable for ForLoop {
         let mut res = vec![];
         // Evaluate the expression for the iterator
         res.append(&mut self.iter.compile(context)?);
+
+        let debug_descr = context.dsd_gen();
+        context.debug_span_descriptors.insert(debug_descr, self.iter.span);
+        res.push(Op::debug(debug_descr));
+
         // Turn it into an iterator
         res.push(Op::make_iter);
         
@@ -255,6 +270,7 @@ impl Compilable for ForLoop {
         res.push(Op::dup);
         let skip_body_offset = body.len() as u16 as i16 + 3;
         let back_to_dup_offset = -(body.len() as u16 as i16) - 3;
+        res.push(Op::debug(debug_descr));
         res.push(Op::take_iter(skip_body_offset));
 
         res.push(Op::store(local_name));

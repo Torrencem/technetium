@@ -114,6 +114,25 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     }
 }
 
+pub fn negate(a: ObjectRef) -> Result<ObjectRef> {
+    let a_any = a.as_any();
+    match a_any.type_id() {
+        a if a == TypeId::of::<IntObject>() => {
+            let int_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let res = IntObject::new(-int_a.val);
+            Ok(res)
+        },
+        a if a == TypeId::of::<FloatObject>() => {
+            let int_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let res = FloatObject::new(-int_a.val);
+            Ok(res)
+        },
+        _ => {
+            Err(RuntimeError::type_error(format!("Cannot negate type {}", a.marsh_type_name())))
+        },
+    }
+}
+
 pub fn div(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
@@ -384,7 +403,10 @@ pub fn index(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
             let int_a = a_any.downcast_ref::<List>().unwrap();
             let int_b = b_any.downcast_ref::<IntObject>().unwrap();
             if int_b.val < 0 {
-                return Err(RuntimeError::type_error("Negative index".to_string()));
+                return Err(RuntimeError::index_oob_error("Negative index".to_string()));
+            }
+            if (int_b.val as u64 as usize) >= int_a.contents.len() {
+                return Err(RuntimeError::index_oob_error("Index out of bounds".to_string()));
             }
             let res = Arc::clone(&int_a.contents[int_b.val as u64 as usize]);
             Ok(res)
@@ -393,14 +415,14 @@ pub fn index(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
             let int_a = a_any.downcast_ref::<String>().unwrap();
             let int_b = b_any.downcast_ref::<IntObject>().unwrap();
             if int_b.val < 0 {
-                return Err(RuntimeError::type_error("Negative index".to_string()));
+                return Err(RuntimeError::index_oob_error("Negative index".to_string()));
             }
             let c = int_a.chars().nth(int_b.val as u64 as usize);
             if let Some(c) = c {
                 let s = format!("{}", c);
                 Ok(Arc::new(s))
             } else {
-                Err(RuntimeError::type_error(format!("Index out of bounds")))
+                Err(RuntimeError::index_oob_error(format!("Index out of bounds")))
             }
         },
         _ => {

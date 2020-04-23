@@ -49,6 +49,7 @@ pub enum ErrorType {
     TypeError,
     AttributeError,
     InternalError,
+    IndexOutOfBounds
 }
 
 impl RuntimeError {
@@ -71,6 +72,14 @@ impl RuntimeError {
     pub fn internal_error(message: String) -> Self {
         RuntimeError {
             err: ErrorType::InternalError,
+            help: message,
+            span: None,
+        }
+    }
+
+    pub fn index_oob_error(message: String) -> Self {
+        RuntimeError {
+            err: ErrorType::IndexOutOfBounds,
             help: message,
             span: None,
         }

@@ -61,6 +61,7 @@ pub enum Op {
     mul,
     div,
     not,
+    neg,
     or,
     and,
     cmp_lt,
@@ -293,6 +294,13 @@ impl<'code> Frame<'code> {
                     let a = stack.pop().unwrap();
                     stack.push(try_debug!(self, ds, builtins::not(a)));
                 },
+                Op::neg => {
+                    if stack.len() < 1 {
+                        return Err(RuntimeError::internal_error("Tried to negate nothing!".to_string()));
+                    }
+                    let a = stack.pop().unwrap();
+                    stack.push(try_debug!(self, ds, builtins::negate(a)));
+                },
                 Op::or => {
                     if stack.len() < 2 {
                         return Err(RuntimeError::internal_error("Tried to div less than 2 things!".to_string()));
@@ -460,5 +468,3 @@ impl<'code> Frame<'code> {
         }
     }
 }
-
-

@@ -17,6 +17,7 @@ use compile::*;
 use lexer::Lexer;
 use std::sync::Arc;
 use std::process::exit;
+use std::collections::HashMap;
 
 extern crate clap;
 use clap::{Arg, App, SubCommand};
@@ -72,11 +73,11 @@ fn main() {
         dbg!(&ast);
     }
 
-    let mut compile_context = CompileContext::new();
+    let mut manager = CompileManager::new();
 
-    let manager = CompileManager {};
+    let code = manager.compile_statement_list(&ast);
 
-    let code = manager.compile_statement_list(&ast, &mut compile_context);
+    let compile_context = manager.context_stack.pop().unwrap();
 
     if verbose {
         dbg!(&code);
@@ -94,7 +95,9 @@ fn main() {
 
     let global_context = bytecode::GlobalContext { constant_descriptors: compile_context.constant_descriptors, debug_descriptors: compile_context.debug_span_descriptors };
 
-    let mut frame = bytecode::Frame::new(&code, Arc::new(global_context));
+    let mut locals = HashMap::new();
+
+    let mut frame = bytecode::Frame::new(&code, &mut locals, Arc::new(global_context));
 
     let computation = frame.run();
     

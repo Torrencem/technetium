@@ -118,7 +118,8 @@ pub struct Frame<'code> {
     global_context: Arc<GlobalContext>,
     code: &'code [Op],
     curr_instruction: usize,
-    pub locals: HashMap<LocalName, ObjectRef>,
+    pub stack: Vec<ObjectRef>,
+    pub locals: &'code mut HashMap<LocalName, ObjectRef>,
 }
 
 macro_rules! try_debug {
@@ -148,17 +149,17 @@ macro_rules! try_debug {
 }
 
 impl<'code> Frame<'code> {
-    pub fn new(code: &'code [Op], globals: Arc<GlobalContext>) -> Self {
+    pub fn new(code: &'code [Op], locals: &'code mut HashMap<LocalName, ObjectRef>, globals: Arc<GlobalContext>) -> Self {
         Frame {
             global_context: globals,
-            code: code,
+            code,
             curr_instruction: 0,
-            locals: HashMap::new(),
+            locals,
+            stack: vec![],
         }
     }
 
     pub fn run(&mut self) -> Result<ObjectRef> {
-        let mut stack: Vec<ObjectRef> = vec![];
         let mut stale_debug_symb = false;
         let mut stale_weak_debug_symb = false;
         let mut ds: Option<DebugSpanDescriptor> = None;
@@ -178,7 +179,7 @@ impl<'code> Frame<'code> {
             match instr {
                 Op::nop => {},
                 Op::store(local_name) => {
-                    let res = stack.pop();
+                    let res = self.stack.pop();
                     if let Some(val) = res {
                         self.locals.insert(*local_name, val);
                     } else {
@@ -188,81 +189,81 @@ impl<'code> Frame<'code> {
                 Op::load(local_name) => {
                     let local = self.locals.get(local_name);
                     if let Some(val) = local {
-                        stack.push(Arc::clone(val));
+                        self.stack.push(Arc::clone(val));
                     } else {
                         return Err(RuntimeError::internal_error("Loaded a local that doesn't exist!".to_string()));
                     }
                 },
                 Op::swap => {
-                    if stack.len() < 2 {
+                    if self.stack.len() < 2 {
                         return Err(RuntimeError::internal_error("Stack is too small to swap!".to_string()));
                     }
-                    let top = stack.pop().unwrap();
-                    let snd = stack.pop().unwrap();
-                    stack.push(top);
-                    stack.push(snd);
+                    let top = self.stack.pop().unwrap();
+                    let snd = self.stack.pop().unwrap();
+                    self.stack.push(top);
+                    self.stack.push(snd);
                 },
                 Op::pop => {
-                    let res = stack.pop();
+                    let res = self.stack.pop();
                     if res.is_none() {
                         return Err(RuntimeError::internal_error("Popped an empty stack!".to_string()));
                     }
                 },
                 Op::dup => {
-                    let dup = stack.last().map(|val| Arc::clone(val));
+                    let dup = self.stack.last().map(|val| Arc::clone(val));
                     if let Some(val) = dup {
-                        stack.push(val);
+                        self.stack.push(val);
                     } else {
                         return Err(RuntimeError::internal_error("Dupped an empty stack!".to_string()));
                     }
                 },
                 Op::call_method(nargs) => {
                     let nargs = *nargs as usize;
-                    if stack.len() < nargs + 2 {
+                    if self.stack.len() < nargs + 2 {
                         return Err(RuntimeError::internal_error("Called method on too small a stack!".to_string()));
                     }
-                    let args: Vec<ObjectRef> = stack.drain((stack.len() - nargs)..).collect();
-                    let name = stack.pop().unwrap();
-                    let obj = stack.pop().unwrap();
+                    let args: Vec<ObjectRef> = self.stack.drain((self.stack.len() - nargs)..).collect();
+                    let name = self.stack.pop().unwrap();
+                    let obj = self.stack.pop().unwrap();
                     let name = name.as_any();
                     if let Some(method_name) = name.downcast_ref::<String>() {
                         let res = try_debug!(self, ds, dsw, obj.call_method(method_name, &args));
-                        stack.push(res);
+                        self.stack.push(res);
                     } else {
                         return Err(RuntimeError::internal_error("Method name not a string!".to_string()));
                     }
                 },
                 Op::call_function(nargs) => {
                     let nargs = *nargs as usize;
-                    if stack.len() < nargs + 1 {
+                    if self.stack.len() < nargs + 1 {
                         return Err(RuntimeError::internal_error("Called function object on too small a stack!".to_string()));
                     }
-                    let args: Vec<ObjectRef> = stack.drain((stack.len() - nargs)..).collect();
-                    let func = stack.pop().unwrap();
-                    let res = try_debug!(self, ds, dsw, func.call(&args));
-                    stack.push(res);
+                    let args: Vec<ObjectRef> = self.stack.drain((self.stack.len() - nargs)..).collect();
+                    let func = self.stack.pop().unwrap();
+                    let res = try_debug!(self, ds, dsw, func.call(&args, &mut self.locals));
+                    self.stack.push(res);
                 },
                 Op::get_attr => {
-                    if stack.len() < 2 {
+                    if self.stack.len() < 2 {
                         return Err(RuntimeError::internal_error("Too small a stack to perform get_attr!".to_string()));
                     }
-                    let attr = stack.pop().unwrap();
-                    let obj = stack.pop().unwrap();
+                    let attr = self.stack.pop().unwrap();
+                    let obj = self.stack.pop().unwrap();
                     let attr = attr.as_any();
                     if let Some(attr_name) = attr.downcast_ref::<String>() {
                         let res = try_debug!(self, ds, dsw, obj.get_attr(RustClone::clone(attr_name)));
-                        stack.push(res);
+                        self.stack.push(res);
                     } else {
                         return Err(RuntimeError::internal_error("Attribute name not a string!".to_string()));
                     }
                 },
                 Op::set_attr => {
-                    if stack.len() < 3 {
+                    if self.stack.len() < 3 {
                         return Err(RuntimeError::internal_error("Too small a stack to perform set_attr!".to_string()));
                     }
-                    let toset = stack.pop().unwrap();
-                    let attr = stack.pop().unwrap();
-                    let obj = stack.pop().unwrap();
+                    let toset = self.stack.pop().unwrap();
+                    let attr = self.stack.pop().unwrap();
+                    let obj = self.stack.pop().unwrap();
                     let attr = attr.as_any();
                     if let Some(attr_name) = attr.downcast_ref::<String>() {
                         try_debug!(self, ds, dsw, obj.set_attr(RustClone::clone(attr_name), toset));
@@ -271,145 +272,145 @@ impl<'code> Frame<'code> {
                     }
                 },
                 Op::to_string => {
-                    let obj = stack.pop();
+                    let obj = self.stack.pop();
                     if let Some(obj) = obj {
-                        stack.push(Arc::new(try_debug!(self, ds, dsw, obj.to_string())));
+                        self.stack.push(Arc::new(try_debug!(self, ds, dsw, obj.to_string())));
                     } else {
                         return Err(RuntimeError::internal_error("to_string called on an empty stack!".to_string()));
                     }
                 },
                 Op::add => {
-                    if stack.len() < 2 {
+                    if self.stack.len() < 2 {
                         return Err(RuntimeError::internal_error("Tried to add less than 2 things!".to_string()));
                     }
-                    let a = stack.pop().unwrap();
-                    let b = stack.pop().unwrap();
-                    stack.push(try_debug!(self, ds, dsw, builtins::add(b, a)))
+                    let a = self.stack.pop().unwrap();
+                    let b = self.stack.pop().unwrap();
+                    self.stack.push(try_debug!(self, ds, dsw, builtins::add(b, a)))
                 },
                 Op::sub => {
-                    if stack.len() < 2 {
+                    if self.stack.len() < 2 {
                         return Err(RuntimeError::internal_error("Tried to sub less than 2 things!".to_string()));
                     }
-                    let a = stack.pop().unwrap();
-                    let b = stack.pop().unwrap();
-                    stack.push(try_debug!(self, ds, dsw, builtins::sub(b, a)))
+                    let a = self.stack.pop().unwrap();
+                    let b = self.stack.pop().unwrap();
+                    self.stack.push(try_debug!(self, ds, dsw, builtins::sub(b, a)))
                 },
                 Op::mul => {
-                    if stack.len() < 2 {
+                    if self.stack.len() < 2 {
                         return Err(RuntimeError::internal_error("Tried to mul less than 2 things!".to_string()));
                     }
-                    let a = stack.pop().unwrap();
-                    let b = stack.pop().unwrap();
-                    stack.push(try_debug!(self, ds, dsw, builtins::mul(b, a)))
+                    let a = self.stack.pop().unwrap();
+                    let b = self.stack.pop().unwrap();
+                    self.stack.push(try_debug!(self, ds, dsw, builtins::mul(b, a)))
                 },
                 Op::div => {
-                    if stack.len() < 2 {
+                    if self.stack.len() < 2 {
                         return Err(RuntimeError::internal_error("Tried to div less than 2 things!".to_string()));
                     }
-                    let a = stack.pop().unwrap();
-                    let b = stack.pop().unwrap();
-                    stack.push(try_debug!(self, ds, dsw, builtins::div(b, a)))
+                    let a = self.stack.pop().unwrap();
+                    let b = self.stack.pop().unwrap();
+                    self.stack.push(try_debug!(self, ds, dsw, builtins::div(b, a)))
                 },
                 Op::not => {
-                    if stack.len() < 1 {
+                    if self.stack.len() < 1 {
                         return Err(RuntimeError::internal_error("Tried to not nothing!".to_string()));
                     }
-                    let a = stack.pop().unwrap();
-                    stack.push(try_debug!(self, ds, dsw, builtins::not(a)));
+                    let a = self.stack.pop().unwrap();
+                    self.stack.push(try_debug!(self, ds, dsw, builtins::not(a)));
                 },
                 Op::neg => {
-                    if stack.len() < 1 {
+                    if self.stack.len() < 1 {
                         return Err(RuntimeError::internal_error("Tried to negate nothing!".to_string()));
                     }
-                    let a = stack.pop().unwrap();
-                    stack.push(try_debug!(self, ds, dsw, builtins::negate(a)));
+                    let a = self.stack.pop().unwrap();
+                    self.stack.push(try_debug!(self, ds, dsw, builtins::negate(a)));
                 },
                 Op::or => {
-                    if stack.len() < 2 {
+                    if self.stack.len() < 2 {
                         return Err(RuntimeError::internal_error("Tried to div less than 2 things!".to_string()));
                     }
-                    let a = stack.pop().unwrap();
-                    let b = stack.pop().unwrap();
-                    stack.push(try_debug!(self, ds, dsw, builtins::or(b, a)))
+                    let a = self.stack.pop().unwrap();
+                    let b = self.stack.pop().unwrap();
+                    self.stack.push(try_debug!(self, ds, dsw, builtins::or(b, a)))
                 },
                 Op::and => {
-                    if stack.len() < 2 {
+                    if self.stack.len() < 2 {
                         return Err(RuntimeError::internal_error("Tried to div less than 2 things!".to_string()));
                     }
-                    let a = stack.pop().unwrap();
-                    let b = stack.pop().unwrap();
-                    stack.push(try_debug!(self, ds, dsw, builtins::and(b, a)))
+                    let a = self.stack.pop().unwrap();
+                    let b = self.stack.pop().unwrap();
+                    self.stack.push(try_debug!(self, ds, dsw, builtins::and(b, a)))
                 },
                 Op::cmp_lt => {
-                    if stack.len() < 2 {
+                    if self.stack.len() < 2 {
                         return Err(RuntimeError::internal_error("Tried to compare less than 2 things!".to_string()));
                     }
-                    let a = stack.pop().unwrap();
-                    let b = stack.pop().unwrap();
-                    stack.push(try_debug!(self, ds, dsw, builtins::cmp_lt(a, b)))
+                    let a = self.stack.pop().unwrap();
+                    let b = self.stack.pop().unwrap();
+                    self.stack.push(try_debug!(self, ds, dsw, builtins::cmp_lt(a, b)))
                 },
                 Op::cmp_gt => {
-                    if stack.len() < 2 {
+                    if self.stack.len() < 2 {
                         return Err(RuntimeError::internal_error("Tried to compare less than 2 things!".to_string()));
                     }
-                    let a = stack.pop().unwrap();
-                    let b = stack.pop().unwrap();
-                    stack.push(try_debug!(self, ds, dsw, builtins::cmp_gt(a, b)))
+                    let a = self.stack.pop().unwrap();
+                    let b = self.stack.pop().unwrap();
+                    self.stack.push(try_debug!(self, ds, dsw, builtins::cmp_gt(a, b)))
                 },
                 Op::cmp_eq => {
-                    if stack.len() < 2 {
+                    if self.stack.len() < 2 {
                         return Err(RuntimeError::internal_error("Tried to compare less than 2 things!".to_string()));
                     }
-                    let a = stack.pop().unwrap();
-                    let b = stack.pop().unwrap();
-                    stack.push(try_debug!(self, ds, dsw, builtins::cmp_eq(a, b)))
+                    let a = self.stack.pop().unwrap();
+                    let b = self.stack.pop().unwrap();
+                    self.stack.push(try_debug!(self, ds, dsw, builtins::cmp_eq(a, b)))
                 },
                 Op::cmp_neq => {
-                    if stack.len() < 2 {
+                    if self.stack.len() < 2 {
                         return Err(RuntimeError::internal_error("Tried to compare less than 2 things!".to_string()));
                     }
-                    let a = stack.pop().unwrap();
-                    let b = stack.pop().unwrap();
-                    stack.push(try_debug!(self, ds, dsw, builtins::cmp_neq(a, b)))
+                    let a = self.stack.pop().unwrap();
+                    let b = self.stack.pop().unwrap();
+                    self.stack.push(try_debug!(self, ds, dsw, builtins::cmp_neq(a, b)))
                 },
                 Op::cmp_leq => {
-                    if stack.len() < 2 {
+                    if self.stack.len() < 2 {
                         return Err(RuntimeError::internal_error("Tried to compare less than 2 things!".to_string()));
                     }
-                    let a = stack.pop().unwrap();
-                    let b = stack.pop().unwrap();
-                    stack.push(try_debug!(self, ds, dsw, builtins::cmp_leq(a, b)))
+                    let a = self.stack.pop().unwrap();
+                    let b = self.stack.pop().unwrap();
+                    self.stack.push(try_debug!(self, ds, dsw, builtins::cmp_leq(a, b)))
                 },
                 Op::cmp_geq => {
-                    if stack.len() < 2 {
+                    if self.stack.len() < 2 {
                         return Err(RuntimeError::internal_error("Tried to compare less than 2 things!".to_string()));
                     }
-                    let a = stack.pop().unwrap();
-                    let b = stack.pop().unwrap();
-                    stack.push(try_debug!(self, ds, dsw, builtins::cmp_geq(a, b)))
+                    let a = self.stack.pop().unwrap();
+                    let b = self.stack.pop().unwrap();
+                    self.stack.push(try_debug!(self, ds, dsw, builtins::cmp_geq(a, b)))
                 },
                 Op::index => {
-                    if stack.len() < 2 {
+                    if self.stack.len() < 2 {
                         return Err(RuntimeError::internal_error("Tried to index less than 2 things!".to_string()));
                     }
-                    let a = stack.pop().unwrap();
-                    let b = stack.pop().unwrap();
-                    stack.push(try_debug!(self, ds, dsw, builtins::index(b, a)))
+                    let a = self.stack.pop().unwrap();
+                    let b = self.stack.pop().unwrap();
+                    self.stack.push(try_debug!(self, ds, dsw, builtins::index(b, a)))
                 },
                 Op::make_iter => {
-                    let val = stack.pop();
+                    let val = self.stack.pop();
                     if let Some(val) = val {
-                        stack.push(try_debug!(self, ds, dsw, val.make_iter()));
+                        self.stack.push(try_debug!(self, ds, dsw, val.make_iter()));
                     } else {
                         return Err(RuntimeError::internal_error("Tried to call make_iter on nothing!".to_string()));
                     }
                 },
                 Op::take_iter(offset) => {
-                    let val = stack.pop();
+                    let val = self.stack.pop();
                     if let Some(val) = val {
                         let val = try_debug!(self, ds, dsw, val.take_iter());
                         if let Some(val) = val {
-                            stack.push(val);
+                            self.stack.push(val);
                         } else {
                             // Jump
                             if *offset > 0 {
@@ -427,18 +428,18 @@ impl<'code> Frame<'code> {
                 },
                 Op::mklist(len) => {
                     let len = *len as usize;
-                    let objs: Vec<ObjectRef> = stack.drain((stack.len() - len)..).collect();
-                    stack.push(Arc::new(List { contents: objs } ));
+                    let objs: Vec<ObjectRef> = self.stack.drain((self.stack.len() - len)..).collect();
+                    self.stack.push(Arc::new(List { contents: objs } ));
                 },
                 Op::mktuple(len) => {
                     let len = *len as usize;
-                    let objs: Vec<ObjectRef> = stack.drain((stack.len() - len)..).collect();
-                    stack.push(Arc::new(Tuple { contents: objs } ));
+                    let objs: Vec<ObjectRef> = self.stack.drain((self.stack.len() - len)..).collect();
+                    self.stack.push(Arc::new(Tuple { contents: objs } ));
                 },
                 Op::push_const(const_descr) => {
                     let obj = self.global_context.constant_descriptors.get(const_descr);
                     if let Some(obj) = obj {
-                        stack.push(Arc::clone(obj));
+                        self.stack.push(Arc::clone(obj));
                     } else {
                         return Err(RuntimeError::internal_error("Reference to constant that doesn't exist!".to_string()));
                     }
@@ -446,7 +447,7 @@ impl<'code> Frame<'code> {
                 Op::push_global_default(const_descr) => {
                     let obj = Default_Namespace.get(const_descr);
                     if let Some(obj) = obj {
-                        stack.push(Arc::clone(obj));
+                        self.stack.push(Arc::clone(obj));
                     } else {
                         return Err(RuntimeError::internal_error("Reference to a global default that doesn't exist!".to_string()));
                     }
@@ -462,7 +463,7 @@ impl<'code> Frame<'code> {
                     continue;
                 },
                 Op::cond_jmp(offset) => {
-                    let obj = stack.pop();
+                    let obj = self.stack.pop();
                     if let Some(obj) = obj {
                         if obj.truthy() {
                             if *offset > 0 {
@@ -479,7 +480,7 @@ impl<'code> Frame<'code> {
                     }
                 },
                 Op::ret => {
-                    let res = stack.pop();
+                    let res = self.stack.pop();
                     if let Some(val) = res {
                         return Ok(val);
                     } else {

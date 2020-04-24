@@ -5,9 +5,11 @@ use std::fmt;
 use std::clone::Clone as RustClone;
 use crate::bytecode::Op;
 use crate::bytecode;
+use crate::bytecode::LocalName;
 use std::sync::Mutex;
 use codespan::{Span, FileId};
 use codespan_reporting::diagnostic::{Diagnostic, Label};
+use std::collections::HashMap;
 
 pub type ObjectRef = Arc<dyn Object>;
 
@@ -150,7 +152,7 @@ pub trait Object : Any + ToAny + Send + Sync {
         Err(RuntimeError::attribute_error(format!("Cannot call method of {}", self.marsh_type_name())))
     }
 
-    fn call(&self, args: &[ObjectRef]) -> Result<ObjectRef> {
+    fn call(&self, args: &[ObjectRef], locals: &mut HashMap<LocalName, ObjectRef>) -> Result<ObjectRef> {
         Err(RuntimeError::type_error(format!("Object of type {} is not callable", self.marsh_type_name())))
     }
 
@@ -297,15 +299,13 @@ impl Object for Function {
         true
     }
     
-    fn call(&self, args: &[ObjectRef]) -> Result<ObjectRef> {
+    fn call(&self, args: &[ObjectRef], locals: &mut HashMap<LocalName, ObjectRef>) -> Result<ObjectRef> {
         if args.len() != self.nargs {
             return Err(RuntimeError::type_error(format!("Incorrect number of arguments given to {}: expected {}, got {}", self.name, self.nargs, args.len())));
         }
-        let mut frame = bytecode::Frame::new(&self.code, Arc::clone(&self.context));
-        let mut local_name = 0;
-        for arg in args {
-            frame.locals.insert(local_name, Arc::clone(arg));
-            local_name += 1;
+        let mut frame = bytecode::Frame::new(&self.code, locals, Arc::clone(&self.context));
+        for arg in args.iter().rev() {
+            frame.stack.push(Arc::clone(arg));
         }
         frame.run()
     }

@@ -1,6 +1,8 @@
 
 use crate::core::*;
 use crate::builtins::*;
+use std::collections::HashMap;
+use crate::bytecode::LocalName;
 
 use crate::{func_object, func_object_void};
 

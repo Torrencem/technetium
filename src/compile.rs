@@ -339,8 +339,8 @@ impl CompileManager {
 
     pub fn compile_if_statement(&mut self, ast: &IfStatement) -> CompileResult {
         let mut cond = self.compile_expr(&ast.condition)?;
-        let mut body1 = self.compile_statement_list(&ast.then_body)?;
-        let mut body2 = match ast.tail {
+        let mut body2 = self.compile_statement_list(&ast.then_body)?;
+        let mut body1 = match ast.tail {
             Some(IfTail::ElseIf(ref ifstmt)) => {
                 self.compile_if_statement(ifstmt)?
             },
@@ -387,6 +387,7 @@ impl CompileManager {
         }
 
         func_code.append(&mut self.compile_statement_list(&ast.body)?);
+        dbg!(&func_code);
         let finished_context = self.context_stack.pop().unwrap();
         let sub_context = GlobalContext {
             constant_descriptors: finished_context.constant_descriptors,

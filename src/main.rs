@@ -110,7 +110,9 @@ fn main() {
         term::emit(&mut writer.lock(), &config, &files, &diagnostic).expect("Error writing error message");
         exit(1)
     });
-
-    dbg!(computation);
+    
+    if verbose {
+        dbg!(computation);
+    }
 }
 

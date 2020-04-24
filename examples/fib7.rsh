@@ -1,9 +1,11 @@
 
 func fib(n) {
+	print(n)
+	print(n < 3)
 	if n < 3 {
 		return 1
 	}
 	return fib(n - 1) + fib(n - 2)
 }
 
-return fib(10)
+print(fib(30))

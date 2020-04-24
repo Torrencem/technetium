@@ -27,7 +27,7 @@ pub enum Op {
     
     /// Store the object on the top of the stack in a local variable
     store(LocalName),
-
+    
     /// Load an object from a local variable
     load(LocalName),
 
@@ -173,7 +173,7 @@ impl<'code> Frame<'code> {
             }
             let instr = self.code.get(self.curr_instruction);
             if let None = instr {
-                return Err(RuntimeError::internal_error("Ran off the end of the code!".to_string()));
+                return Ok(VoidObject::new());
             }
             let instr = instr.unwrap();
             match instr {
@@ -347,7 +347,7 @@ impl<'code> Frame<'code> {
                     }
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
-                    self.stack.push(try_debug!(self, ds, dsw, builtins::cmp_lt(a, b)))
+                    self.stack.push(try_debug!(self, ds, dsw, builtins::cmp_lt(b, a)))
                 },
                 Op::cmp_gt => {
                     if self.stack.len() < 2 {
@@ -355,7 +355,7 @@ impl<'code> Frame<'code> {
                     }
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
-                    self.stack.push(try_debug!(self, ds, dsw, builtins::cmp_gt(a, b)))
+                    self.stack.push(try_debug!(self, ds, dsw, builtins::cmp_gt(b, a)))
                 },
                 Op::cmp_eq => {
                     if self.stack.len() < 2 {
@@ -363,7 +363,7 @@ impl<'code> Frame<'code> {
                     }
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
-                    self.stack.push(try_debug!(self, ds, dsw, builtins::cmp_eq(a, b)))
+                    self.stack.push(try_debug!(self, ds, dsw, builtins::cmp_eq(b, a)))
                 },
                 Op::cmp_neq => {
                     if self.stack.len() < 2 {
@@ -371,7 +371,7 @@ impl<'code> Frame<'code> {
                     }
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
-                    self.stack.push(try_debug!(self, ds, dsw, builtins::cmp_neq(a, b)))
+                    self.stack.push(try_debug!(self, ds, dsw, builtins::cmp_neq(b, a)))
                 },
                 Op::cmp_leq => {
                     if self.stack.len() < 2 {
@@ -379,7 +379,7 @@ impl<'code> Frame<'code> {
                     }
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
-                    self.stack.push(try_debug!(self, ds, dsw, builtins::cmp_leq(a, b)))
+                    self.stack.push(try_debug!(self, ds, dsw, builtins::cmp_leq(b, a)))
                 },
                 Op::cmp_geq => {
                     if self.stack.len() < 2 {
@@ -387,7 +387,7 @@ impl<'code> Frame<'code> {
                     }
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
-                    self.stack.push(try_debug!(self, ds, dsw, builtins::cmp_geq(a, b)))
+                    self.stack.push(try_debug!(self, ds, dsw, builtins::cmp_geq(b, a)))
                 },
                 Op::index => {
                     if self.stack.len() < 2 {

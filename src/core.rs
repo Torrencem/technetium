@@ -430,6 +430,10 @@ impl Object for VoidObject {
         "void".to_string()
     }
 
+    fn to_string(&self) -> Result<String> {
+        Ok("void".to_string())
+    }
+
     fn truthy(&self) -> bool {
         false
     }

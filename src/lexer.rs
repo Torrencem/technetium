@@ -177,15 +177,15 @@ impl<'input> Lexer<'input> {
         }
     }
 
-    fn comment_line(&mut self) {
+    fn comment_line(&mut self) -> usize {
         loop {
             let next = self.chars.next();
             if next == None {
-                return;
+                return 0;
             }
-            if let Some((_, c)) = next {
+            if let Some((i, c)) = next {
                 if c == '\n' {
-                    return;
+                    return i;
                 }
             }
         }
@@ -344,7 +344,8 @@ impl<'input> Iterator for Lexer<'input> {
                     return Some(Ok((i, Tok::StringLit(s), i2)));
                 },
                 Some((i, '#')) => {
-                    self.comment_line();
+                    let line_end = self.comment_line();
+                    return Some(Ok((i, Tok::Newline, line_end)));
                 },
                 Some((i, c)) => {
                     if c.is_alphabetic() {

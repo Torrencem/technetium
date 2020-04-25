@@ -325,7 +325,7 @@ impl CompileManager {
         
         res.push(Op::dup);
         let skip_body_offset = body.len() as u16 as i16 + 3;
-        let back_to_dup_offset = -(body.len() as u16 as i16) - 3;
+        let back_to_dup_offset = -(body.len() as u16 as i16) - 4;
         res.push(Op::debug(debug_descr));
         res.push(Op::take_iter(skip_body_offset));
 
@@ -462,7 +462,11 @@ impl CompileManager {
             Statement::ReturnStatement(r) => self.compile_return_statement(r),
             Statement::FuncDefinition(f) => self.compile_func_definition(f),
             Statement::Assignment(a) => self.compile_assignment(a),
-            Statement::Expr(e) => self.compile_expr(e),
+            Statement::Expr(e) => {
+                let mut vals = self.compile_expr(e)?;
+                vals.push(Op::pop);
+                Ok(vals)
+            }
         }
     }
 

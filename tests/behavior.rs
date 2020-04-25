@@ -33,3 +33,27 @@ print(c1())
 
     Ok(())
 }
+
+#[test]
+fn loops() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    // cmd.arg(concat!(env!("CARGO_MANIFEST_DIR"), "/examples/counter.rsh"));
+    cmd.write_stdin(
+r#"
+x = 10
+while x > 1 {
+    print(x)
+    x -= 2
+}
+
+for val in [123, 123.456, "world"] {
+    print("Hello " + val)
+}
+"#);
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("10\n8\n6\n4\n2\nHello 123\nHello 123.456\nHello world\n"));
+
+    Ok(())
+}

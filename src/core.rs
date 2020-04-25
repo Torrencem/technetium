@@ -15,10 +15,15 @@ pub type ObjectRef = Arc<dyn Object>;
 
 pub trait ToAny {
     fn as_any(&self) -> &dyn Any;
+    fn as_any_mut(&mut self) -> &mut dyn Any;
 }
 
 impl<T: Object> ToAny for T {
     fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
         self
     }
 }
@@ -285,6 +290,7 @@ pub struct Function {
     pub context: Arc<bytecode::GlobalContext>,
     pub code: Vec<Op>,
     pub context_id: ContextId,
+    pub least_ancestors: Mutex<Option<HashMap<ContextId, FrameId>>>,
 }
 
 impl Object for Function {
@@ -304,7 +310,7 @@ impl Object for Function {
         if args.len() != self.nargs {
             return Err(RuntimeError::type_error(format!("Incorrect number of arguments given to {}: expected {}, got {}", self.name, self.nargs, args.len())));
         }
-        let mut frame = bytecode::Frame::new(&self.code, locals, Arc::clone(&self.context), least_ancestors, self.context_id);
+        let mut frame = bytecode::Frame::new(&self.code, locals, Arc::clone(&self.context), self.least_ancestors.lock().unwrap().as_ref().unwrap().clone(), self.context_id);
         for arg in args.iter().rev() {
             frame.stack.push(Arc::clone(arg));
         }

@@ -57,6 +57,9 @@ pub enum Op {
     load(LocalName),
     load_non_local(NonLocalUnmappedName),
 
+    /// Special for functions: Attach the current least_ancestor
+    attach_ancestors,
+
     /// Swap the top 2 objects on the stack
     swap,
 
@@ -197,6 +200,9 @@ impl<'code> Frame<'code> {
         let mut stale_weak_debug_symb = false;
         let mut ds: Option<DebugSpanDescriptor> = None;
         let mut dsw: Option<DebugSpanDescriptor> = None;
+                    
+        self.least_ancestors.insert(self.context_id, self.id);
+
         loop {
             if !stale_debug_symb {
                 stale_debug_symb = true;
@@ -241,6 +247,21 @@ impl<'code> Frame<'code> {
                         self.stack.push(Arc::clone(val));
                     } else {
                         return Err(RuntimeError::internal_error("Loaded a local that doesn't exist!".to_string()));
+                    }
+                },
+                Op::attach_ancestors => {
+                    let top = self.stack.pop();
+                    if let Some(top) = top {
+                        let top_any = top.as_any();
+                        if let Some(f) = top_any.downcast_ref::<Function>() {
+                            let mut la = f.least_ancestors.lock().unwrap();
+                            *la = Some(self.least_ancestors.clone());
+                        } else {
+                            return Err(RuntimeError::internal_error("Tried to attach ancestors to non-function".to_string()));
+                        }
+                        self.stack.push(top);
+                    } else {
+                        return Err(RuntimeError::internal_error("Tried to attach ancestors to nothing".to_string()));
                     }
                 },
                 Op::swap => {
@@ -289,11 +310,7 @@ impl<'code> Frame<'code> {
                     }
                     let args: Vec<ObjectRef> = self.stack.drain((self.stack.len() - nargs)..).collect();
                     let func = self.stack.pop().unwrap();
-                    
-                    let mut modified_least_anc = self.least_ancestors.clone();
-                    modified_least_anc.insert(self.context_id, self.id);
-
-                    let res = try_debug!(self, ds, dsw, func.call(&args, &mut self.locals, modified_least_anc));
+                    let res = try_debug!(self, ds, dsw, func.call(&args, &mut self.locals, self.least_ancestors.clone()));
                     self.stack.push(res);
                 },
                 Op::get_attr => {

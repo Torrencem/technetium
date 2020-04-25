@@ -4,7 +4,7 @@ use crate::core::*;
 use crate::bytecode::*;
 use crate::standard::Default_Namespace_Descriptors;
 use std::collections::HashMap;
-use std::sync::Arc;
+use std::sync::{Mutex, Arc};
 use std::clone::Clone as RustClone;
 use std::result::Result as RustResult;
 use codespan::{Span, FileId};
@@ -400,7 +400,6 @@ impl CompileManager {
         }
 
         func_code.append(&mut self.compile_statement_list(&ast.body)?);
-        dbg!(&func_code);
         let finished_context = self.context_stack.pop().unwrap();
         let sub_context = GlobalContext {
             constant_descriptors: finished_context.constant_descriptors,
@@ -411,12 +410,14 @@ impl CompileManager {
             name: ast.name.name.clone(),
             context: Arc::new(sub_context),
             context_id: finished_context.context_id,
+            least_ancestors: Mutex::new(None),
             code: func_code,
         };
         let my_descr = self.context().gcd_gen();
         self.context().constant_descriptors.insert(my_descr, Arc::new(function_obj));
         let mut res = vec![];
         res.push(Op::push_const(my_descr));
+        res.push(Op::attach_ancestors);
         res.push(Op::store(my_local));
         Ok(res)
     }

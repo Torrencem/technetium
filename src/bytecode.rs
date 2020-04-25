@@ -23,7 +23,7 @@ pub struct FrameIdGen {
 
 lazy_static! {
     pub static ref FRAME_ID_GEN: Mutex<FrameIdGen> = {
-        Mutex::new(FrameIdGen { last: 0 })
+        Mutex::new(FrameIdGen { last: 100 })
     };
 }
 
@@ -39,7 +39,7 @@ pub type ContextId = u16;
 pub type LocalName = u16;
 pub type NonLocalUnmappedName = (ContextId, u16);
 pub type NonLocalName = (FrameId, u16);
-pub type GlobalConstantDescriptor = u16;
+pub type GlobalConstantDescriptor = (ContextId, u16);
 pub type DebugSpanDescriptor = u16;
 
 #[allow(non_camel_case_types)]

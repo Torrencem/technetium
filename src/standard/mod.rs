@@ -6,18 +6,20 @@ use std::sync::Arc;
 use crate::bytecode::{GlobalContext, GlobalConstantDescriptor, ContextId, FrameId};
 use std::collections::HashMap;
 
+pub static STANDARD_CONTEXT_ID: ContextId = 0;
+
 lazy_static! {
     pub static ref Default_Namespace_Descriptors: HashMap<String, GlobalConstantDescriptor> = {
         let mut res: HashMap<String, GlobalConstantDescriptor> = HashMap::new();
-        res.insert("print".to_string(), 0);
-        res.insert("exit".to_string(), 1);
+        res.insert("print".to_string(), (STANDARD_CONTEXT_ID, 0));
+        res.insert("exit".to_string(), (STANDARD_CONTEXT_ID, 1));
         res
     };
 
     pub static ref Default_Namespace: HashMap<GlobalConstantDescriptor, ObjectRef> = {
         let mut res: HashMap<GlobalConstantDescriptor, ObjectRef> = HashMap::new();
-        res.insert(0, Arc::new(special_funcs::Print));
-        res.insert(1, Arc::new(special_funcs::Exit));
+        res.insert((STANDARD_CONTEXT_ID, 0), Arc::new(special_funcs::Print));
+        res.insert((STANDARD_CONTEXT_ID, 1), Arc::new(special_funcs::Exit));
         res
     };
 }

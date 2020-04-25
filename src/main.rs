@@ -15,6 +15,7 @@ pub mod compile;
 pub mod standard;
 use compile::*;
 use lexer::Lexer;
+use standard::STANDARD_CONTEXT_ID;
 use std::sync::Arc;
 use std::process::exit;
 use std::collections::HashMap;
@@ -97,7 +98,7 @@ fn main() {
 
     let mut locals = HashMap::new();
 
-    let mut frame = bytecode::Frame::new(&code, &mut locals, Arc::new(global_context), HashMap::new(), 0);
+    let mut frame = bytecode::Frame::new(&code, &mut locals, Arc::new(global_context), HashMap::new(), STANDARD_CONTEXT_ID + 1);
 
     let computation = frame.run();
     

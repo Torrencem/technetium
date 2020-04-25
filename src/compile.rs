@@ -3,6 +3,7 @@ use crate::ast::*;
 use crate::core::*;
 use crate::bytecode::*;
 use crate::standard::Default_Namespace_Descriptors;
+use crate::standard::STANDARD_CONTEXT_ID;
 use std::collections::HashMap;
 use std::sync::{Mutex, Arc};
 use std::clone::Clone as RustClone;
@@ -45,7 +46,7 @@ pub type CompileResult = RustResult<Vec<Op>, CompileError>;
 
 pub struct CompileContext {
     context_id: ContextId,
-    gcd_last: GlobalConstantDescriptor,
+    gcd_last: u16,
     pub constant_descriptors: HashMap<GlobalConstantDescriptor, ObjectRef>,
     dcd_last: DebugSpanDescriptor,
     pub debug_span_descriptors: HashMap<DebugSpanDescriptor, Span>,
@@ -65,7 +66,7 @@ impl CompileContext {
     pub fn gcd_gen(&mut self) -> GlobalConstantDescriptor {
         let old = self.gcd_last;
         self.gcd_last += 1;
-        old
+        (self.context_id, old)
     }
 
     pub fn dsd_gen(&mut self) -> DebugSpanDescriptor {
@@ -105,17 +106,17 @@ pub struct CompileManager {
 pub enum NameLookupResult {
     MyLocal(LocalName),
     ExternLocal(NonLocalUnmappedName),
-    Global(LocalName),
+    Global(GlobalConstantDescriptor),
     NotFound,
 }
 
 impl CompileManager {
     pub fn new() -> Self {
         CompileManager {
-            context_stack: vec![CompileContext::new(0)],
+            context_stack: vec![CompileContext::new(STANDARD_CONTEXT_ID + 1)],
             local_index_last: 0,
             local_index: HashMap::new(),
-            context_id_last: 1,
+            context_id_last: STANDARD_CONTEXT_ID + 2,
         }
     }
 
@@ -434,7 +435,7 @@ impl CompileManager {
         let mut res = vec![];
         res.append(&mut self.compile_expr(&ast.val)?);
         match self.name_lookup(&ast.name.name) {
-            NameLookupResult::MyLocal(index) | NameLookupResult::Global(index) => {
+            NameLookupResult::MyLocal(index) => {
                 res.push(Op::store(index));
                 Ok(res)
             },
@@ -469,6 +470,9 @@ impl CompileManager {
         let mut res = vec![];
         for statement in ast.statements.iter() {
             res.append(&mut self.compile_statement(statement)?);
+        }
+        if *(&self.context().context_id) == 0 {
+            panic!();
         }
         Ok(res)
     }

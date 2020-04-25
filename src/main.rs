@@ -97,7 +97,7 @@ fn main() {
 
     let mut locals = HashMap::new();
 
-    let mut frame = bytecode::Frame::new(&code, &mut locals, Arc::new(global_context));
+    let mut frame = bytecode::Frame::new(&code, &mut locals, Arc::new(global_context), HashMap::new(), 0);
 
     let computation = frame.run();
     

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use crate::core::*;
 
-use std::sync::Arc;
+use std::sync::{Mutex, Arc};
 
 use std::clone::Clone as RustClone;
 
@@ -14,7 +14,31 @@ use std::fmt;
 
 use codespan::Span;
 
+/// Unique to each instance of a function
+pub type FrameId = u32;
+
+pub struct FrameIdGen {
+    last: FrameId,
+}
+
+lazy_static! {
+    pub static ref FRAME_ID_GEN: Mutex<FrameIdGen> = {
+        Mutex::new(FrameIdGen { last: 0 })
+    };
+}
+
+pub fn gen_frame_id() -> FrameId {
+    let mut gen = FRAME_ID_GEN.lock().unwrap();
+    let old = gen.last;
+    gen.last += 1;
+    old
+}
+
+/// Unique to each function in source code
+pub type ContextId = u16;
 pub type LocalName = u16;
+pub type NonLocalUnmappedName = (ContextId, u16);
+pub type NonLocalName = (FrameId, u16);
 pub type GlobalConstantDescriptor = u16;
 pub type DebugSpanDescriptor = u16;
 
@@ -27,9 +51,11 @@ pub enum Op {
     
     /// Store the object on the top of the stack in a local variable
     store(LocalName),
+    store_non_local(NonLocalUnmappedName),
     
     /// Load an object from a local variable
     load(LocalName),
+    load_non_local(NonLocalUnmappedName),
 
     /// Swap the top 2 objects on the stack
     swap,
@@ -106,20 +132,24 @@ pub enum Op {
     
     /// Attach a weak debug reference to the next instruction in case it errors without a message
     weak_debug(DebugSpanDescriptor),
-
 }
 
+#[derive(Debug)]
 pub struct GlobalContext {
     pub constant_descriptors: HashMap<GlobalConstantDescriptor, ObjectRef>,
     pub debug_descriptors: HashMap<DebugSpanDescriptor, Span>,
 }
 
+#[derive(Debug)]
 pub struct Frame<'code> {
+    id: FrameId,
+    context_id: ContextId,
     global_context: Arc<GlobalContext>,
     code: &'code [Op],
     curr_instruction: usize,
+    least_ancestors: HashMap<ContextId, FrameId>,
     pub stack: Vec<ObjectRef>,
-    pub locals: &'code mut HashMap<LocalName, ObjectRef>,
+    pub locals: &'code mut HashMap<NonLocalName, ObjectRef>,
 }
 
 macro_rules! try_debug {
@@ -149,13 +179,16 @@ macro_rules! try_debug {
 }
 
 impl<'code> Frame<'code> {
-    pub fn new(code: &'code [Op], locals: &'code mut HashMap<LocalName, ObjectRef>, globals: Arc<GlobalContext>) -> Self {
+    pub fn new(code: &'code [Op], locals: &'code mut HashMap<NonLocalName, ObjectRef>, globals: Arc<GlobalContext>, least_ancestors: HashMap<ContextId, FrameId>, context_id: ContextId) -> Self {
         Frame {
+            id: gen_frame_id(),
+            context_id,
             global_context: globals,
             code,
             curr_instruction: 0,
             locals,
             stack: vec![],
+            least_ancestors,
         }
     }
 
@@ -181,14 +214,30 @@ impl<'code> Frame<'code> {
                 Op::store(local_name) => {
                     let res = self.stack.pop();
                     if let Some(val) = res {
-                        self.locals.insert(*local_name, val);
+                        self.locals.insert((self.id, *local_name), val);
+                    } else {
+                        return Err(RuntimeError::internal_error("Stored an empty stack!".to_string()));
+                    }
+                },
+                Op::store_non_local(nl_name) => {
+                    let res = self.stack.pop();
+                    if let Some(val) = res {
+                        self.locals.insert((*self.least_ancestors.get(&nl_name.0).unwrap(), nl_name.1), val);
                     } else {
                         return Err(RuntimeError::internal_error("Stored an empty stack!".to_string()));
                     }
                 },
                 Op::load(local_name) => {
-                    let local = self.locals.get(local_name);
+                    let local = self.locals.get(&(self.id, *local_name));
                     if let Some(val) = local {
+                        self.stack.push(Arc::clone(val));
+                    } else {
+                        return Err(RuntimeError::internal_error("Loaded a local that doesn't exist!".to_string()));
+                    }
+                },
+                Op::load_non_local(nl_name) => {
+                    let nl = self.locals.get(&(*self.least_ancestors.get(&nl_name.0).unwrap(), nl_name.1));
+                    if let Some(val) = nl {
                         self.stack.push(Arc::clone(val));
                     } else {
                         return Err(RuntimeError::internal_error("Loaded a local that doesn't exist!".to_string()));
@@ -240,7 +289,11 @@ impl<'code> Frame<'code> {
                     }
                     let args: Vec<ObjectRef> = self.stack.drain((self.stack.len() - nargs)..).collect();
                     let func = self.stack.pop().unwrap();
-                    let res = try_debug!(self, ds, dsw, func.call(&args, &mut self.locals));
+                    
+                    let mut modified_least_anc = self.least_ancestors.clone();
+                    modified_least_anc.insert(self.context_id, self.id);
+
+                    let res = try_debug!(self, ds, dsw, func.call(&args, &mut self.locals, modified_least_anc));
                     self.stack.push(res);
                 },
                 Op::get_attr => {

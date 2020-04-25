@@ -5,7 +5,7 @@ use std::fmt;
 use std::clone::Clone as RustClone;
 use crate::bytecode::Op;
 use crate::bytecode;
-use crate::bytecode::LocalName;
+use crate::bytecode::{NonLocalName, ContextId, FrameId};
 use std::sync::Mutex;
 use codespan::{Span, FileId};
 use codespan_reporting::diagnostic::{Diagnostic, Label};
@@ -152,7 +152,7 @@ pub trait Object : Any + ToAny + Send + Sync {
         Err(RuntimeError::attribute_error(format!("Cannot call method of {}", self.marsh_type_name())))
     }
 
-    fn call(&self, args: &[ObjectRef], locals: &mut HashMap<LocalName, ObjectRef>) -> Result<ObjectRef> {
+    fn call(&self, args: &[ObjectRef], locals: &mut HashMap<NonLocalName, ObjectRef>, least_ancestors: HashMap<ContextId, FrameId>) -> Result<ObjectRef> {
         Err(RuntimeError::type_error(format!("Object of type {} is not callable", self.marsh_type_name())))
     }
 
@@ -284,6 +284,7 @@ pub struct Function {
     pub name: String,
     pub context: Arc<bytecode::GlobalContext>,
     pub code: Vec<Op>,
+    pub context_id: ContextId,
 }
 
 impl Object for Function {
@@ -299,11 +300,11 @@ impl Object for Function {
         true
     }
     
-    fn call(&self, args: &[ObjectRef], locals: &mut HashMap<LocalName, ObjectRef>) -> Result<ObjectRef> {
+    fn call(&self, args: &[ObjectRef], locals: &mut HashMap<NonLocalName, ObjectRef>, least_ancestors: HashMap<ContextId, FrameId>) -> Result<ObjectRef> {
         if args.len() != self.nargs {
             return Err(RuntimeError::type_error(format!("Incorrect number of arguments given to {}: expected {}, got {}", self.name, self.nargs, args.len())));
         }
-        let mut frame = bytecode::Frame::new(&self.code, locals, Arc::clone(&self.context));
+        let mut frame = bytecode::Frame::new(&self.code, locals, Arc::clone(&self.context), least_ancestors, self.context_id);
         for arg in args.iter().rev() {
             frame.stack.push(Arc::clone(arg));
         }

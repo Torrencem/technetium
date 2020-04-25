@@ -3,7 +3,7 @@ pub mod special_funcs;
 
 use crate::core::*;
 use std::sync::Arc;
-use crate::bytecode::{GlobalContext, GlobalConstantDescriptor};
+use crate::bytecode::{GlobalContext, GlobalConstantDescriptor, ContextId, FrameId};
 use std::collections::HashMap;
 
 lazy_static! {
@@ -32,7 +32,7 @@ macro_rules! func_object_void {
                 "builtin func".to_string()
             }
 
-            fn call(&self, $args: &[ObjectRef], _locals: &mut HashMap<LocalName, ObjectRef>) -> Result<ObjectRef> {
+            fn call(&self, $args: &[ObjectRef], _locals: &mut HashMap<NonLocalName, ObjectRef>, _least_ancestors: HashMap<ContextId, FrameId>) -> Result<ObjectRef> {
                 if !$args_range.contains(&$args.len()) {
                     return Err(RuntimeError::type_error(format!("Incorrect number of arguments: expected {:?}, got {}", $args_range, $args.len())));
                 }
@@ -53,7 +53,7 @@ macro_rules! func_object {
                 "builtin func".to_string()
             }
 
-            fn call(&self, $args: &[ObjectRef], _locals: &mut HashMap<LocalName, ObjectRef>) -> Result<ObjectRef> {
+            fn call(&self, $args: &[ObjectRef], _locals: &mut HashMap<NonLocalName, ObjectRef>, _least_ancestors: HashMap<ContextId, FrameId>) -> Result<ObjectRef> {
                 if !$args_range.contains(&$args.len()) {
                     return Err(RuntimeError::type_error(format!("Incorrect number of arguments: expected {:?}, got {}", $args_range, $args.len())));
                 }

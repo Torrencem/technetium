@@ -43,8 +43,6 @@ impl CompileError {
 
 pub type CompileResult = RustResult<Vec<Op>, CompileError>;
 
-pub type ContextId = u32;
-
 pub struct CompileContext {
     context_id: ContextId,
     gcd_last: GlobalConstantDescriptor,
@@ -105,7 +103,8 @@ pub struct CompileManager {
 }
 
 pub enum NameLookupResult {
-    Local(LocalName),
+    MyLocal(LocalName),
+    ExternLocal(NonLocalUnmappedName),
     Global(LocalName),
     NotFound,
 }
@@ -137,9 +136,17 @@ impl CompileManager {
     }
 
     pub fn name_lookup(&self, name: &String) -> NameLookupResult {
+        let mut first = true;
         for context in self.context_stack.iter().rev() {
             if let Some(local_index) = self.local_index.get(&(context.context_id, name.clone())) {
-                return NameLookupResult::Local(*local_index);
+                if first {
+                    return NameLookupResult::MyLocal(*local_index);
+                } else {
+                    return NameLookupResult::ExternLocal((context.context_id, *local_index));
+                }
+            }
+            if first {
+                first = false;
             }
         }
         if let Some(global_index) = Default_Namespace_Descriptors.get(name) {
@@ -195,8 +202,11 @@ impl CompileManager {
             return Ok(res);
         }
         match self.name_lookup(&ast.fname.name) {
-            NameLookupResult::Local(name) => {
+            NameLookupResult::MyLocal(name) => {
                 res.push(Op::load(name));
+            },
+            NameLookupResult::ExternLocal(name) => {
+                res.push(Op::load_non_local(name));
             },
             NameLookupResult::Global(name) => {
                 res.push(Op::push_global_default(name));
@@ -256,8 +266,11 @@ impl CompileManager {
         match ast {
             Expr::Variable(v) => {
                 match self.name_lookup(&v.name) {
-                    NameLookupResult::Local(name) => {
+                    NameLookupResult::MyLocal(name) => {
                         Ok(vec![Op::load(name)])
+                    },
+                    NameLookupResult::ExternLocal(name) => {
+                        Ok(vec![Op::load_non_local(name)])
                     },
                     NameLookupResult::Global(name) => {
                         Ok(vec![Op::push_global_default(name)])
@@ -397,6 +410,7 @@ impl CompileManager {
             nargs: ast.args.len(),
             name: ast.name.name.clone(),
             context: Arc::new(sub_context),
+            context_id: finished_context.context_id,
             code: func_code,
         };
         let my_descr = self.context().gcd_gen();
@@ -418,8 +432,12 @@ impl CompileManager {
         let mut res = vec![];
         res.append(&mut self.compile_expr(&ast.val)?);
         match self.name_lookup(&ast.name.name) {
-            NameLookupResult::Local(index) | NameLookupResult::Global(index) => {
+            NameLookupResult::MyLocal(index) | NameLookupResult::Global(index) => {
                 res.push(Op::store(index));
+                Ok(res)
+            },
+            NameLookupResult::ExternLocal(name) => {
+                res.push(Op::store_non_local(name));
                 Ok(res)
             },
             _ => {

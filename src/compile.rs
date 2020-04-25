@@ -340,6 +340,7 @@ impl CompileManager {
     pub fn compile_while_loop(&mut self, ast: &WhileLoop) -> CompileResult {
         let mut res = vec![];
         let mut cond = self.compile_expr(&ast.cond)?;
+        cond.push(Op::not);
         let mut body = self.compile_statement_list(&ast.body)?;
         let skip_body = Op::cond_jmp(2 + body.len() as i16);
         let to_beginning = Op::jmp(-(body.len() as i16 + cond.len() as i16 + 1));

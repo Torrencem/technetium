@@ -117,6 +117,9 @@ pub enum Op {
     
     /// Push a constant referred to by a global constant descriptor
     push_const(GlobalConstantDescriptor),
+
+    /// Push a constant referred to by a global constant descriptor, and make a deep clone
+    push_const_clone(GlobalConstantDescriptor),
     
     /// Push a constant built in object / default (see: standard)
     push_global_default(GlobalConstantDescriptor),
@@ -255,6 +258,7 @@ impl<'code> Frame<'code> {
                         let top_any = top.as_any();
                         if let Some(f) = top_any.downcast_ref::<Function>() {
                             let mut la = f.least_ancestors.lock().unwrap();
+                            assert!(la.is_none());
                             *la = Some(self.least_ancestors.clone());
                         } else {
                             return Err(RuntimeError::internal_error("Tried to attach ancestors to non-function".to_string()));
@@ -510,6 +514,14 @@ impl<'code> Frame<'code> {
                     let obj = self.global_context.constant_descriptors.get(const_descr);
                     if let Some(obj) = obj {
                         self.stack.push(Arc::clone(obj));
+                    } else {
+                        return Err(RuntimeError::internal_error("Reference to constant that doesn't exist!".to_string()));
+                    }
+                },
+                Op::push_const_clone(const_descr) => {
+                    let obj = self.global_context.constant_descriptors.get(const_descr);
+                    if let Some(obj) = obj {
+                        self.stack.push(obj.marsh_clone()?);
                     } else {
                         return Err(RuntimeError::internal_error("Reference to constant that doesn't exist!".to_string()));
                     }

@@ -436,10 +436,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_basic() {
+    fn test_basic_dispatch() {
         let a = IntObject::new(5);
         let b = IntObject::new(10);
+        let c = FloatObject::new(5.0);
+        let d = Arc::new("Hello".to_string());
         assert!(add(a, b).is_ok());
+        assert!(add(c, d).is_ok());
     }
 }
 

@@ -418,7 +418,7 @@ impl CompileManager {
         let my_descr = self.context().gcd_gen();
         self.context().constant_descriptors.insert(my_descr, Arc::new(function_obj));
         let mut res = vec![];
-        res.push(Op::push_const(my_descr));
+        res.push(Op::push_const_clone(my_descr));
         res.push(Op::attach_ancestors);
         res.push(Op::store(my_local));
         Ok(res)

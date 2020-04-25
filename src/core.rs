@@ -295,7 +295,14 @@ pub struct Function {
 
 impl Object for Function {
     fn marsh_clone(&self) -> Result<ObjectRef> {
-        Err(RuntimeError::type_error("Error: cannot clone a function".to_string()))
+        Ok(Arc::new(Function {
+            nargs: self.nargs,
+            name: self.name.clone(),
+            context: Arc::clone(&self.context),
+            code: self.code.clone(),
+            context_id: self.context_id,
+            least_ancestors: Mutex::new(None),
+        }))
     }
 
     fn marsh_type_name(&self) -> String {

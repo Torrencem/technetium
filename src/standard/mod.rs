@@ -32,7 +32,7 @@ macro_rules! func_object_void {
                 "builtin func".to_string()
             }
 
-            fn call(&self, $args: &[ObjectRef], _locals: &mut HashMap<NonLocalName, ObjectRef>, _least_ancestors: HashMap<ContextId, FrameId>) -> Result<ObjectRef> {
+            fn call(&self, $args: &[ObjectRef], _locals: &mut HashMap<NonLocalName, ObjectRef>) -> Result<ObjectRef> {
                 if !$args_range.contains(&$args.len()) {
                     return Err(RuntimeError::type_error(format!("Incorrect number of arguments: expected {:?}, got {}", $args_range, $args.len())));
                 }
@@ -53,7 +53,7 @@ macro_rules! func_object {
                 "builtin func".to_string()
             }
 
-            fn call(&self, $args: &[ObjectRef], _locals: &mut HashMap<NonLocalName, ObjectRef>, _least_ancestors: HashMap<ContextId, FrameId>) -> Result<ObjectRef> {
+            fn call(&self, $args: &[ObjectRef], _locals: &mut HashMap<NonLocalName, ObjectRef>) -> Result<ObjectRef> {
                 if !$args_range.contains(&$args.len()) {
                     return Err(RuntimeError::type_error(format!("Incorrect number of arguments: expected {:?}, got {}", $args_range, $args.len())));
                 }

@@ -157,7 +157,7 @@ pub trait Object : Any + ToAny + Send + Sync {
         Err(RuntimeError::attribute_error(format!("Cannot call method of {}", self.marsh_type_name())))
     }
 
-    fn call(&self, args: &[ObjectRef], locals: &mut HashMap<NonLocalName, ObjectRef>, least_ancestors: HashMap<ContextId, FrameId>) -> Result<ObjectRef> {
+    fn call(&self, args: &[ObjectRef], locals: &mut HashMap<NonLocalName, ObjectRef>) -> Result<ObjectRef> {
         Err(RuntimeError::type_error(format!("Object of type {} is not callable", self.marsh_type_name())))
     }
 
@@ -306,7 +306,7 @@ impl Object for Function {
         true
     }
     
-    fn call(&self, args: &[ObjectRef], locals: &mut HashMap<NonLocalName, ObjectRef>, least_ancestors: HashMap<ContextId, FrameId>) -> Result<ObjectRef> {
+    fn call(&self, args: &[ObjectRef], locals: &mut HashMap<NonLocalName, ObjectRef>) -> Result<ObjectRef> {
         if args.len() != self.nargs {
             return Err(RuntimeError::type_error(format!("Incorrect number of arguments given to {}: expected {}, got {}", self.name, self.nargs, args.len())));
         }

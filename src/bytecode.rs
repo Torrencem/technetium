@@ -310,7 +310,7 @@ impl<'code> Frame<'code> {
                     }
                     let args: Vec<ObjectRef> = self.stack.drain((self.stack.len() - nargs)..).collect();
                     let func = self.stack.pop().unwrap();
-                    let res = try_debug!(self, ds, dsw, func.call(&args, &mut self.locals, self.least_ancestors.clone()));
+                    let res = try_debug!(self, ds, dsw, func.call(&args, &mut self.locals));
                     self.stack.push(res);
                 },
                 Op::get_attr => {

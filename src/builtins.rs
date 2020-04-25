@@ -7,27 +7,27 @@ pub fn add(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = IntObject::new(int_a.val + int_b.val);
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let res = IntObject::new(val_a.val + val_b.val);
             Ok(res)
         },
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<FloatObject>() => {
-            let int_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let int_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = FloatObject::new((int_a.val as f64) + int_b.val);
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = FloatObject::new((val_a.val as f64) + val_b.val);
             Ok(res)
         },
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<FloatObject>().unwrap();
-            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = FloatObject::new(int_a.val + (int_b.val as f64));
+            let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let res = FloatObject::new(val_a.val + (val_b.val as f64));
             Ok(res)
         },
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
-            let int_a = a_any.downcast_ref::<FloatObject>().unwrap();
-            let int_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = FloatObject::new(int_a.val + int_b.val);
+            let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = FloatObject::new(val_a.val + val_b.val);
             Ok(res)
         },
         (a, _) if a == TypeId::of::<String>() => {
@@ -51,27 +51,27 @@ pub fn sub(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = IntObject::new(int_a.val - int_b.val);
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let res = IntObject::new(val_a.val - val_b.val);
             Ok(res)
         },
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<FloatObject>() => {
-            let int_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let int_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = FloatObject::new((int_a.val as f64) - int_b.val);
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = FloatObject::new((val_a.val as f64) - val_b.val);
             Ok(res)
         },
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<FloatObject>().unwrap();
-            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = FloatObject::new(int_a.val - (int_b.val as f64));
+            let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let res = FloatObject::new(val_a.val - (val_b.val as f64));
             Ok(res)
         },
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
-            let int_a = a_any.downcast_ref::<FloatObject>().unwrap();
-            let int_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = FloatObject::new(int_a.val - int_b.val);
+            let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = FloatObject::new(val_a.val - val_b.val);
             Ok(res)
         },
         _ => {
@@ -85,27 +85,27 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = IntObject::new(int_a.val * int_b.val);
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let res = IntObject::new(val_a.val * val_b.val);
             Ok(res)
         },
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<FloatObject>() => {
-            let int_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let int_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = FloatObject::new((int_a.val as f64) * int_b.val);
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = FloatObject::new((val_a.val as f64) * val_b.val);
             Ok(res)
         },
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<FloatObject>().unwrap();
-            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = FloatObject::new(int_a.val * (int_b.val as f64));
+            let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let res = FloatObject::new(val_a.val * (val_b.val as f64));
             Ok(res)
         },
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
-            let int_a = a_any.downcast_ref::<FloatObject>().unwrap();
-            let int_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = FloatObject::new(int_a.val * int_b.val);
+            let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = FloatObject::new(val_a.val * val_b.val);
             Ok(res)
         },
         _ => {
@@ -118,13 +118,13 @@ pub fn negate(a: ObjectRef) -> Result<ObjectRef> {
     let a_any = a.as_any();
     match a_any.type_id() {
         a if a == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let res = IntObject::new(-int_a.val);
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let res = IntObject::new(-val_a.val);
             Ok(res)
         },
         a if a == TypeId::of::<FloatObject>() => {
-            let int_a = a_any.downcast_ref::<FloatObject>().unwrap();
-            let res = FloatObject::new(-int_a.val);
+            let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let res = FloatObject::new(-val_a.val);
             Ok(res)
         },
         _ => {
@@ -138,27 +138,27 @@ pub fn div(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = IntObject::new(int_a.val / int_b.val);
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let res = IntObject::new(val_a.val / val_b.val);
             Ok(res)
         },
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<FloatObject>() => {
-            let int_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let int_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = FloatObject::new((int_a.val as f64) / int_b.val);
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = FloatObject::new((val_a.val as f64) / val_b.val);
             Ok(res)
         },
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<FloatObject>().unwrap();
-            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = FloatObject::new(int_a.val / (int_b.val as f64));
+            let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let res = FloatObject::new(val_a.val / (val_b.val as f64));
             Ok(res)
         },
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
-            let int_a = a_any.downcast_ref::<FloatObject>().unwrap();
-            let int_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = FloatObject::new(int_a.val / int_b.val);
+            let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = FloatObject::new(val_a.val / val_b.val);
             Ok(res)
         },
         _ => {
@@ -196,27 +196,27 @@ pub fn cmp_lt(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = BoolObject::new(int_a.val < int_b.val);
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let res = BoolObject::new(val_a.val < val_b.val);
             Ok(res)
         },
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<FloatObject>() => {
-            let int_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let int_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = BoolObject::new((int_a.val as f64) < int_b.val);
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = BoolObject::new((val_a.val as f64) < val_b.val);
             Ok(res)
         },
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<FloatObject>().unwrap();
-            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = BoolObject::new(int_a.val < (int_b.val as f64));
+            let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let res = BoolObject::new(val_a.val < (val_b.val as f64));
             Ok(res)
         },
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
-            let int_a = a_any.downcast_ref::<FloatObject>().unwrap();
-            let int_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = BoolObject::new(int_a.val < int_b.val);
+            let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = BoolObject::new(val_a.val < val_b.val);
             Ok(res)
         },
         _ => {
@@ -230,27 +230,27 @@ pub fn cmp_gt(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = BoolObject::new(int_a.val > int_b.val);
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let res = BoolObject::new(val_a.val > val_b.val);
             Ok(res)
         },
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<FloatObject>() => {
-            let int_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let int_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = BoolObject::new((int_a.val as f64) > int_b.val);
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = BoolObject::new((val_a.val as f64) > val_b.val);
             Ok(res)
         },
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<FloatObject>().unwrap();
-            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = BoolObject::new(int_a.val > (int_b.val as f64));
+            let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let res = BoolObject::new(val_a.val > (val_b.val as f64));
             Ok(res)
         },
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
-            let int_a = a_any.downcast_ref::<FloatObject>().unwrap();
-            let int_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = BoolObject::new(int_a.val > int_b.val);
+            let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = BoolObject::new(val_a.val > val_b.val);
             Ok(res)
         },
         _ => {
@@ -264,27 +264,27 @@ pub fn cmp_eq(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = BoolObject::new(int_a.val == int_b.val);
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let res = BoolObject::new(val_a.val == val_b.val);
             Ok(res)
         },
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<FloatObject>() => {
-            let int_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let int_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = BoolObject::new((int_a.val as f64) == int_b.val);
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = BoolObject::new((val_a.val as f64) == val_b.val);
             Ok(res)
         },
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<FloatObject>().unwrap();
-            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = BoolObject::new(int_a.val == (int_b.val as f64));
+            let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let res = BoolObject::new(val_a.val == (val_b.val as f64));
             Ok(res)
         },
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
-            let int_a = a_any.downcast_ref::<FloatObject>().unwrap();
-            let int_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = BoolObject::new(int_a.val == int_b.val);
+            let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = BoolObject::new(val_a.val == val_b.val);
             Ok(res)
         },
         _ => {
@@ -298,27 +298,27 @@ pub fn cmp_neq(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = BoolObject::new(int_a.val != int_b.val);
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let res = BoolObject::new(val_a.val != val_b.val);
             Ok(res)
         },
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<FloatObject>() => {
-            let int_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let int_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = BoolObject::new((int_a.val as f64) != int_b.val);
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = BoolObject::new((val_a.val as f64) != val_b.val);
             Ok(res)
         },
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<FloatObject>().unwrap();
-            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = BoolObject::new(int_a.val != (int_b.val as f64));
+            let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let res = BoolObject::new(val_a.val != (val_b.val as f64));
             Ok(res)
         },
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
-            let int_a = a_any.downcast_ref::<FloatObject>().unwrap();
-            let int_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = BoolObject::new(int_a.val != int_b.val);
+            let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = BoolObject::new(val_a.val != val_b.val);
             Ok(res)
         },
         _ => {
@@ -332,27 +332,27 @@ pub fn cmp_leq(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = BoolObject::new(int_a.val <= int_b.val);
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let res = BoolObject::new(val_a.val <= val_b.val);
             Ok(res)
         },
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<FloatObject>() => {
-            let int_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let int_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = BoolObject::new((int_a.val as f64) <= int_b.val);
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = BoolObject::new((val_a.val as f64) <= val_b.val);
             Ok(res)
         },
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<FloatObject>().unwrap();
-            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = BoolObject::new(int_a.val <= (int_b.val as f64));
+            let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let res = BoolObject::new(val_a.val <= (val_b.val as f64));
             Ok(res)
         },
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
-            let int_a = a_any.downcast_ref::<FloatObject>().unwrap();
-            let int_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = BoolObject::new(int_a.val <= int_b.val);
+            let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = BoolObject::new(val_a.val <= val_b.val);
             Ok(res)
         },
         _ => {
@@ -366,27 +366,27 @@ pub fn cmp_geq(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = BoolObject::new(int_a.val >= int_b.val);
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let res = BoolObject::new(val_a.val >= val_b.val);
             Ok(res)
         },
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<FloatObject>() => {
-            let int_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let int_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = BoolObject::new((int_a.val as f64) >= int_b.val);
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = BoolObject::new((val_a.val as f64) >= val_b.val);
             Ok(res)
         },
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<FloatObject>().unwrap();
-            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = BoolObject::new(int_a.val >= (int_b.val as f64));
+            let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let res = BoolObject::new(val_a.val >= (val_b.val as f64));
             Ok(res)
         },
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
-            let int_a = a_any.downcast_ref::<FloatObject>().unwrap();
-            let int_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = BoolObject::new(int_a.val >= int_b.val);
+            let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = BoolObject::new(val_a.val >= val_b.val);
             Ok(res)
         },
         _ => {
@@ -395,29 +395,41 @@ pub fn cmp_geq(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     }
 }
 
-pub fn index(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
+pub fn index_get(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<List>() && b == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<List>().unwrap();
-            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
-            if int_b.val < 0 {
+            let val_a = a_any.downcast_ref::<List>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            if val_b.val < 0 {
                 return Err(RuntimeError::index_oob_error("Negative index".to_string()));
             }
-            if (int_b.val as u64 as usize) >= int_a.contents.len() {
+            if (val_b.val as u64 as usize) >= val_a.contents.len() {
                 return Err(RuntimeError::index_oob_error("Index out of bounds".to_string()));
             }
-            let res = Arc::clone(&int_a.contents[int_b.val as u64 as usize]);
+            let res = Arc::clone(&val_a.contents[val_b.val as u64 as usize]);
+            Ok(res)
+        },
+        (a, b) if a == TypeId::of::<Tuple>() && b == TypeId::of::<IntObject>() => {
+            let val_a = a_any.downcast_ref::<Tuple>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            if val_b.val < 0 {
+                return Err(RuntimeError::index_oob_error("Negative index".to_string()));
+            }
+            if (val_b.val as u64 as usize) >= val_a.contents.len() {
+                return Err(RuntimeError::index_oob_error("Index out of bounds".to_string()));
+            }
+            let res = Arc::clone(&val_a.contents[val_b.val as u64 as usize]);
             Ok(res)
         },
         (a, b) if a == TypeId::of::<String>() && b == TypeId::of::<IntObject>() => {
-            let int_a = a_any.downcast_ref::<String>().unwrap();
-            let int_b = b_any.downcast_ref::<IntObject>().unwrap();
-            if int_b.val < 0 {
+            let val_a = a_any.downcast_ref::<String>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            if val_b.val < 0 {
                 return Err(RuntimeError::index_oob_error("Negative index".to_string()));
             }
-            let c = int_a.chars().nth(int_b.val as u64 as usize);
+            let c = val_a.chars().nth(val_b.val as u64 as usize);
             if let Some(c) = c {
                 let s = format!("{}", c);
                 Ok(Arc::new(s))

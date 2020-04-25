@@ -264,7 +264,15 @@ impl<'input> Iterator for Lexer<'input> {
                         },
                     }
                 },
-                Some((i, '!')) => return Some(Ok((i, Tok::Not, i + 1))),
+                Some((i, '!')) => {
+                    match self.chars.peek() {
+                        Some((_, '=')) => {
+                            self.chars.next();
+                            return Some(Ok((i, Tok::Neq, i + 2)));
+                        },
+                        _ => return Some(Ok((i, Tok::Not, i + 1))),
+                    }
+                },
                 Some((i, '=')) => {
                     match self.chars.peek() {
                         Some((_, '>')) => {

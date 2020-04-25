@@ -11,10 +11,6 @@ use std::result::Result as RustResult;
 use codespan::{Span, FileId};
 use codespan_reporting::diagnostic::{Diagnostic, Label};
 
-// type GCDGenerator = Box<dyn FnMut() -> GlobalConstantDescriptor>;
-// type LocalNameGenerator = Box<dyn FnMut() -> LocalName>;
-// type DSDGenerator = Box<dyn FnMut() -> DebugSpanDescriptor>;
-
 #[derive(Debug, Clone)]
 pub struct CompileError {
     pub kind: CompileErrorType,
@@ -92,7 +88,7 @@ fn builtin_functions() -> HashMap<String, Op> {
     res.insert("<or>".to_string(), Op::or);
     res.insert("<not>".to_string(), Op::not);
     res.insert("<neg>".to_string(), Op::neg);
-    res.insert("<index>".to_string(), Op::index);
+    res.insert("<index>".to_string(), Op::index_get);
     res
 }
 
@@ -300,7 +296,7 @@ impl CompileManager {
         self.context().debug_span_descriptors.insert(debug_descr, ast.span);
         res.push(Op::debug(debug_descr));
 
-        res.push(Op::index);
+        res.push(Op::index_get);
         Ok(res)
     }
 

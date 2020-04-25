@@ -118,12 +118,12 @@ LogicalExpr: Expr = {
 		vec![s1],
 		l, r,
 	)),
-	<l:@L> <s1: Comparison> "||" <s2: Comparison> <r:@R> => Expr::FuncCall(FuncCall::new(
+	<l:@L> <s1: Comparison> "||" <s2: LogicalExpr> <r:@R> => Expr::FuncCall(FuncCall::new(
 		Identifier::new("<or>".to_string(), l, r),
 		vec![s1, s2],
 		l, r,
 	)),
-	<l:@L> <s1: Comparison> "&&" <s2: Comparison> <r:@R> => Expr::FuncCall(FuncCall::new(
+	<l:@L> <s1: Comparison> "&&" <s2: LogicalExpr> <r:@R> => Expr::FuncCall(FuncCall::new(
 		Identifier::new("<and>".to_string(), l, r),
 		vec![s1, s2],
 		l, r,
@@ -166,12 +166,12 @@ Comparison: Expr = {
 
 Sum: Expr = {
 	<b: Term> => b,
-	<l:@L> <t1: Term> "+" <t2: Term> <r:@R> => Expr::FuncCall(FuncCall::new(
+	<l:@L> <t1: Term> "+" <t2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
 		Identifier::new("<add>".to_string(), l, r),
 		vec![t1, t2],
 		l, r,
 	)),
-	<l:@L> <t1: Term> "-" <t2: Term> <r:@R> => Expr::FuncCall(FuncCall::new(
+	<l:@L> <t1: Term> "-" <t2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
 		Identifier::new("<sub>".to_string(), l, r),
 		vec![t1, t2],
 		l, r,
@@ -185,12 +185,12 @@ Sum: Expr = {
 
 Term: Expr = {
 	<b: BaseExpr> => b,
-	<l:@L> <f1: BaseExpr> "*" <f2: BaseExpr> <r:@R> => Expr::FuncCall(FuncCall::new(
+	<l:@L> <f1: BaseExpr> "*" <f2: Term> <r:@R> => Expr::FuncCall(FuncCall::new(
 		Identifier::new("<mul>".to_string(), l, r),
 		vec![f1, f2],
 		l, r,
 	)),
-	<l:@L> <f1: BaseExpr> "/" <f2: BaseExpr> <r:@R> => Expr::FuncCall(FuncCall::new(
+	<l:@L> <f1: BaseExpr> "/" <f2: Term> <r:@R> => Expr::FuncCall(FuncCall::new(
 		Identifier::new("<div>".to_string(), l, r),
 		vec![f1, f2],
 		l, r,

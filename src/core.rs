@@ -408,7 +408,7 @@ impl Object for Tuple {
     }
 
     fn marsh_type_name(&self) -> String {
-        "list".to_string()
+        "tuple".to_string()
     }
 
     fn truthy(&self) -> bool {

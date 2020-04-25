@@ -102,7 +102,7 @@ pub enum Op {
     cmp_geq,
 
     /// Take the 2nd object on the stack, and take the 1st object as an index
-    index,
+    index_get,
     
     /// Transform the object on the top of the stack into an interator object
     make_iter,
@@ -463,13 +463,13 @@ impl<'code> Frame<'code> {
                     let b = self.stack.pop().unwrap();
                     self.stack.push(try_debug!(self, ds, dsw, builtins::cmp_geq(b, a)))
                 },
-                Op::index => {
+                Op::index_get => {
                     if self.stack.len() < 2 {
                         return Err(RuntimeError::internal_error("Tried to index less than 2 things!".to_string()));
                     }
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
-                    self.stack.push(try_debug!(self, ds, dsw, builtins::index(b, a)))
+                    self.stack.push(try_debug!(self, ds, dsw, builtins::index_get(b, a)))
                 },
                 Op::make_iter => {
                     let val = self.stack.pop();

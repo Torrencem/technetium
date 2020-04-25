@@ -116,6 +116,22 @@ print(["we", 123.01, 999].length())
 }
 
 #[test]
+fn comments() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+r#"
+print("Hello world!")  # To the world
+print("Hi again!")          # To whom?
+"#);
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("Hello world!\nHi again!\n"));
+
+    Ok(())
+}
+
+#[test]
 fn test_builtins() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
     cmd.write_stdin(

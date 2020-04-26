@@ -13,6 +13,7 @@ lazy_static! {
         let mut res: HashMap<String, GlobalConstantDescriptor> = HashMap::new();
         res.insert("print".to_string(), (STANDARD_CONTEXT_ID, 0));
         res.insert("exit".to_string(), (STANDARD_CONTEXT_ID, 1));
+        res.insert("range".to_string(), (STANDARD_CONTEXT_ID, 2));
         res
     };
 
@@ -20,6 +21,7 @@ lazy_static! {
         let mut res: HashMap<GlobalConstantDescriptor, ObjectRef> = HashMap::new();
         res.insert((STANDARD_CONTEXT_ID, 0), Arc::new(special_funcs::Print));
         res.insert((STANDARD_CONTEXT_ID, 1), Arc::new(special_funcs::Exit));
+        res.insert((STANDARD_CONTEXT_ID, 2), Arc::new(special_funcs::RangeFunc));
         res
     };
 }

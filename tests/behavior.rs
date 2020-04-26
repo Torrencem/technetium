@@ -177,3 +177,47 @@ if x < y || y < x {
 
     Ok(())
 }
+
+#[test]
+fn test_range() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+r#"
+for i in range(5) {
+	print(i)
+}
+
+for i in range(-10, -5) {
+	print(i)
+}
+
+for i in range(10, 100, 10) {
+	print(i)
+}
+"#);
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq(r#"0
+1
+2
+3
+4
+-10
+-9
+-8
+-7
+-6
+10
+20
+30
+40
+50
+60
+70
+80
+90
+"#));
+
+    Ok(())
+}

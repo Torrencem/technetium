@@ -44,6 +44,37 @@ print(x.incorrect())
 }
 
 #[test]
+fn index_oob() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+r#"
+l = [1, 2, 3]
+
+print(l[3])
+"#);
+
+    cmd.assert()
+        .failure()
+        .stderr(predicate::str::contains("print(l[3])")) // Gives the correct line
+        .stderr(predicate::str::contains("Index out of bounds")); // Mentions the variable
+    
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+r#"
+l = [1, 2, 3]
+
+l[3] += 1
+"#);
+
+    cmd.assert()
+        .failure()
+        .stderr(predicate::str::contains("l[3] += 1")) // Gives the correct line
+        .stderr(predicate::str::contains("Index out of bounds")); // Mentions the variable
+
+    Ok(())
+}
+
+#[test]
 fn unknown_variable() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
     cmd.write_stdin(

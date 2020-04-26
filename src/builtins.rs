@@ -30,15 +30,15 @@ pub fn add(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
             let res = FloatObject::new(val_a.val + val_b.val);
             Ok(res)
         },
-        (a, _) if a == TypeId::of::<String>() => {
-            let a = a_any.downcast_ref::<String>().unwrap();
-            let res = format!("{}{}", a, b.to_string()?);
-            Ok(Arc::new(res))
+        (a, _) if a == TypeId::of::<StringObject>() => {
+            let a = a_any.downcast_ref::<StringObject>().unwrap();
+            let res = format!("{}{}", a.val, b.to_string()?);
+            Ok(StringObject::new(res))
         },
-        (_, b) if b == TypeId::of::<String>() => {
-            let b = b_any.downcast_ref::<String>().unwrap();
-            let res = format!("{}{}", a.to_string()?, b);
-            Ok(Arc::new(res))
+        (_, b) if b == TypeId::of::<StringObject>() => {
+            let b = b_any.downcast_ref::<StringObject>().unwrap();
+            let res = format!("{}{}", a.to_string()?, b.val);
+            Ok(StringObject::new(res))
         },
         _ => {
             Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.marsh_type_name(), b.marsh_type_name())))
@@ -400,15 +400,15 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<List>() && b == TypeId::of::<IntObject>() => {
-            let val_a = a_any.downcast_ref::<List>().unwrap();
+            let val_a = a_any.downcast_ref::<List>().unwrap().contents.lock().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
             if val_b.val < 0 {
                 return Err(RuntimeError::index_oob_error("Negative index".to_string()));
             }
-            if (val_b.val as u64 as usize) >= val_a.contents.len() {
+            if (val_b.val as u64 as usize) >= val_a.len() {
                 return Err(RuntimeError::index_oob_error("Index out of bounds".to_string()));
             }
-            let res = Arc::clone(&val_a.contents[val_b.val as u64 as usize]);
+            let res = Arc::clone(&val_a[val_b.val as u64 as usize]);
             Ok(res)
         },
         (a, b) if a == TypeId::of::<Tuple>() && b == TypeId::of::<IntObject>() => {
@@ -423,19 +423,41 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
             let res = Arc::clone(&val_a.contents[val_b.val as u64 as usize]);
             Ok(res)
         },
-        (a, b) if a == TypeId::of::<String>() && b == TypeId::of::<IntObject>() => {
-            let val_a = a_any.downcast_ref::<String>().unwrap();
+        (a, b) if a == TypeId::of::<StringObject>() && b == TypeId::of::<IntObject>() => {
+            let val_a = a_any.downcast_ref::<StringObject>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
             if val_b.val < 0 {
                 return Err(RuntimeError::index_oob_error("Negative index".to_string()));
             }
-            let c = val_a.chars().nth(val_b.val as u64 as usize);
+            let c = val_a.val.chars().nth(val_b.val as u64 as usize);
             if let Some(c) = c {
                 let s = format!("{}", c);
-                Ok(Arc::new(s))
+                Ok(StringObject::new(s))
             } else {
                 Err(RuntimeError::index_oob_error(format!("Index out of bounds")))
             }
+        },
+        _ => {
+            Err(RuntimeError::type_error(format!("Cannot index type {} with type {}", a.marsh_type_name(), b.marsh_type_name())))
+        },
+    }
+}
+
+pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> Result<()> {
+    let a_any = a.as_any();
+    let b_any = b.as_any();
+    match (a_any.type_id(), b_any.type_id()) {
+        (a, b) if a == TypeId::of::<List>() && b == TypeId::of::<IntObject>() => {
+            let mut val_a = a_any.downcast_ref::<List>().unwrap().contents.lock().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            if val_b.val < 0 {
+                return Err(RuntimeError::index_oob_error("Negative index".to_string()));
+            }
+            if (val_b.val as u64 as usize) >= val_a.len() {
+                return Err(RuntimeError::index_oob_error("Index out of bounds".to_string()));
+            }
+            val_a[val_b.val as u64 as usize] = c;
+            Ok(())
         },
         _ => {
             Err(RuntimeError::type_error(format!("Cannot index type {} with type {}", a.marsh_type_name(), b.marsh_type_name())))
@@ -452,7 +474,7 @@ mod tests {
         let a = IntObject::new(5);
         let b = IntObject::new(10);
         let c = FloatObject::new(5.0);
-        let d = Arc::new("Hello".to_string());
+        let d = StringObject::new("Hello".to_string());
         assert!(add(a, b).is_ok());
         assert!(add(c, d).is_ok());
     }

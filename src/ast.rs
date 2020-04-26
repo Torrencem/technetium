@@ -248,18 +248,35 @@ impl ReturnStatement {
     }
 }
 
+#[derive(Debug, Clone)]
+pub enum AssignmentLHS {
+    Identifier(Identifier),
+    AttrLookup(AttrLookup),
+    Indexed(IndexedExpr),
+}
+
+impl AssignmentLHS {
+    pub fn as_expr(&self) -> Expr {
+        match self {
+            AssignmentLHS::Identifier(id) => Expr::Variable(id.clone()),
+            AssignmentLHS::AttrLookup(al) => Expr::AttrLookup(al.clone()),
+            AssignmentLHS::Indexed(id) => Expr::IndexedExpr(id.clone()),
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Assignment {
     pub span: Span,
-    pub name: Identifier,
+    pub lhs: AssignmentLHS,
     pub val: Expr,
 }
 
 impl Assignment {
-    pub fn new(name: Identifier, val: Expr, l: usize, r: usize) -> Self {
+    pub fn new(lhs: AssignmentLHS, val: Expr, l: usize, r: usize) -> Self {
         Assignment {
             span: Span::new(l as u32, r as u32),
-            name, val
+            lhs, val
         }
     }
 }

@@ -266,7 +266,18 @@ impl Object for FloatObject {
     }
 }
 
-impl Object for String {
+#[derive(Clone, Debug)]
+pub struct StringObject {
+    pub val: String
+}
+
+impl StringObject {
+    pub fn new(s: String) -> ObjectRef {
+        Arc::new(StringObject { val: s })
+    }
+}
+
+impl Object for StringObject {
     fn marsh_clone(&self) -> Result<ObjectRef> {
         Ok(Arc::new(RustClone::clone(self)))
     }
@@ -276,11 +287,11 @@ impl Object for String {
     }
 
     fn to_string(&self) -> Result<String> {
-        Ok(RustClone::clone(self))
+        Ok(RustClone::clone(&self.val))
     }
 
     fn truthy(&self) -> bool {
-        self != ""
+        self.val != ""
     }
 }
 
@@ -327,16 +338,17 @@ impl Object for Function {
 
 
 pub struct List {
-    pub contents: Vec<ObjectRef>,
+    pub contents: Mutex<Vec<ObjectRef>>,
 }
 
 impl Object for List {
     fn marsh_clone(&self) -> Result<ObjectRef> {
         let mut res_contents = vec![];
-        for val in self.contents.iter() {
+        let contents_ = self.contents.lock().unwrap();
+        for val in contents_.iter() {
             res_contents.push(val.marsh_clone()?);
         }
-        Ok(Arc::new(List { contents: res_contents }))
+        Ok(Arc::new(List { contents: Mutex::new(res_contents) }))
     }
 
     fn marsh_type_name(&self) -> String {
@@ -344,7 +356,7 @@ impl Object for List {
     }
 
     fn truthy(&self) -> bool {
-        self.contents.len() != 0
+        self.contents.lock().unwrap().len() != 0
     }
 
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> Result<ObjectRef> {
@@ -353,7 +365,7 @@ impl Object for List {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("length expects 0 args".to_string()))
                 } else {
-                    Ok(IntObject::new(self.contents.len() as i64))
+                    Ok(IntObject::new(self.contents.lock().unwrap().len() as i64))
                 }
             },
             _ => {
@@ -364,7 +376,7 @@ impl Object for List {
 
     fn make_iter(&self) -> Result<ObjectRef> {
         let iter = ListIterator {
-            contents: self.contents.iter().map(|val| Arc::clone(val)).collect(),
+            contents: self.contents.lock().unwrap().iter().map(|val| Arc::clone(val)).collect(),
             index: Mutex::new(0),
         };
 

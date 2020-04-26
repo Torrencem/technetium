@@ -103,6 +103,8 @@ pub enum Op {
 
     /// Take the 2nd object on the stack, and take the 1st object as an index
     index_get,
+
+    index_set,
     
     /// Transform the object on the top of the stack into an interator object
     make_iter,
@@ -304,8 +306,8 @@ impl<'code> Frame<'code> {
                     let name = self.stack.pop().unwrap();
                     let obj = self.stack.pop().unwrap();
                     let name = name.as_any();
-                    if let Some(method_name) = name.downcast_ref::<String>() {
-                        let res = try_debug!(self, ds, dsw, obj.call_method(method_name, &args));
+                    if let Some(method_name) = name.downcast_ref::<StringObject>() {
+                        let res = try_debug!(self, ds, dsw, obj.call_method(method_name.val.as_ref(), &args));
                         self.stack.push(res);
                     } else {
                         return Err(RuntimeError::internal_error("Method name not a string!".to_string()));
@@ -328,8 +330,8 @@ impl<'code> Frame<'code> {
                     let attr = self.stack.pop().unwrap();
                     let obj = self.stack.pop().unwrap();
                     let attr = attr.as_any();
-                    if let Some(attr_name) = attr.downcast_ref::<String>() {
-                        let res = try_debug!(self, ds, dsw, obj.get_attr(RustClone::clone(attr_name)));
+                    if let Some(attr_name) = attr.downcast_ref::<StringObject>() {
+                        let res = try_debug!(self, ds, dsw, obj.get_attr(RustClone::clone(&attr_name.val)));
                         self.stack.push(res);
                     } else {
                         return Err(RuntimeError::internal_error("Attribute name not a string!".to_string()));
@@ -343,8 +345,8 @@ impl<'code> Frame<'code> {
                     let attr = self.stack.pop().unwrap();
                     let obj = self.stack.pop().unwrap();
                     let attr = attr.as_any();
-                    if let Some(attr_name) = attr.downcast_ref::<String>() {
-                        try_debug!(self, ds, dsw, obj.set_attr(RustClone::clone(attr_name), toset));
+                    if let Some(attr_name) = attr.downcast_ref::<StringObject>() {
+                        try_debug!(self, ds, dsw, obj.set_attr(RustClone::clone(&attr_name.val), toset));
                     } else {
                         return Err(RuntimeError::internal_error("Attribute name not a string!".to_string()));
                     }
@@ -352,7 +354,7 @@ impl<'code> Frame<'code> {
                 Op::to_string => {
                     let obj = self.stack.pop();
                     if let Some(obj) = obj {
-                        self.stack.push(Arc::new(try_debug!(self, ds, dsw, obj.to_string())));
+                        self.stack.push(StringObject::new(try_debug!(self, ds, dsw, obj.to_string())));
                     } else {
                         return Err(RuntimeError::internal_error("to_string called on an empty stack!".to_string()));
                     }
@@ -475,6 +477,15 @@ impl<'code> Frame<'code> {
                     let b = self.stack.pop().unwrap();
                     self.stack.push(try_debug!(self, ds, dsw, builtins::index_get(b, a)))
                 },
+                Op::index_set => {
+                    if self.stack.len() < 3 {
+                        return Err(RuntimeError::internal_error("Tried to index less than 2 things!".to_string()));
+                    }
+                    let a = self.stack.pop().unwrap();
+                    let b = self.stack.pop().unwrap();
+                    let c = self.stack.pop().unwrap();
+                    try_debug!(self, ds, dsw, builtins::index_set(c, b, a))
+                },
                 Op::make_iter => {
                     let val = self.stack.pop();
                     if let Some(val) = val {
@@ -507,7 +518,7 @@ impl<'code> Frame<'code> {
                 Op::mklist(len) => {
                     let len = *len as usize;
                     let objs: Vec<ObjectRef> = self.stack.drain((self.stack.len() - len)..).collect();
-                    self.stack.push(Arc::new(List { contents: objs } ));
+                    self.stack.push(Arc::new(List { contents: Mutex::new(objs) } ));
                 },
                 Op::mktuple(len) => {
                     let len = *len as usize;

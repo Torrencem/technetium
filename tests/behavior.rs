@@ -100,6 +100,39 @@ print(("we", 123.01, 999)[2])
 }
 
 #[test]
+fn index_set() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+r#"
+l = [1, 2, 3]
+
+l[0] = "Pie"
+
+print(l[0])
+"#);
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("Pie\n"));
+    
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+r#"
+l = [1, "w", 3]
+
+l[2] += 100
+
+print(l[2])
+"#);
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("103\n"));
+
+    Ok(())
+}
+
+#[test]
 fn method_simple() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
     cmd.write_stdin(

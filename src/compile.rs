@@ -177,7 +177,7 @@ impl CompileManager {
                 FloatObject::new(*val)
             },
             Literal::Str(val, _) => {
-                Arc::new(RustClone::clone(val))
+                StringObject::new(RustClone::clone(val))
             },
         };
         self.context().constant_descriptors.insert(descr, constant);
@@ -242,7 +242,7 @@ impl CompileManager {
         let mut res = vec![];
         res.append(&mut self.compile_expr(&*ast.parent)?);
         let const_descr = self.context().gcd_gen();
-        let name_val = Arc::new(RustClone::clone(&ast.attribute.name));
+        let name_val = StringObject::new(RustClone::clone(&ast.attribute.name));
         self.context().constant_descriptors.insert(const_descr, name_val);
         res.push(Op::push_const(const_descr));
 
@@ -258,7 +258,7 @@ impl CompileManager {
         let mut res = vec![];
         res.append(&mut self.compile_expr(&*ast.parent)?);
         let const_descr = self.context().gcd_gen();
-        let name_val = Arc::new(RustClone::clone(&ast.fname.name));
+        let name_val = StringObject::new(RustClone::clone(&ast.fname.name));
         self.context().constant_descriptors.insert(const_descr, name_val);
         res.push(Op::push_const(const_descr));
         for arg in ast.arguments.iter() {
@@ -443,24 +443,40 @@ impl CompileManager {
 
     pub fn compile_assignment(&mut self, ast: &Assignment) -> CompileResult {
         let mut res = vec![];
-        res.append(&mut self.compile_expr(&ast.val)?);
-        match self.name_lookup(&ast.name.name) {
-            NameLookupResult::MyLocal(index) => {
-                res.push(Op::store(index));
-                Ok(res)
+        match &ast.lhs {
+            AssignmentLHS::Identifier(id) => {
+                res.append(&mut self.compile_expr(&ast.val)?);
+                match self.name_lookup(&id.name) {
+                    NameLookupResult::MyLocal(index) => {
+                        res.push(Op::store(index));
+                    },
+                    NameLookupResult::ExternLocal(name) => {
+                        res.push(Op::store_non_local(name));
+                    },
+                    _ => {
+                        let local_name = self.local_name_gen();
+                        let cid = self.context().context_id;
+                        self.local_index.insert(RustClone::clone(&(cid, id.name.clone())), local_name);
+                        res.push(Op::store(local_name));
+                    }
+                }
             },
-            NameLookupResult::ExternLocal(name) => {
-                res.push(Op::store_non_local(name));
-                Ok(res)
+            AssignmentLHS::AttrLookup(a_lookup) => {
+                res.append(&mut self.compile_expr(&a_lookup.parent)?);
+                let name_descr = self.context().gcd_gen();
+                self.context().constant_descriptors.insert(name_descr, StringObject::new(a_lookup.attribute.name.clone()));
+                res.push(Op::push_const(name_descr));
+                res.append(&mut self.compile_expr(&ast.val)?);
+                res.push(Op::set_attr);
             },
-            _ => {
-                let local_name = self.local_name_gen();
-                let cid = self.context().context_id;
-                self.local_index.insert(RustClone::clone(&(cid, ast.name.name.clone())), local_name);
-                res.push(Op::store(local_name));
-                Ok(res)
+            AssignmentLHS::Indexed(indexed) => {
+                res.append(&mut self.compile_expr(&indexed.parent)?);
+                res.append(&mut self.compile_expr(&indexed.index)?);
+                res.append(&mut self.compile_expr(&ast.val)?);
+                res.push(Op::index_set);
             }
         }
+        Ok(res)
     }
 
     pub fn compile_statement(&mut self, ast: &Statement) -> CompileResult {

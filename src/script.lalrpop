@@ -33,43 +33,49 @@ StatementList: StatementList = <l:@L> <v: Newline<Statement>> <r:@R> => Statemen
 );
 
 Assignment: Assignment = {
-	<l: @L> <n: Identifier> "=" <e: Expr> <r:@R> => Assignment::new(n, e, l, r),
-	<l: @L> <n: Identifier> "+=" <e: Expr> <r:@R> => Assignment::new(
+	<l: @L> <n: AssignmentLHS> "=" <e: Expr> <r:@R> => Assignment::new(n, e, l, r),
+	<l: @L> <n: AssignmentLHS> "+=" <e: Expr> <r:@R> => Assignment::new(
 		n.clone(),
 		Expr::FuncCall(FuncCall::new(
 			Identifier::new("<add>".to_string(), l, r),
-			vec![Expr::Variable(n), e],
+			vec![n.as_expr(), e],
 			l, r
 		)),
 		l, r
 	),
-	<l: @L> <n: Identifier> "-=" <e: Expr> <r:@R> => Assignment::new(
+	<l: @L> <n: AssignmentLHS> "-=" <e: Expr> <r:@R> => Assignment::new(
 		n.clone(),
 		Expr::FuncCall(FuncCall::new(
 			Identifier::new("<sub>".to_string(), l, r),
-			vec![Expr::Variable(n), e],
+			vec![n.as_expr(), e],
 			l, r
 		)),
 		l, r
 	),
-	<l: @L> <n: Identifier> "*=" <e: Expr> <r:@R> => Assignment::new(
+	<l: @L> <n: AssignmentLHS> "*=" <e: Expr> <r:@R> => Assignment::new(
 		n.clone(),
 		Expr::FuncCall(FuncCall::new(
 			Identifier::new("<mul>".to_string(), l, r),
-			vec![Expr::Variable(n), e],
+			vec![n.as_expr(), e],
 			l, r
 		)),
 		l, r
 	),
-	<l: @L> <n: Identifier> "/=" <e: Expr> <r:@R> => Assignment::new(
+	<l: @L> <n: AssignmentLHS> "/=" <e: Expr> <r:@R> => Assignment::new(
 		n.clone(),
 		Expr::FuncCall(FuncCall::new(
 			Identifier::new("<div>".to_string(), l, r),
-			vec![Expr::Variable(n), e],
+			vec![n.as_expr(), e],
 			l, r
 		)),
 		l, r
 	),
+};
+
+AssignmentLHS: AssignmentLHS = {
+	<n: Identifier> => AssignmentLHS::Identifier(n),
+	<a: AttrLookup> => AssignmentLHS::AttrLookup(a),
+	<a: IndexedExpr> => AssignmentLHS::Indexed(a),
 };
 
 ReturnStatement: ReturnStatement = <l:@L> "return" <e: Expr> <r:@R> => ReturnStatement::new(e, l, r);

@@ -372,9 +372,6 @@ name = "lalrpop-util"
 version = "0.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7d6e9bc1801eb54529fd6a020aaf9514e8193bb6b42d96d0fe7da99187efa93d"
-dependencies = [
- "regex",
-]
 
 [[package]]
 name = "lazy_static"
@@ -408,6 +405,7 @@ dependencies = [
  "lalrpop",
  "lalrpop-util",
  "lazy_static",
+ "log",
  "predicates",
 ]
 

@@ -114,6 +114,10 @@ pub enum Op {
     mklist(u16),
 
     mktuple(u16),
+
+    push_int(i32),
+
+    push_float(f32),
     
     /// Push a constant referred to by a global constant descriptor
     push_const(GlobalConstantDescriptor),
@@ -509,6 +513,14 @@ impl<'code> Frame<'code> {
                     let len = *len as usize;
                     let objs: Vec<ObjectRef> = self.stack.drain((self.stack.len() - len)..).collect();
                     self.stack.push(Arc::new(Tuple { contents: objs } ));
+                },
+                Op::push_int(int_val) => {
+                    let obj = IntObject::new(*int_val as i64);
+                    self.stack.push(obj);
+                },
+                Op::push_float(f_val) => {
+                    let obj = FloatObject::new(*f_val as f64);
+                    self.stack.push(obj);
                 },
                 Op::push_const(const_descr) => {
                     let obj = self.global_context.constant_descriptors.get(const_descr);

@@ -10,6 +10,7 @@ use std::clone::Clone as RustClone;
 use std::result::Result as RustResult;
 use codespan::{Span, FileId};
 use codespan_reporting::diagnostic::{Diagnostic, Label};
+use std::i32;
 
 #[derive(Debug, Clone)]
 pub struct CompileError {
@@ -39,6 +40,12 @@ impl CompileError {
 }
 
 pub type CompileResult = RustResult<Vec<Op>, CompileError>;
+
+
+/// Determine if a f64 is exactly representable as a f32
+fn is_exact_float(val: f64) -> bool {
+    ((val as f32) as f64) == val
+}
 
 pub struct CompileContext {
     context_id: ContextId,
@@ -157,9 +164,16 @@ impl CompileManager {
         let descr = self.context().gcd_gen();
         let constant: ObjectRef = match ast {
             Literal::Integer(val, _) => {
+                if *val < i32::MAX as i64 &&
+                   *val > i32::MIN as i64 {
+                    return Ok(vec![Op::push_int(*val as i32)]);
+                }
                 IntObject::new(*val)
             },
             Literal::Float(val, _) => {
+                if is_exact_float(*val) {
+                    return Ok(vec![Op::push_float(*val as f32)]);
+                }
                 FloatObject::new(*val)
             },
             Literal::Str(val, _) => {

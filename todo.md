@@ -1,6 +1,7 @@
 
 This is a rough todo list of features I need to add to the language:
 
+* case of
 * format string instruction
 * `$` literals (shell literal statements on their own line)
 * `$` expressions (shell objects with methods and attributes)

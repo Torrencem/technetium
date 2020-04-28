@@ -13,6 +13,7 @@ Statement: Statement = {
 	<f: IfStatement>  => Statement::IfStatement(f),
 	<c: CaseOf>  => Statement::CaseOf(c),
 	<re: ReturnStatement>  => Statement::ReturnStatement(re),
+	<s: ShStatement> => Statement::ShStatement(s),
 	<f: FuncDefinition>  => Statement::FuncDefinition(f),
 	<a: Assignment>  => Statement::Assignment(a),
 	<e: Expr>  => Statement::Expr(e),
@@ -88,6 +89,8 @@ AssignmentLHS: AssignmentLHS = {
 };
 
 ReturnStatement: ReturnStatement = <l:@L> "return" <e: Expr> <r:@R> => ReturnStatement::new(e, l, r);
+
+ShStatement: ShStatement = <l:@L> <s:sh_statement> <r:@R> => ShStatement::new(s, l, r);
 
 WhileLoop: WhileLoop = <l:@L> "while" <e: Expr> "\n"? "{" "\n"? <body: StatementList> "}" <r:@R> => WhileLoop::new(e, body, l, r);
 
@@ -326,6 +329,7 @@ extern {
 		int_lit => Tok::Int(<i64>),
 		float_lit => Tok::Float(<f64>),
 		string_lit => Tok::StringLit(<String>),
+		sh_statement => Tok::ShStatement(<String>),
 		"if" => Tok::If,
 		"then" => Tok::Then,
 		"else" => Tok::Else,

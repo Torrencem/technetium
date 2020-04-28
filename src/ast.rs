@@ -248,6 +248,21 @@ impl ReturnStatement {
     }
 }
 
+#[derive(Clone, Debug)]
+pub struct ShStatement {
+    pub span: Span,
+    pub val: String,
+}
+
+impl ShStatement {
+    pub fn new(val: String, l: usize, r: usize) -> Self {
+        ShStatement {
+            span: Span::new(l as u32, r as u32),
+            val
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum AssignmentLHS {
     Identifier(Identifier),
@@ -288,6 +303,7 @@ pub enum Statement {
     IfStatement(IfStatement),
     CaseOf(CaseOf),
     ReturnStatement(ReturnStatement),
+    ShStatement(ShStatement),
     FuncDefinition(FuncDefinition),
     Assignment(Assignment),
     Expr(Expr),
@@ -301,6 +317,7 @@ impl Statement {
             Statement::IfStatement(i) => i.span,
             Statement::CaseOf(c) => c.span,
             Statement::ReturnStatement(r) => r.span,
+            Statement::ShStatement(s) => s.span,
             Statement::FuncDefinition(f) => f.span,
             Statement::Assignment(a) => a.span,
             Statement::Expr(e) => e.span(),

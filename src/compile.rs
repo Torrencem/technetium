@@ -441,6 +441,10 @@ impl CompileManager {
         res.push(Op::ret);
         Ok(res)
     }
+    
+    pub fn compile_sh_statement(&mut self, ast: &ShStatement) -> CompileResult {
+        unimplemented!()
+    }
 
     pub fn compile_assignment(&mut self, ast: &Assignment) -> CompileResult {
         let mut res = vec![];
@@ -487,6 +491,7 @@ impl CompileManager {
             Statement::IfStatement(i) => self.compile_if_statement(i),
             Statement::CaseOf(c) => self.compile_case_of(c),
             Statement::ReturnStatement(r) => self.compile_return_statement(r),
+            Statement::ShStatement(s) => self.compile_sh_statement(s),
             Statement::FuncDefinition(f) => self.compile_func_definition(f),
             Statement::Assignment(a) => self.compile_assignment(a),
             Statement::Expr(e) => {

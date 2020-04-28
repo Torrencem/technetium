@@ -42,6 +42,7 @@ pub enum Tok {
     Int(i64),
     Float(f64),
     StringLit(String),
+    ShStatement(String),
     If,
     Then,
     Else,
@@ -108,6 +109,30 @@ impl<'input> Lexer<'input> {
                     }
                 },
                 Some((i, '"')) => return Ok((res, i)),
+                Some((_, c)) => {
+                    res.push(c);
+                },
+            }
+        }
+    }
+    
+    fn parse_sh_statement(&mut self) -> Result<(String, usize), ()> {
+        let mut res: String = String::new();
+        loop {
+            match self.chars.next() {
+                None => return Err(()),
+                Some((_, '\\')) => {
+                    // Escaped character
+                    match self.chars.next() {
+                        None => return Err(()),
+                        Some((_, 'n')) => res.push('\n'),
+                        Some((_, 't')) => res.push('\t'),
+                        Some((_, '"')) => res.push('"'),
+                        Some((_, '\\')) => res.push('\\'),
+                        _ => return Err(()),
+                    }
+                },
+                Some((i, '\n')) => return Ok((res, i)),
                 Some((_, c)) => {
                     res.push(c);
                 },
@@ -363,6 +388,14 @@ impl<'input> Iterator for Lexer<'input> {
                     }
                     let (s, i2) = lit.unwrap();
                     return Some(Ok((i, Tok::StringLit(s), i2)));
+                },
+                Some((i, '$')) => {
+                    let lit = self.parse_sh_statement();
+                    if let Err(_) = lit {
+                        return Some(Err(()));
+                    }
+                    let (s, i2) = lit.unwrap();
+                    return Some(Ok((i, Tok::ShStatement(s), i2)));
                 },
                 Some((i, '#')) => {
                     let line_end = self.comment_line();

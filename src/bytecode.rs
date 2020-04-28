@@ -616,7 +616,14 @@ impl<'code> Frame<'code> {
                             let process = command.stdin(Stdio::piped()).spawn();
                             if let Ok(mut child) = process {
                                 child.stdin.as_mut().unwrap().write_all(arg.as_bytes());
-                                try_debug!(self, ds, dsw, child.wait());
+                                let exit_code = try_debug!(self, ds, dsw, child.wait());
+                                if !exit_code.success() {
+                                    let mut err = RuntimeError::child_process_error(format!("Child process returned {}", exit_code));
+                                    if let Some(ds) = ds {
+                                        return Err(err.attach_span(*self.global_context.debug_descriptors.get(&ds).unwrap()));
+                                    }
+                                    return Err(err);
+                                }
                             } else {
                                 let mut err = RuntimeError::child_process_error("Child process failed to start".to_string());
                                 if let Some(ds) = ds {

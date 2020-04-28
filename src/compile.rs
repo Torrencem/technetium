@@ -447,7 +447,7 @@ impl CompileManager {
         self.context().constant_descriptors.insert(name_descr, StringObject::new(ast.val.clone()));
         let debug_descr = self.context().dsd_gen();
         self.context().debug_span_descriptors.insert(debug_descr, ast.span);
-        Ok(vec![Op::debug(debug_descr), Op::push_const(name_descr), Op::sh])
+        Ok(vec![Op::push_const(name_descr), Op::debug(debug_descr), Op::sh])
     }
 
     pub fn compile_assignment(&mut self, ast: &Assignment) -> CompileResult {

@@ -106,7 +106,7 @@ impl RuntimeError {
     
     pub fn child_process_error(message: String) -> Self {
         RuntimeError {
-            err: ErrorType::IndexOutOfBounds,
+            err: ErrorType::ChildProcessError,
             help: message,
             span: None,
         }

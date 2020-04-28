@@ -6,7 +6,8 @@ use crate::core::*;
 use std::sync::{Mutex, Arc};
 
 use std::clone::Clone as RustClone;
-use std::process::Command;
+use std::process::{Command, Stdio};
+use std::io::{self, Write};
 
 use crate::builtins;
 use crate::standard::Default_Namespace;
@@ -611,11 +612,10 @@ impl<'code> Frame<'code> {
                         let top = top.as_any();
                         if let Some(top) = top.downcast_ref::<StringObject>() {
                             let arg = top.val.clone();
-                            let mut parts = arg.trim().split(' '); // TODO Temporary, add splitting on pipes etc.
-                            let mut command = Command::new(parts.next().unwrap_or(""));
-                            command.args(parts);
-                            let process = command.spawn();
+                            let mut command = Command::new("sh");
+                            let process = command.stdin(Stdio::piped()).spawn();
                             if let Ok(mut child) = process {
+                                child.stdin.as_mut().unwrap().write_all(arg.as_bytes());
                                 try_debug!(self, ds, dsw, child.wait());
                             } else {
                                 let mut err = RuntimeError::child_process_error("Child process failed to start".to_string());

@@ -90,6 +90,7 @@ pub enum Op {
     sub,
     mul,
     div,
+    mod_,
     not,
     neg,
     or,
@@ -390,6 +391,14 @@ impl<'code> Frame<'code> {
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
                     self.stack.push(try_debug!(self, ds, dsw, builtins::div(b, a)))
+                },
+                Op::mod_ => {
+                    if self.stack.len() < 2 {
+                        return Err(RuntimeError::internal_error("Tried to mod less than 2 things!".to_string()));
+                    }
+                    let a = self.stack.pop().unwrap();
+                    let b = self.stack.pop().unwrap();
+                    self.stack.push(try_debug!(self, ds, dsw, builtins::mod_(b, a)))
                 },
                 Op::not => {
                     if self.stack.len() < 1 {

@@ -167,6 +167,40 @@ pub fn div(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     }
 }
 
+pub fn mod_(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
+    let a_any = a.as_any();
+    let b_any = b.as_any();
+    match (a_any.type_id(), b_any.type_id()) {
+        (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let res = IntObject::new(val_a.val % val_b.val);
+            Ok(res)
+        },
+        (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<FloatObject>() => {
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = FloatObject::new((val_a.val as f64) % val_b.val);
+            Ok(res)
+        },
+        (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<IntObject>() => {
+            let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let res = FloatObject::new(val_a.val % (val_b.val as f64));
+            Ok(res)
+        },
+        (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
+            let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
+            let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = FloatObject::new(val_a.val % val_b.val);
+            Ok(res)
+        },
+        _ => {
+            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.marsh_type_name(), b.marsh_type_name())))
+        },
+    }
+}
+
 pub fn not(a: ObjectRef) -> Result<ObjectRef> {
     Ok(if a.truthy() {
         BoolObject::new(false)

@@ -85,6 +85,7 @@ fn builtin_functions() -> HashMap<String, Op> {
     res.insert("<sub>".to_string(), Op::sub);
     res.insert("<mul>".to_string(), Op::mul);
     res.insert("<div>".to_string(), Op::div);
+    res.insert("<mod>".to_string(), Op::mod_);
     res.insert("<eq>".to_string(), Op::cmp_eq);
     res.insert("<neq>".to_string(), Op::cmp_neq);
     res.insert("<gt>".to_string(), Op::cmp_gt);

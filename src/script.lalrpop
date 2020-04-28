@@ -70,6 +70,15 @@ Assignment: Assignment = {
 		)),
 		l, r
 	),
+	<l: @L> <n: AssignmentLHS> "%=" <e: Expr> <r:@R> => Assignment::new(
+		n.clone(),
+		Expr::FuncCall(FuncCall::new(
+			Identifier::new("<mod>".to_string(), l, r),
+			vec![n.as_expr(), e],
+			l, r
+		)),
+		l, r
+	),
 };
 
 AssignmentLHS: AssignmentLHS = {
@@ -196,6 +205,11 @@ Term: Expr = {
 		vec![f1, f2],
 		l, r,
 	)),
+	<l:@L> <f1: BaseExpr> "%" <f2: Term> <r:@R> => Expr::FuncCall(FuncCall::new(
+		Identifier::new("<mod>".to_string(), l, r),
+		vec![f1, f2],
+		l, r,
+	)),
 	<l:@L> <f1: BaseExpr> "/" <f2: Term> <r:@R> => Expr::FuncCall(FuncCall::new(
 		Identifier::new("<div>".to_string(), l, r),
 		vec![f1, f2],
@@ -293,6 +307,7 @@ extern {
 		"/" => Tok::Divide,
 		"+" => Tok::Plus,
 		"-" => Tok::Minus,
+		"%" => Tok::Mod,
 		">" => Tok::Greater,
 		"<" => Tok::Lesser,
 		"!=" => Tok::Neq,
@@ -306,6 +321,7 @@ extern {
 		"-=" => Tok::SubAssign,
 		"*=" => Tok::MulAssign,
 		"/=" => Tok::DivAssign,
+		"%=" => Tok::ModAssign,
 		ident => Tok::Identifier(<String>),
 		int_lit => Tok::Int(<i64>),
 		float_lit => Tok::Float(<f64>),

@@ -23,6 +23,7 @@ pub enum Tok {
     Divide,
     Plus,
     Minus,
+    Mod,
     Greater,
     Lesser,
     Neq,
@@ -36,6 +37,7 @@ pub enum Tok {
     SubAssign,
     MulAssign,
     DivAssign,
+    ModAssign,
     Identifier(String),
     Int(i64),
     Float(f64),
@@ -261,6 +263,17 @@ impl<'input> Iterator for Lexer<'input> {
                         },
                         _ => {
                             return Some(Ok((i, Tok::Divide, i + 1)));
+                        },
+                    }
+                },
+                Some((i, '%')) => {
+                    match self.chars.peek() {
+                        Some((_, '=')) => {
+                            self.chars.next();
+                            return Some(Ok((i, Tok::ModAssign, i + 2)));
+                        },
+                        _ => {
+                            return Some(Ok((i, Tok::Mod, i + 1)));
                         },
                     }
                 },

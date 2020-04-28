@@ -56,7 +56,19 @@ pub enum ErrorType {
     TypeError,
     AttributeError,
     InternalError,
-    IndexOutOfBounds
+    IndexOutOfBounds,
+    ChildProcessError,
+    IOError,
+}
+
+impl From<std::io::Error> for RuntimeError {
+    fn from(error: std::io::Error) -> Self {
+        RuntimeError {
+            err: ErrorType::IOError,
+            help: error.to_string(),
+            span: None,
+        }
+    }
 }
 
 impl RuntimeError {
@@ -85,6 +97,14 @@ impl RuntimeError {
     }
 
     pub fn index_oob_error(message: String) -> Self {
+        RuntimeError {
+            err: ErrorType::IndexOutOfBounds,
+            help: message,
+            span: None,
+        }
+    }
+    
+    pub fn child_process_error(message: String) -> Self {
         RuntimeError {
             err: ErrorType::IndexOutOfBounds,
             help: message,

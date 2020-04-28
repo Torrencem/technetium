@@ -6,6 +6,7 @@ use crate::core::*;
 use std::sync::{Mutex, Arc};
 
 use std::clone::Clone as RustClone;
+use std::process::Command;
 
 use crate::builtins;
 use crate::standard::Default_Namespace;
@@ -139,6 +140,9 @@ pub enum Op {
 
     /// Return the top of the stack from the current function
     ret,
+    
+    /// Launch as a subprocess the string on the top of the stack
+    sh,
 
     /// Attach a debug reference to the next instruction in case it errors
     debug(DebugSpanDescriptor),
@@ -168,23 +172,23 @@ pub struct Frame<'code> {
 macro_rules! try_debug {
     ($this: expr, $debug_symb: expr, $weak_debug_symb: expr, $expr: expr) => {
         $expr.map_err(|e| match $debug_symb {
-            None => e,
+            None => RuntimeError::from(e),
             Some(debug_symb) => {
                 let span = $this.global_context.debug_descriptors.get(&debug_symb);
                 if let Some(span) = span {
-                    e.attach_span(*span)
+                    RuntimeError::from(e).attach_span(*span)
                 } else {
-                    e
+                    RuntimeError::from(e)
                 }
             },
         }).map_err(|e| match $weak_debug_symb {
-            None => e,
+            None => RuntimeError::from(e),
             Some(weak_debug_symb) => {
                 let span = $this.global_context.debug_descriptors.get(&weak_debug_symb);
                 if let Some(span) = span {
-                    e.weak_attach_span(*span)
+                    RuntimeError::from(e).weak_attach_span(*span)
                 } else {
-                    e
+                    RuntimeError::from(e)
                 }
             }
         })?;
@@ -599,6 +603,32 @@ impl<'code> Frame<'code> {
                         return Ok(val);
                     } else {
                         return Err(RuntimeError::internal_error("Returned an empty stack!".to_string()));
+                    }
+                },
+                Op::sh => {
+                    let top = self.stack.pop();
+                    if let Some(top) = top {
+                        let top = top.as_any();
+                        if let Some(top) = top.downcast_ref::<StringObject>() {
+                            let arg = top.val.clone();
+                            let mut parts = arg.trim().split(' '); // TODO Temporary, add splitting on pipes etc.
+                            let mut command = Command::new(parts.next().unwrap_or(""));
+                            command.args(parts);
+                            let process = command.spawn();
+                            if let Ok(mut child) = process {
+                                try_debug!(self, ds, dsw, child.wait());
+                            } else {
+                                let mut err = RuntimeError::child_process_error("Child process failed to start".to_string());
+                                if let Some(ds) = ds {
+                                    return Err(err.attach_span(*self.global_context.debug_descriptors.get(&ds).unwrap()));
+                                }
+                                return Err(err);
+                            }
+                        } else {
+                            return Err(RuntimeError::internal_error("Tried to call sh on a non-string!".to_string()));
+                        }
+                    } else {
+                        return Err(RuntimeError::internal_error("Tried to call sh on an empty stack!".to_string()));
                     }
                 },
                 Op::debug(symb) => {

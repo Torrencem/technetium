@@ -443,7 +443,11 @@ impl CompileManager {
     }
     
     pub fn compile_sh_statement(&mut self, ast: &ShStatement) -> CompileResult {
-        unimplemented!()
+        let name_descr = self.context().gcd_gen();
+        self.context().constant_descriptors.insert(name_descr, StringObject::new(ast.val.clone()));
+        let debug_descr = self.context().dsd_gen();
+        self.context().debug_span_descriptors.insert(debug_descr, ast.span);
+        Ok(vec![Op::debug(debug_descr), Op::push_const(name_descr), Op::sh])
     }
 
     pub fn compile_assignment(&mut self, ast: &Assignment) -> CompileResult {

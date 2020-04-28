@@ -119,9 +119,10 @@ impl<'input> Lexer<'input> {
     fn parse_sh_statement(&mut self) -> Result<(String, usize), ()> {
         let mut res: String = String::new();
         loop {
-            match self.chars.next() {
+            match self.chars.peek() {
                 None => return Err(()),
                 Some((_, '\\')) => {
+                    self.chars.next();
                     // Escaped character
                     match self.chars.next() {
                         None => return Err(()),
@@ -132,9 +133,10 @@ impl<'input> Lexer<'input> {
                         _ => return Err(()),
                     }
                 },
-                Some((i, '\n')) => return Ok((res, i)),
+                Some((i, '\n')) => return Ok((res, *i)),
                 Some((_, c)) => {
-                    res.push(c);
+                    res.push(*c);
+                    self.chars.next();
                 },
             }
         }

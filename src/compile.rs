@@ -25,7 +25,7 @@ pub enum CompileErrorType {
 
 impl CompileError {
     pub fn new(kind: CompileErrorType, help: &str) -> Self {
-        CompileError { kind: kind, help: help.to_string() }
+        CompileError { kind, help: help.to_string() }
     }
 
     pub fn as_diagnostic<FileId>(&self, fileid: FileId) -> Diagnostic<FileId> {
@@ -441,8 +441,8 @@ impl CompileManager {
         res.push(Op::ret);
         Ok(res)
     }
-    
-    pub fn compile_sh_statement(&mut self, ast: &ShStatement) -> CompileResult {
+
+    pub fn compile_format_string(&mut self, ast: &FormatString) -> CompileResult {
         let mut res = vec![];
         let name_descr = self.context().gcd_gen();
         self.context().constant_descriptors.insert(name_descr, StringObject::new(ast.val.clone()));
@@ -454,6 +454,14 @@ impl CompileManager {
         }
         res.push(Op::debug(debug_descr));
         res.push(Op::fmt_string(ast.substitutions.len() as u8));
+        Ok(res)
+    }
+    
+    pub fn compile_sh_statement(&mut self, ast: &ShStatement) -> CompileResult {
+        let mut res = vec![];
+        res.append(&mut self.compile_format_string(&ast.inner)?);
+        let debug_descr = self.context().dsd_gen();
+        self.context().debug_span_descriptors.insert(debug_descr, ast.span);
         res.push(Op::debug(debug_descr));
         res.push(Op::sh);
         Ok(res)

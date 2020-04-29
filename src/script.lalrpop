@@ -90,7 +90,10 @@ AssignmentLHS: AssignmentLHS = {
 
 ReturnStatement: ReturnStatement = <l:@L> "return" <e: Expr> <r:@R> => ReturnStatement::new(e, l, r);
 
-ShStatement: ShStatement = <l:@L> <s:sh_statement> <r:@R> => ShStatement::new(s.0, s.1, l, r);
+ShStatement: ShStatement = <l:@L> <s:sh_statement> <r:@R> => ShStatement {
+	span: Span::new(l as u32, r as u32),
+	inner: FormatString::new(s.0, s.1, l, r),
+};
 
 WhileLoop: WhileLoop = <l:@L> "while" <e: Expr> "\n"? "{" "\n"? <body: StatementList> "}" <r:@R> => WhileLoop::new(e, body, l, r);
 

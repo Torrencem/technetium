@@ -256,11 +256,17 @@ impl ReturnStatement {
 #[derive(Clone, Debug)]
 pub struct ShStatement {
     pub span: Span,
+    pub inner: FormatString,
+}
+
+#[derive(Clone, Debug)]
+pub struct FormatString {
+    pub span: Span,
     pub val: String,
     pub substitutions: Vec<Expr>,
 }
 
-impl ShStatement {
+impl FormatString {
     pub fn new(val: String, substitutions: Vec<String>, l: usize, r: usize) -> Self {
         let mut subs = vec![];
         for s in substitutions.iter() {
@@ -269,7 +275,7 @@ impl ShStatement {
             // is in the parser, which isn't expecting and can't properly handle a Result<Self, ParseError> here
             subs.push(script::ExprParser::new().parse(lexer).expect("Error parsing expression in {} interpolation!"));
         }
-        ShStatement {
+        FormatString {
             span: Span::new(l as u32, r as u32),
             val,
             substitutions: subs,

@@ -1,15 +1,16 @@
 
 use std::sync::Arc;
 use std::any::Any;
-use std::fmt;
 use std::clone::Clone as RustClone;
 use crate::bytecode::Op;
 use crate::bytecode;
 use crate::bytecode::{NonLocalName, ContextId, FrameId};
 use std::sync::Mutex;
-use codespan::{Span, FileId};
-use codespan_reporting::diagnostic::{Diagnostic, Label};
 use std::collections::HashMap;
+
+use std::fmt;
+
+use crate::error::*;
 
 pub type ObjectRef = Arc<dyn Object>;
 
@@ -28,164 +29,38 @@ impl<T: Object> ToAny for T {
     }
 }
 
-// Similar to https://stackoverflow.com/a/28664881/6504760
-// Don't use this abomination unless absolutely necessary
-// pub type ObjectAny = Arc<dyn Any>;
-// pub fn ref_to_any(val: ObjectRef) -> ObjectAny {
-//     unsafe {
-//         let val = (Arc::into_raw(val).as_ref().unwrap()).as_any();
-//         Arc::new(val as *const dyn Any)
-//     }
-// }
-
-#[derive(Clone, Debug)]
-pub struct RuntimeError {
-    err: ErrorType,
-    help: String,
-    span: Option<Span>,
-}
-
-impl fmt::Display for RuntimeError {
-    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(fmt, "{:?}: {}", self.err, self.help)
-    }
-}
-
-#[derive(Copy, Clone, Debug)]
-pub enum ErrorType {
-    TypeError,
-    AttributeError,
-    InternalError,
-    IndexOutOfBounds,
-    ChildProcessError,
-    IOError,
-}
-
-impl From<std::io::Error> for RuntimeError {
-    fn from(error: std::io::Error) -> Self {
-        RuntimeError {
-            err: ErrorType::IOError,
-            help: error.to_string(),
-            span: None,
-        }
-    }
-}
-
-impl RuntimeError {
-    pub fn type_error(message: String) -> Self {
-        RuntimeError {
-            err: ErrorType::TypeError,
-            help: message,
-            span: None,
-        }
-    }
-    
-    pub fn attribute_error(message: String) -> Self {
-        RuntimeError {
-            err: ErrorType::AttributeError,
-            help: message,
-            span: None,
-        }
-    }
-
-    pub fn internal_error(message: String) -> Self {
-        RuntimeError {
-            err: ErrorType::InternalError,
-            help: message,
-            span: None,
-        }
-    }
-
-    pub fn index_oob_error(message: String) -> Self {
-        RuntimeError {
-            err: ErrorType::IndexOutOfBounds,
-            help: message,
-            span: None,
-        }
-    }
-    
-    pub fn child_process_error(message: String) -> Self {
-        RuntimeError {
-            err: ErrorType::ChildProcessError,
-            help: message,
-            span: None,
-        }
-    }
-
-    pub fn attach_span(self, span: Span) -> Self {
-        RuntimeError {
-            err: self.err,
-            help: self.help,
-            span: Some(span),
-        }
-    }
-
-    pub fn weak_attach_span(self, span: Span) -> Self {
-        match self.span {
-            Some(val) => {
-                RuntimeError {
-                    err: self.err,
-                    help: self.help,
-                    span: Some(val),
-                }
-            },
-            None => {
-                RuntimeError {
-                    err: self.err,
-                    help: self.help,
-                    span: Some(span),
-                }
-            }
-        }
-    }
-    
-    pub fn as_diagnostic<FileId>(&self, fileid: FileId) -> Diagnostic<FileId> {
-        match self.span {
-            Some(span) => Diagnostic::error()
-                .with_message(format!("Runtime Error: {:?}", self.err))
-                .with_labels(vec![
-                    Label::primary(fileid, span).with_message(&self.help),
-                ]),
-            None => Diagnostic::error()
-                .with_message(&self.help),
-        }
-    }
-}
-
-pub type Result<T> = std::result::Result<T, RuntimeError>;
-
 pub trait Object : Any + ToAny + Send + Sync {
-    fn marsh_clone(&self) -> Result<ObjectRef> {
+    fn marsh_clone(&self) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::type_error(format!("{} can not be cloned", self.marsh_type_name())))
     }
 
     fn marsh_type_name(&self) -> String;
 
-    fn to_string(&self) -> Result<String> {
+    fn to_string(&self) -> RuntimeResult<String> {
         Err(RuntimeError::type_error(format!("{} can not be converted into a string", self.marsh_type_name())))
     }
 
-    fn get_attr(&self, attr: String) -> Result<ObjectRef> {
+    fn get_attr(&self, attr: String) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::attribute_error(format!("{} has no attributes", self.marsh_type_name())))
     }
 
-    fn set_attr(&self, attr: String, val: ObjectRef) -> Result<()> {
+    fn set_attr(&self, attr: String, val: ObjectRef) -> RuntimeResult<()> {
         Err(RuntimeError::attribute_error(format!("Cannot set attributes of {}", self.marsh_type_name())))
     }
 
-    fn call_method(&self, method: &str, args: &[ObjectRef]) -> Result<ObjectRef> {
+    fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::attribute_error(format!("Cannot call method of {}", self.marsh_type_name())))
     }
 
-    fn call(&self, args: &[ObjectRef], locals: &mut HashMap<NonLocalName, ObjectRef>) -> Result<ObjectRef> {
+    fn call(&self, args: &[ObjectRef], locals: &mut HashMap<NonLocalName, ObjectRef>) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::type_error(format!("Object of type {} is not callable", self.marsh_type_name())))
     }
 
-    fn make_iter(&self) -> Result<ObjectRef> {
+    fn make_iter(&self) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::type_error(format!("Object of type {} cannot be made into an iterator", self.marsh_type_name())))
     }
     
-    fn take_iter(&self) -> Result<Option<ObjectRef>> {
+    fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
         Err(RuntimeError::type_error(format!("Object of type {} cannot be iterated", self.marsh_type_name())))
     }
 
@@ -206,12 +81,12 @@ pub struct BoolObject {
 
 impl BoolObject {
     pub fn new(val: bool) -> ObjectRef {
-        Arc::new(BoolObject { val: val })
+        Arc::new(BoolObject { val })
     }
 }
 
 impl Object for BoolObject {
-    fn marsh_clone(&self) -> Result<ObjectRef> {
+    fn marsh_clone(&self) -> RuntimeResult<ObjectRef> {
         Ok(BoolObject::new(self.val))
     }
 
@@ -219,7 +94,7 @@ impl Object for BoolObject {
         "boolean".to_string()
     }
 
-    fn to_string(&self) -> Result<String> {
+    fn to_string(&self) -> RuntimeResult<String> {
         Ok(format!("{}", self.val))
     }
 
@@ -234,13 +109,13 @@ pub struct IntObject {
 
 impl IntObject {
     pub fn new(val: i64) -> ObjectRef {
-        let res = Arc::new(IntObject { val: val });
+        let res = Arc::new(IntObject { val });
         res
     }
 }
 
 impl Object for IntObject {
-    fn marsh_clone(&self) -> Result<ObjectRef> {
+    fn marsh_clone(&self) -> RuntimeResult<ObjectRef> {
         Ok(IntObject::new(self.val))
     }
 
@@ -248,7 +123,7 @@ impl Object for IntObject {
         "int".to_string()
     }
 
-    fn to_string(&self) -> Result<String> {
+    fn to_string(&self) -> RuntimeResult<String> {
         Ok(format!("{}", self.val))
     }
 
@@ -263,13 +138,13 @@ pub struct FloatObject {
 
 impl FloatObject {
     pub fn new(val: f64) -> ObjectRef {
-        let res = Arc::new(FloatObject { val: val });
+        let res = Arc::new(FloatObject { val });
         res
     }
 }
 
 impl Object for FloatObject {
-    fn marsh_clone(&self) -> Result<ObjectRef> {
+    fn marsh_clone(&self) -> RuntimeResult<ObjectRef> {
         Ok(FloatObject::new(self.val))
     }
 
@@ -277,7 +152,7 @@ impl Object for FloatObject {
         "int".to_string()
     }
 
-    fn to_string(&self) -> Result<String> {
+    fn to_string(&self) -> RuntimeResult<String> {
         Ok(format!("{}", self.val))
     }
 
@@ -298,7 +173,7 @@ impl StringObject {
 }
 
 impl Object for StringObject {
-    fn marsh_clone(&self) -> Result<ObjectRef> {
+    fn marsh_clone(&self) -> RuntimeResult<ObjectRef> {
         Ok(Arc::new(RustClone::clone(self)))
     }
 
@@ -306,7 +181,7 @@ impl Object for StringObject {
         "string".to_string()
     }
 
-    fn to_string(&self) -> Result<String> {
+    fn to_string(&self) -> RuntimeResult<String> {
         Ok(RustClone::clone(&self.val))
     }
 
@@ -325,7 +200,7 @@ pub struct Function {
 }
 
 impl Object for Function {
-    fn marsh_clone(&self) -> Result<ObjectRef> {
+    fn marsh_clone(&self) -> RuntimeResult<ObjectRef> {
         Ok(Arc::new(Function {
             nargs: self.nargs,
             name: self.name.clone(),
@@ -344,7 +219,7 @@ impl Object for Function {
         true
     }
     
-    fn call(&self, args: &[ObjectRef], locals: &mut HashMap<NonLocalName, ObjectRef>) -> Result<ObjectRef> {
+    fn call(&self, args: &[ObjectRef], locals: &mut HashMap<NonLocalName, ObjectRef>) -> RuntimeResult<ObjectRef> {
         if args.len() != self.nargs {
             return Err(RuntimeError::type_error(format!("Incorrect number of arguments given to {}: expected {}, got {}", self.name, self.nargs, args.len())));
         }
@@ -362,7 +237,7 @@ pub struct List {
 }
 
 impl Object for List {
-    fn marsh_clone(&self) -> Result<ObjectRef> {
+    fn marsh_clone(&self) -> RuntimeResult<ObjectRef> {
         let mut res_contents = vec![];
         let contents_ = self.contents.lock().unwrap();
         for val in contents_.iter() {
@@ -379,7 +254,7 @@ impl Object for List {
         self.contents.lock().unwrap().len() != 0
     }
 
-    fn call_method(&self, method: &str, args: &[ObjectRef]) -> Result<ObjectRef> {
+    fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
        match method {
             "length" => {
                 if args.len() > 0 {
@@ -394,7 +269,7 @@ impl Object for List {
        }
     }
 
-    fn make_iter(&self) -> Result<ObjectRef> {
+    fn make_iter(&self) -> RuntimeResult<ObjectRef> {
         let iter = ListIterator {
             contents: self.contents.lock().unwrap().iter().map(|val| Arc::clone(val)).collect(),
             index: Mutex::new(0),
@@ -414,7 +289,7 @@ impl Object for ListIterator {
         "iterator(list)".to_string()
     }
 
-    fn take_iter(&self) -> Result<Option<ObjectRef>> {
+    fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
         let mut index = self.index.lock().unwrap();
         if *index >= self.contents.len() {
             Ok(None)
@@ -431,7 +306,7 @@ pub struct Tuple {
 }
 
 impl Object for Tuple {
-    fn marsh_clone(&self) -> Result<ObjectRef> {
+    fn marsh_clone(&self) -> RuntimeResult<ObjectRef> {
         let mut res_contents = vec![];
         for val in self.contents.iter() {
             res_contents.push(val.marsh_clone()?);
@@ -447,7 +322,7 @@ impl Object for Tuple {
         self.contents.len() != 0
     }
 
-    fn call_method(&self, method: &str, args: &[ObjectRef]) -> Result<ObjectRef> {
+    fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
        match method {
             "length" => {
                 if args.len() > 0 {
@@ -476,7 +351,7 @@ impl Object for VoidObject {
         "void".to_string()
     }
 
-    fn to_string(&self) -> Result<String> {
+    fn to_string(&self) -> RuntimeResult<String> {
         Ok("void".to_string())
     }
 

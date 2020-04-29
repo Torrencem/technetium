@@ -1,8 +1,9 @@
 use crate::core::*;
 use std::any::TypeId;
 use std::sync::Arc;
+use crate::error::*;
 
-pub fn add(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
+pub fn add(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
@@ -46,7 +47,7 @@ pub fn add(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     }
 }
 
-pub fn sub(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
+pub fn sub(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
@@ -80,7 +81,7 @@ pub fn sub(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     }
 }
 
-pub fn mul(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
+pub fn mul(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
@@ -114,7 +115,7 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     }
 }
 
-pub fn negate(a: ObjectRef) -> Result<ObjectRef> {
+pub fn negate(a: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     match a_any.type_id() {
         a if a == TypeId::of::<IntObject>() => {
@@ -133,7 +134,7 @@ pub fn negate(a: ObjectRef) -> Result<ObjectRef> {
     }
 }
 
-pub fn div(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
+pub fn div(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
@@ -167,7 +168,7 @@ pub fn div(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     }
 }
 
-pub fn mod_(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
+pub fn mod_(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
@@ -201,7 +202,7 @@ pub fn mod_(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     }
 }
 
-pub fn not(a: ObjectRef) -> Result<ObjectRef> {
+pub fn not(a: ObjectRef) -> RuntimeResult<ObjectRef> {
     Ok(if a.truthy() {
         BoolObject::new(false)
     } else {
@@ -209,7 +210,7 @@ pub fn not(a: ObjectRef) -> Result<ObjectRef> {
     })
 }
 
-pub fn or(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
+pub fn or(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     Ok(if a.truthy() || b.truthy() {
         BoolObject::new(true)
     } else {
@@ -217,7 +218,7 @@ pub fn or(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     })
 }
 
-pub fn and(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
+pub fn and(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     Ok(if a.truthy() && b.truthy() {
         BoolObject::new(true)
     } else {
@@ -225,7 +226,7 @@ pub fn and(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     })
 }
 
-pub fn cmp_lt(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
+pub fn cmp_lt(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
@@ -259,7 +260,7 @@ pub fn cmp_lt(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     }
 }
 
-pub fn cmp_gt(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
+pub fn cmp_gt(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
@@ -293,7 +294,7 @@ pub fn cmp_gt(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     }
 }
 
-pub fn cmp_eq(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
+pub fn cmp_eq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
@@ -327,7 +328,7 @@ pub fn cmp_eq(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     }
 }
 
-pub fn cmp_neq(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
+pub fn cmp_neq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
@@ -361,7 +362,7 @@ pub fn cmp_neq(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     }
 }
 
-pub fn cmp_leq(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
+pub fn cmp_leq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
@@ -395,7 +396,7 @@ pub fn cmp_leq(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     }
 }
 
-pub fn cmp_geq(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
+pub fn cmp_geq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
@@ -429,7 +430,7 @@ pub fn cmp_geq(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     }
 }
 
-pub fn index_get(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
+pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
@@ -477,7 +478,7 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> Result<ObjectRef> {
     }
 }
 
-pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> Result<()> {
+pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {

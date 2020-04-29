@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use crate::bytecode::NonLocalName;
 use crate::bytecode::{ContextId, FrameId};
+use crate::error::*;
 
 use crate::{func_object, func_object_void};
 
@@ -40,7 +41,7 @@ pub struct Range {
 }
 
 impl Object for Range {
-    fn marsh_clone(&self) -> Result<ObjectRef> {
+    fn marsh_clone(&self) -> RuntimeResult<ObjectRef> {
         Ok(Arc::new(self.clone()))
     }
 
@@ -48,7 +49,7 @@ impl Object for Range {
         "range".to_string()
     }
 
-    fn make_iter(&self) -> Result<ObjectRef> {
+    fn make_iter(&self) -> RuntimeResult<ObjectRef> {
         Ok(RangeIterator::new(self.clone()))
     }
 }
@@ -72,7 +73,7 @@ impl Object for RangeIterator {
         "iterator(range)".to_string()
     }
 
-    fn take_iter(&self) -> Result<Option<ObjectRef>> {
+    fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
         let mut _curr = self.curr.lock().unwrap();
         if (self.inner.step < 0 && *_curr <= self.inner.end)
         || (self.inner.step > 0 && *_curr >= self.inner.end) {

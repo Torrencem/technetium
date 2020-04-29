@@ -2,6 +2,7 @@
 use std::collections::HashMap;
 
 use crate::core::*;
+use crate::error::*;
 
 use std::sync::{Mutex, Arc};
 
@@ -212,7 +213,7 @@ impl<'code> Frame<'code> {
         }
     }
 
-    pub fn run(&mut self) -> Result<ObjectRef> {
+    pub fn run(&mut self) -> RuntimeResult<ObjectRef> {
         let mut stale_debug_symb = false;
         let mut stale_weak_debug_symb = false;
         let mut ds: Option<DebugSpanDescriptor> = None;

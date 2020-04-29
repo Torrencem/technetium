@@ -6,6 +6,7 @@ use crate::lexer::Lexer;
 use crate::script;
 use lalrpop_util;
 use crate::lexer;
+use crate::error::*;
 
 #[derive(Clone, Debug)]
 pub enum Literal {
@@ -269,19 +270,19 @@ pub struct FormatString {
 }
 
 impl FormatString {
-    pub fn new(val: String, substitutions: Vec<String>, l: usize, r: usize) -> Self {
+    pub fn new(val: String, substitutions: Vec<String>, l: usize, r: usize) -> Result<Self, MiscParseError> {
         let mut subs = vec![];
         for s in substitutions.iter() {
             let lexer = Lexer::new(s.as_ref());
             // TODO: Figure out error handling here. Propogating up is difficult because execution
             // is in the parser, which isn't expecting and can't properly handle a Result<Self, ParseError> here
-            subs.push(script::ExprParser::new().parse(lexer).expect("Error parsing expression in {} interpolation!"));
+            subs.push(script::ExprParser::new().parse(lexer)?);
         }
-        FormatString {
+        Ok(FormatString {
             span: Span::new(l as u32, r as u32),
             val,
             substitutions: subs,
-        }
+        })
     }
 }
 

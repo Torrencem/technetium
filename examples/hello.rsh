@@ -7,6 +7,4 @@ if my_num > 50 {
 	print(~"Number too small! The number is {my_num}")
 }
 
-" lfaksjdlf
-
 print(5)

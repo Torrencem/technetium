@@ -2,6 +2,7 @@
 use crate::ast::*;
 use crate::core::*;
 use crate::bytecode::*;
+use crate::error::*;
 use crate::standard::Default_Namespace_Descriptors;
 use crate::standard::STANDARD_CONTEXT_ID;
 use std::collections::HashMap;
@@ -11,36 +12,6 @@ use std::result::Result as RustResult;
 use codespan::{Span, FileId};
 use codespan_reporting::diagnostic::{Diagnostic, Label};
 use std::i32;
-
-#[derive(Debug, Clone)]
-pub struct CompileError {
-    pub kind: CompileErrorType,
-    pub help: String,
-}
-
-#[derive(Debug, Clone)]
-pub enum CompileErrorType {
-    UndefinedVariable(Span),
-}
-
-impl CompileError {
-    pub fn new(kind: CompileErrorType, help: &str) -> Self {
-        CompileError { kind, help: help.to_string() }
-    }
-
-    pub fn as_diagnostic<FileId>(&self, fileid: FileId) -> Diagnostic<FileId> {
-        match self.kind {
-            CompileErrorType::UndefinedVariable(span) => Diagnostic::error()
-                .with_message(self.help.clone())
-                .with_labels(vec![
-                    Label::primary(fileid, span).with_message("Undefined variable"),
-                ]),
-        }
-    }
-}
-
-pub type CompileResult = RustResult<Vec<Op>, CompileError>;
-
 
 /// Determine if a f64 is exactly representable as a f32
 fn is_exact_float(val: f64) -> bool {

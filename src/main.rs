@@ -15,7 +15,9 @@ pub mod builtins;
 pub mod compile;
 pub mod standard;
 pub mod logging;
+pub mod error;
 use compile::*;
+use error::*;
 use lexer::Lexer;
 use standard::STANDARD_CONTEXT_ID;
 use std::sync::Arc;
@@ -87,20 +89,14 @@ fn main() {
     trace!("Beginning parsing stage");
 
     let ast = script::ProgramParser::new().parse(lexer).unwrap_or_else(|e| {
+        let writer = StandardStream::stderr(ColorChoice::Always);
+        let config = codespan_reporting::term::Config::default();
+
+        let diagnostic = parse_error_to_diagnostic(&e, file_id);
+
+        term::emit(&mut writer.lock(), &config, &files, &diagnostic).expect("Error writing error message");
         
-        if let ParseError::User { error: e } = e {
-            let writer = StandardStream::stderr(ColorChoice::Always);
-            let config = codespan_reporting::term::Config::default();
-
-            let diagnostic = e.as_diagnostic(file_id);
-
-            term::emit(&mut writer.lock(), &config, &files, &diagnostic).expect("Error writing error message");
-            
-            exit(1)
-        } else {
-            println!("{:?}", e);
-            exit(1)
-        }
+        exit(1)
     });
 
     trace!("Completed parsing. AST: {:?}", ast);

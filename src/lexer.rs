@@ -6,6 +6,8 @@ use codespan_reporting::diagnostic::{Diagnostic, Label};
 
 use std::collections::HashMap;
 
+use crate::error::*;
+
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
 
 #[derive(Clone, Debug)]
@@ -82,36 +84,6 @@ enum ParsedNum {
     Float(f64),
 }
 
-#[derive(Clone, Debug)]
-pub struct LexError {
-    pub message: String,
-    pub loc: Option<usize>,
-}
-
-impl LexError {
-    pub fn new(message: &str, loc: Option<usize>) -> Self {
-        LexError {
-            message: message.to_owned(),
-            loc
-        }
-    }
-
-    pub fn as_diagnostic<FileId>(&self, fileid: FileId) -> Diagnostic<FileId> {
-        match self.loc {
-            Some(loc) => {
-                let loc = loc as u32;
-                Diagnostic::error()
-                    .with_message("Lex Error".to_string())
-                    .with_labels(vec![
-                        Label::primary(fileid, Span::new(loc, loc+1)).with_message(&self.message),
-                    ])
-            },
-            None => Diagnostic::error()
-                .with_message(&self.message),
-        }
-    }
-}
-
 pub struct Lexer<'input> {
     chars: std::iter::Peekable<CharIndices<'input>>,
     input: &'input str,
@@ -125,24 +97,24 @@ impl<'input> Lexer<'input> {
         }
     }
 
-    fn parse_string_lit(&mut self) -> Result<(String, usize), LexError> {
+    fn parse_string_lit(&mut self) -> Result<(String, usize), MiscParseError> {
         let mut res: String = String::new();
         loop {
             match self.chars.next() {
-                None => return Err(LexError::new("Unexpected end of input when reading string", None)),
+                None => return Err(MiscParseError::lex("Unexpected end of input when reading string", None)),
                 Some((_, '\\')) => {
                     // Escaped character
                     match self.chars.next() {
-                        None => return Err(LexError::new("Unexpected end of input when reading string", None)),
+                        None => return Err(MiscParseError::lex("Unexpected end of input when reading string", None)),
                         Some((_, 'n')) => res.push('\n'),
                         Some((_, 't')) => res.push('\t'),
                         Some((_, '"')) => res.push('"'),
                         Some((_, '\\')) => res.push('\\'),
-                        Some((i, c)) => return Err(LexError::new(format!("Unrecognized escape sequence: \\{}", c).as_ref(), Some(i))),
+                        Some((i, c)) => return Err(MiscParseError::lex(format!("Unrecognized escape sequence: \\{}", c).as_ref(), Some(i))),
                     }
                 },
                 Some((i, '"')) => return Ok((res, i)),
-                Some((i, '\n')) => return Err(LexError::new("Unexpected end of line before end of string literal", Some(i))),
+                Some((i, '\n')) => return Err(MiscParseError::lex("Unexpected end of line before end of string literal", Some(i))),
                 Some((_, c)) => {
                     res.push(c);
                 },
@@ -150,17 +122,17 @@ impl<'input> Lexer<'input> {
         }
     }
     
-    fn parse_fmt_string(&mut self, end_char: char) -> Result<((String, Vec<String>), usize), LexError> {
+    fn parse_fmt_string(&mut self, end_char: char) -> Result<((String, Vec<String>), usize), MiscParseError> {
         let mut res: String = String::new();
         let mut subs: Vec<String> = vec![];
         loop {
             match self.chars.peek() {
-                None => return Err(LexError::new("Unexpected end of input when reading format string", None)),
+                None => return Err(MiscParseError::lex("Unexpected end of input when reading format string", None)),
                 Some((_, '\\')) => {
                     self.chars.next();
                     // Escaped character
                     match self.chars.next() {
-                        None => return Err(LexError::new("Unexpected end of input when reading format string", None)),
+                        None => return Err(MiscParseError::lex("Unexpected end of input when reading format string", None)),
                         Some((_, 'n')) => res.push('\n'),
                         Some((_, 't')) => res.push('\t'),
                         Some((_, '"')) => res.push('"'),
@@ -169,7 +141,7 @@ impl<'input> Lexer<'input> {
                             res.push('{');
                         },
                         Some((_, '\\')) => res.push('\\'),
-                        Some((i, c)) => return Err(LexError::new(format!("Unrecognized escape sequence: \\{}", c).as_ref(), Some(i))),
+                        Some((i, c)) => return Err(MiscParseError::lex(format!("Unrecognized escape sequence: \\{}", c).as_ref(), Some(i))),
                     }
                 },
                 Some((_, '{')) => {
@@ -177,7 +149,7 @@ impl<'input> Lexer<'input> {
                     let mut s = String::new();
                     loop {
                         match self.chars.next() {
-                            None => return Err(LexError::new("Unexpected end of input when reading format string",None)),
+                            None => return Err(MiscParseError::lex("Unexpected end of input when reading format string",None)),
                             Some((_, '}')) => break,
                             Some((_, '\n')) => panic!(),
                             Some((_, c)) => s.push(c),
@@ -187,7 +159,7 @@ impl<'input> Lexer<'input> {
                     res.push('{');
                 },
                 Some((i, c)) if *c == end_char => return Ok(((res, subs), *i)),
-                Some((i, '\n')) => return Err(LexError::new("Unexpected end of line before end of string literal", Some(*i))),
+                Some((i, '\n')) => return Err(MiscParseError::lex("Unexpected end of line before end of string literal", Some(*i))),
                 Some((_, c)) => {
                     res.push(*c);
                     self.chars.next();
@@ -216,7 +188,7 @@ impl<'input> Lexer<'input> {
         }
     }
 
-    fn parse_num(&mut self, initial: char, initial_index: usize) -> Result<(ParsedNum, usize), LexError> {
+    fn parse_num(&mut self, initial: char, initial_index: usize) -> Result<(ParsedNum, usize), MiscParseError> {
         let mut result = String::new();
         result.push(initial);
         let mut curr_index = initial_index;
@@ -234,7 +206,7 @@ impl<'input> Lexer<'input> {
                 Some((i, c)) => {
                     curr_index = *i;
                     if found_decimal && *c == '.' {
-                        return Err(LexError::new("Two decimal places given in number literal", Some(*i)));
+                        return Err(MiscParseError::lex("Two decimal places given in number literal", Some(*i)));
                     }
                     if *c == '.' {
                         found_decimal = true;
@@ -285,7 +257,7 @@ impl<'input> Lexer<'input> {
 }
 
 impl<'input> Iterator for Lexer<'input> {
-    type Item = Spanned<Tok, usize, LexError>;
+    type Item = Spanned<Tok, usize, MiscParseError>;
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
@@ -422,10 +394,10 @@ impl<'input> Iterator for Lexer<'input> {
                             return Some(Ok((i, Tok::Or, i + 2)));
                         },
                         Some((i, _)) => {
-                            return Some(Err(LexError::new("Unexpected lone |; expected ||", Some(*i))));
+                            return Some(Err(MiscParseError::lex("Unexpected lone |; expected ||", Some(*i))));
                         },
                         None => {
-                            return Some(Err(LexError::new("Unexpected end of input when reading; expected another |", None)));
+                            return Some(Err(MiscParseError::lex("Unexpected end of input when reading; expected another |", None)));
                         },
                     }
                 },
@@ -436,10 +408,10 @@ impl<'input> Iterator for Lexer<'input> {
                             return Some(Ok((i, Tok::And, i + 2)));
                         },
                         Some((i, _)) => {
-                            return Some(Err(LexError::new("Unexpected lone &; expected &&", Some(*i))));
+                            return Some(Err(MiscParseError::lex("Unexpected lone &; expected &&", Some(*i))));
                         },
                         None => {
-                            return Some(Err(LexError::new("Unexpected end of input when reading; expected another &", None)));
+                            return Some(Err(MiscParseError::lex("Unexpected end of input when reading; expected another &", None)));
                         },
                     }
                 },
@@ -477,10 +449,10 @@ impl<'input> Iterator for Lexer<'input> {
                             return Some(Ok((i, Tok::FormatStringLit(s.0, s.1), i2)));
                         },
                         Some((i, _)) => {
-                            return Some(Err(LexError::new("Expected character after ~ to be the start of a format string", Some(*i))));
+                            return Some(Err(MiscParseError::lex("Expected character after ~ to be the start of a format string", Some(*i))));
                         }
                         None => {
-                            return Some(Err(LexError::new("Unexpected end of input after ~ character; expected format string", None)));
+                            return Some(Err(MiscParseError::lex("Unexpected end of input after ~ character; expected format string", None)));
                         }
                     }
                 },

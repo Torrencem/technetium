@@ -42,6 +42,7 @@ pub enum Tok {
     Int(i64),
     Float(f64),
     StringLit(String),
+    FormatStringLit(String, Vec<String>),
     ShStatement(String, Vec<String>),
     If,
     Then,
@@ -116,17 +117,17 @@ impl<'input> Lexer<'input> {
         }
     }
     
-    fn parse_sh_statement(&mut self) -> Result<((String, Vec<String>), usize), ()> {
+    fn parse_fmt_string(&mut self, end_char: char) -> Result<((String, Vec<String>), usize), ()> {
         let mut res: String = String::new();
         let mut subs: Vec<String> = vec![];
         loop {
             match self.chars.peek() {
-                None => return Err(()),
+                None => panic!(),
                 Some((_, '\\')) => {
                     self.chars.next();
                     // Escaped character
                     match self.chars.next() {
-                        None => return Err(()),
+                        None => panic!(),
                         Some((_, 'n')) => res.push('\n'),
                         Some((_, 't')) => res.push('\t'),
                         Some((_, '"')) => res.push('"'),
@@ -135,7 +136,7 @@ impl<'input> Lexer<'input> {
                             res.push('{');
                         },
                         Some((_, '\\')) => res.push('\\'),
-                        _ => return Err(()),
+                        _ => panic!(),
                     }
                 },
                 Some((_, '{')) => {
@@ -145,14 +146,14 @@ impl<'input> Lexer<'input> {
                         match self.chars.next() {
                             None => return Err(()),
                             Some((_, '}')) => break,
-                            Some((_, '\n')) => return Err(()),
+                            Some((_, '\n')) => panic!(),
                             Some((_, c)) => s.push(c),
                         }
                     }
                     subs.push(s);
                     res.push('{');
                 },
-                Some((i, '\n')) => return Ok(((res, subs), *i)),
+                Some((i, c)) if *c == end_char => return Ok(((res, subs), *i)),
                 Some((_, c)) => {
                     res.push(*c);
                     self.chars.next();
@@ -405,14 +406,16 @@ impl<'input> Iterator for Lexer<'input> {
                 Some((i, '"')) => {
                     let lit = self.parse_string_lit();
                     if let Err(_) = lit {
+                        panic!();
                         return Some(Err(()));
                     }
                     let (s, i2) = lit.unwrap();
                     return Some(Ok((i, Tok::StringLit(s), i2)));
                 },
                 Some((i, '$')) => {
-                    let lit = self.parse_sh_statement();
+                    let lit = self.parse_fmt_string('\n');
                     if let Err(_) = lit {
+                        panic!();
                         return Some(Err(()));
                     }
                     let (s, i2) = lit.unwrap();
@@ -421,6 +424,26 @@ impl<'input> Iterator for Lexer<'input> {
                 Some((i, '#')) => {
                     let line_end = self.comment_line();
                     return Some(Ok((i, Tok::Newline, line_end)));
+                },
+                Some((i, '~')) => {
+                    match self.chars.peek() {
+                        Some((_, '"')) => {
+                            self.chars.next();
+                            let lit = self.parse_fmt_string('"');
+                            if let Err(_) = lit {
+                                panic!();
+                                return Some(Err(()));
+                            }
+                            // Get rid of the last "
+                            self.chars.next();
+                            let (s, i2) = lit.unwrap();
+                            return Some(Ok((i, Tok::FormatStringLit(s.0, s.1), i2)));
+                        },
+                        _ => {
+                            panic!();
+                            return Some(Err(()));
+                        }
+                    }
                 },
                 Some((i, c)) => {
                     if c.is_alphabetic() {

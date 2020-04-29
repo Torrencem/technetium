@@ -270,5 +270,21 @@ $ echo {my_var} and {my_var2}
         .success()
         .stdout(predicate::eq("hello and hello2\n"));
 
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+r#"
+my_num = 10
+
+if my_num > 50 {
+	$ cat /dev/urandom | head -c {my_num * 3}
+} else {
+	print(~"Number too small! The number is {my_num}")
+}
+"#);
+    
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("Number too small! The number is 10\n"));
+
     Ok(())
 }

@@ -241,6 +241,7 @@ Literal: Literal = {
 	<l:@L> <n:int_lit> <r:@R> => Literal::Integer(n, Span::new(l as u32, r as u32)),
 	<l:@L> <f:float_lit> <r:@R> => Literal::Float(f, Span::new(l as u32, r as u32)),
 	<l:@L> <s:string_lit> <r:@R> => Literal::Str(s, Span::new(l as u32, r as u32)),
+	<l:@L> <s:format_string_lit> <r:@R> => Literal::FormatString(FormatString::new(s.0, s.1, l, r)),
 };
 
 ListLiteral: ListLiteral = <l:@L> "[" <v: Comma<Expr>> "]" <r:@R> => ListLiteral::new(v, l, r);
@@ -332,6 +333,7 @@ extern {
 		int_lit => Tok::Int(<i64>),
 		float_lit => Tok::Float(<f64>),
 		string_lit => Tok::StringLit(<String>),
+		format_string_lit => Tok::FormatStringLit(<String>, <Vec<String>>),
 		sh_statement => Tok::ShStatement(<String>, <Vec<String>>),
 		"if" => Tok::If,
 		"then" => Tok::Then,

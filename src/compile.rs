@@ -180,6 +180,9 @@ impl CompileManager {
             Literal::Str(val, _) => {
                 StringObject::new(RustClone::clone(val))
             },
+            Literal::FormatString(f) => {
+                return self.compile_format_string(&f);
+            }
         };
         self.context().constant_descriptors.insert(descr, constant);
         Ok(vec![Op::push_const(descr)])

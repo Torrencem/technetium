@@ -12,6 +12,7 @@ pub enum Literal {
     Integer(i64, Span),
     Float(f64, Span),
     Str(String, Span),
+    FormatString(FormatString),
 }
 
 impl Literal {
@@ -20,6 +21,7 @@ impl Literal {
             Literal::Integer(_, s) => *s,
             Literal::Float(_, s) => *s,
             Literal::Str(_, s) => *s,
+            Literal::FormatString(s) => s.span,
         }
     }
 }

@@ -1,5 +1,8 @@
 
-my_var = "hello"
-my_var2 = "hello2"
+my_num = 100
 
-$ echo {my_var} and {my_var2}
+if my_num > 50 {
+	$ cat /dev/urandom | head -c {my_num * 3}
+} else {
+	print("Number too small!")
+}

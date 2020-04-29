@@ -443,11 +443,20 @@ impl CompileManager {
     }
     
     pub fn compile_sh_statement(&mut self, ast: &ShStatement) -> CompileResult {
+        let mut res = vec![];
         let name_descr = self.context().gcd_gen();
         self.context().constant_descriptors.insert(name_descr, StringObject::new(ast.val.clone()));
         let debug_descr = self.context().dsd_gen();
         self.context().debug_span_descriptors.insert(debug_descr, ast.span);
-        Ok(vec![Op::push_const(name_descr), Op::debug(debug_descr), Op::sh])
+        res.push(Op::push_const(name_descr));
+        for subs in ast.substitutions.iter().rev() {
+            res.append(&mut self.compile_expr(subs)?);
+        }
+        res.push(Op::debug(debug_descr));
+        res.push(Op::fmt_string(ast.substitutions.len() as u8));
+        res.push(Op::debug(debug_descr));
+        res.push(Op::sh);
+        Ok(res)
     }
 
     pub fn compile_assignment(&mut self, ast: &Assignment) -> CompileResult {

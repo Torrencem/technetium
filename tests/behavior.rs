@@ -254,3 +254,21 @@ for i in range(10, 100, 10) {
 
     Ok(())
 }
+
+#[test]
+fn test_sh_and_substitution() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+r#"
+my_var = "hello"
+my_var2 = "hello2"
+
+$ echo {my_var} and {my_var2}
+"#);
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("hello and hello2\n"));
+
+    Ok(())
+}

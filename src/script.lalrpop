@@ -90,7 +90,7 @@ AssignmentLHS: AssignmentLHS = {
 
 ReturnStatement: ReturnStatement = <l:@L> "return" <e: Expr> <r:@R> => ReturnStatement::new(e, l, r);
 
-ShStatement: ShStatement = <l:@L> <s:sh_statement> <r:@R> => ShStatement::new(s, l, r);
+ShStatement: ShStatement = <l:@L> <s:sh_statement> <r:@R> => ShStatement::new(s.0, s.1, l, r);
 
 WhileLoop: WhileLoop = <l:@L> "while" <e: Expr> "\n"? "{" "\n"? <body: StatementList> "}" <r:@R> => WhileLoop::new(e, body, l, r);
 
@@ -127,7 +127,7 @@ ElifTail: IfStatement = {
 	),
 };
 
-Expr: Expr =  <e: LogicalExpr> => e;
+pub Expr: Expr =  <e: LogicalExpr> => e;
 
 LogicalExpr: Expr = {
 	<b: Comparison> => b,
@@ -329,7 +329,7 @@ extern {
 		int_lit => Tok::Int(<i64>),
 		float_lit => Tok::Float(<f64>),
 		string_lit => Tok::StringLit(<String>),
-		sh_statement => Tok::ShStatement(<String>),
+		sh_statement => Tok::ShStatement(<String>, <Vec<String>>),
 		"if" => Tok::If,
 		"then" => Tok::Then,
 		"else" => Tok::Else,

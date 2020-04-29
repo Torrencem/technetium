@@ -2,6 +2,11 @@
 use codespan::Span;
 use crate::compile::*;
 
+use crate::lexer::Lexer;
+use crate::script;
+use lalrpop_util;
+use crate::lexer;
+
 #[derive(Clone, Debug)]
 pub enum Literal {
     Integer(i64, Span),
@@ -252,13 +257,22 @@ impl ReturnStatement {
 pub struct ShStatement {
     pub span: Span,
     pub val: String,
+    pub substitutions: Vec<Expr>,
 }
 
 impl ShStatement {
-    pub fn new(val: String, l: usize, r: usize) -> Self {
+    pub fn new(val: String, substitutions: Vec<String>, l: usize, r: usize) -> Self {
+        let mut subs = vec![];
+        for s in substitutions.iter() {
+            let lexer = Lexer::new(s.as_ref());
+            // TODO: Figure out error handling here. Propogating up is difficult because execution
+            // is in the parser, which isn't expecting and can't properly handle a Result<Self, ParseError> here
+            subs.push(script::ExprParser::new().parse(lexer).expect("Error parsing expression in {} interpolation!"));
+        }
         ShStatement {
             span: Span::new(l as u32, r as u32),
-            val
+            val,
+            substitutions: subs,
         }
     }
 }

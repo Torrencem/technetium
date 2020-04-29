@@ -87,6 +87,8 @@ pub enum Op {
 
     to_string,
 
+    fmt_string(u8),
+
     // Perform operations on the top 2 elements of the stack, leaving the result
     add,
     sub,
@@ -363,6 +365,44 @@ impl<'code> Frame<'code> {
                         self.stack.push(StringObject::new(try_debug!(self, ds, dsw, obj.to_string())));
                     } else {
                         return Err(RuntimeError::internal_error("to_string called on an empty stack!".to_string()));
+                    }
+                },
+                Op::fmt_string(num_args) => {
+                    let len = *num_args as usize;
+                    if self.stack.len() < len + 1 {
+                        return Err(RuntimeError::internal_error("Tried to format a string with an incorrect number of args!".to_string()));
+                    }
+                    let mut objs: Vec<ObjectRef> = self.stack.drain((self.stack.len() - len)..).collect();
+                    let subs = self.stack.pop();
+                    if let Some(subs) = subs {
+                        if let Some(string) = subs.as_any().downcast_ref::<StringObject>() {
+                            let mut result_string = String::new();
+                            let mut chars = string.val.chars().peekable();
+                            loop {
+                                match chars.next() {
+                                    Some('\\') => {
+                                        if chars.peek() == Some(&'{') {
+                                            chars.next();
+                                            result_string.push('{');
+                                        } else {
+                                            result_string.push('\\');
+                                        }
+                                    },
+                                    Some('{') => {
+                                        let obj = objs.pop().unwrap();
+                                        result_string.push_str(obj.to_string()?.as_ref());
+                                    },
+                                    Some(x) => result_string.push(x),
+                                    None => break,
+                                }
+                            }
+
+                            self.stack.push(StringObject::new(result_string));
+                        } else {
+                            return Err(RuntimeError::internal_error("Tried to format a non-string!".to_string()));
+                        }
+                    } else {
+                        return Err(RuntimeError::internal_error("Tried to format an empty stack!".to_string()));
                     }
                 },
                 Op::add => {

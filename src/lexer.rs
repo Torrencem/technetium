@@ -42,7 +42,7 @@ pub enum Tok {
     Int(i64),
     Float(f64),
     StringLit(String),
-    ShStatement(String),
+    ShStatement(String, Vec<String>),
     If,
     Then,
     Else,
@@ -116,8 +116,9 @@ impl<'input> Lexer<'input> {
         }
     }
     
-    fn parse_sh_statement(&mut self) -> Result<(String, usize), ()> {
+    fn parse_sh_statement(&mut self) -> Result<((String, Vec<String>), usize), ()> {
         let mut res: String = String::new();
+        let mut subs: Vec<String> = vec![];
         loop {
             match self.chars.peek() {
                 None => return Err(()),
@@ -129,11 +130,29 @@ impl<'input> Lexer<'input> {
                         Some((_, 'n')) => res.push('\n'),
                         Some((_, 't')) => res.push('\t'),
                         Some((_, '"')) => res.push('"'),
+                        Some((_, '{')) => {
+                            res.push('\\');
+                            res.push('{');
+                        },
                         Some((_, '\\')) => res.push('\\'),
                         _ => return Err(()),
                     }
                 },
-                Some((i, '\n')) => return Ok((res, *i)),
+                Some((_, '{')) => {
+                    self.chars.next();
+                    let mut s = String::new();
+                    loop {
+                        match self.chars.next() {
+                            None => return Err(()),
+                            Some((_, '}')) => break,
+                            Some((_, '\n')) => return Err(()),
+                            Some((_, c)) => s.push(c),
+                        }
+                    }
+                    subs.push(s);
+                    res.push('{');
+                },
+                Some((i, '\n')) => return Ok(((res, subs), *i)),
                 Some((_, c)) => {
                     res.push(*c);
                     self.chars.next();
@@ -397,7 +416,7 @@ impl<'input> Iterator for Lexer<'input> {
                         return Some(Err(()));
                     }
                     let (s, i2) = lit.unwrap();
-                    return Some(Ok((i, Tok::ShStatement(s), i2)));
+                    return Some(Ok((i, Tok::ShStatement(s.0, s.1), i2)));
                 },
                 Some((i, '#')) => {
                     let line_end = self.comment_line();

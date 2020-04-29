@@ -296,7 +296,7 @@ CommaNonEmpty<T>: Vec<T> = {
 
 extern {
 	type Location = usize;
-	type Error = ();
+	type Error = LexError;
 
 	enum Tok {
 		"\n" => Tok::Newline,

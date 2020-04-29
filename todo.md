@@ -1,7 +1,7 @@
 
 This is a rough todo list of features I need to add to the language:
 
-* Get rid of temp panics in lexer, add lexing error type and propogate correctly
+* Seperate User error type of lalrpop into an enum LexError / MiscParseError
 * case of
 * many tests for format string instruction
 * `sh` expressions (shell objects with methods and attributes)

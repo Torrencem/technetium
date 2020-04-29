@@ -31,6 +31,7 @@ use codespan_reporting::term::termcolor::{ColorChoice, StandardStream};
 use codespan_reporting::term;
 
 use log::Level;
+use lalrpop_util::ParseError;
 
 fn main() {
     let matches = App::new("marsh")
@@ -85,7 +86,22 @@ fn main() {
 
     trace!("Beginning parsing stage");
 
-    let ast = script::ProgramParser::new().parse(lexer).expect("temp1");
+    let ast = script::ProgramParser::new().parse(lexer).unwrap_or_else(|e| {
+        
+        if let ParseError::User { error: e } = e {
+            let writer = StandardStream::stderr(ColorChoice::Always);
+            let config = codespan_reporting::term::Config::default();
+
+            let diagnostic = e.as_diagnostic(file_id);
+
+            term::emit(&mut writer.lock(), &config, &files, &diagnostic).expect("Error writing error message");
+            
+            exit(1)
+        } else {
+            println!("{:?}", e);
+            exit(1)
+        }
+    });
 
     trace!("Completed parsing. AST: {:?}", ast);
 

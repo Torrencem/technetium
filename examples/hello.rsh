@@ -6,3 +6,7 @@ if my_num > 50 {
 } else {
 	print(~"Number too small! The number is {my_num}")
 }
+
+" lfaksjdlf
+
+print(5)

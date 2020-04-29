@@ -1,6 +1,7 @@
 
 This is a rough todo list of features I need to add to the language:
 
+* add offsets to substitutions so they know where to highlight if they error [BLOCKING]
 * many tests for format string instruction [BLOCKING MERGE TO MASTER]
 * `sh` expressions (shell objects with methods and attributes)
 * standard library: sh, cd, get command line args, platform

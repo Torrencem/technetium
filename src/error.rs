@@ -215,9 +215,9 @@ pub fn parse_error_to_diagnostic<FileId>(p: &ParseError, fileid: FileId) -> Diag
         },
         ParseError::UnrecognizedEOF { location: l, expected: e } => {
                 Diagnostic::error()
-                    .with_message("Parse error: Unrecognized End of File".to_string())
+                    .with_message("Parse error: Unrecognized End of Input".to_string())
                     .with_labels(vec![
-                        Label::primary(fileid, Span::new(*l as u32, *l as u32 - 1)).with_message("Invalid EOF"),
+                        Label::primary(fileid, Span::new(*l as u32 - 1, *l as u32)).with_message("Invalid EOI"),
                     ])
                     .with_notes(vec![
                         format!("Expected one of {:?}", e)

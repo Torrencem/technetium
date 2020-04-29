@@ -166,6 +166,12 @@ impl LexError {
         }
     }
 
+    pub fn offset_spans(&mut self, offset: usize) {
+        if let Some(loc) = &mut self.loc {
+            *loc += offset;
+        }
+    }
+
     pub fn as_diagnostic<FileId>(&self, fileid: FileId) -> Diagnostic<FileId> {
         match self.loc {
             Some(loc) => {
@@ -202,6 +208,13 @@ impl MiscParseError {
             MiscParseError::Recursive(p) => parse_error_to_diagnostic(&p, fileid),
         }
     }
+
+    pub fn offset_spans(&mut self, offset: usize) {
+        match self {
+            MiscParseError::Lex(l) => l.offset_spans(offset),
+            MiscParseError::Recursive(p) => offset_parse_error_spans(p, offset),
+        }
+    }
 }
 
 pub fn parse_error_to_diagnostic<FileId>(p: &ParseError, fileid: FileId) -> Diagnostic<FileId> {
@@ -217,10 +230,10 @@ pub fn parse_error_to_diagnostic<FileId>(p: &ParseError, fileid: FileId) -> Diag
                 Diagnostic::error()
                     .with_message("Parse error: Unrecognized End of Input".to_string())
                     .with_labels(vec![
-                        Label::primary(fileid, Span::new(*l as u32 - 1, *l as u32)).with_message("Invalid EOI"),
+                        Label::primary(fileid, Span::new(*l as u32, *l as u32 + 1)).with_message("Invalid EOI"),
                     ])
                     .with_notes(vec![
-                        format!("Expected one of {:?}", e)
+                        format!("Expected one of {:?} after this point", e)
                     ])
         },
         ParseError::UnrecognizedToken { token: t, expected: e } => {
@@ -258,3 +271,26 @@ impl From<ParseError> for MiscParseError {
     }
 }
 
+pub fn offset_parse_error_spans(p: &mut ParseError, offset: usize) {
+    match p {
+        ParseError::InvalidToken { location: l } => {
+            *l += offset
+        },
+        ParseError::UnrecognizedEOF { location: l, expected: e } => {
+            *l += offset
+        },
+        ParseError::UnrecognizedToken { token: t, expected: e } => {
+            *t = (t.0 + offset, t.1.clone(), t.2 + offset)
+        },
+        ParseError::ExtraToken { token: t } => {
+            *t = (t.0 + offset, t.1.clone(), t.2 + offset)
+        },
+        ParseError::User { error: e } => e.offset_spans(offset),
+    }
+}
+
+pub fn offset_parse_result_error_spans<T>(p: &mut Result<T, ParseError>, offset: usize) {
+    if let Err(e) = p {
+        offset_parse_error_spans(e, offset)
+    }
+}

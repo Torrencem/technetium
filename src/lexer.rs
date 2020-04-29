@@ -46,8 +46,8 @@ pub enum Tok {
     Int(i64),
     Float(f64),
     StringLit(String),
-    FormatStringLit(String, Vec<String>),
-    ShStatement(String, Vec<String>),
+    FormatStringLit(String, Vec<(usize, String)>),
+    ShStatement(String, Vec<(usize, String)>),
     If,
     Then,
     Else,
@@ -122,9 +122,9 @@ impl<'input> Lexer<'input> {
         }
     }
     
-    fn parse_fmt_string(&mut self, end_char: char) -> Result<((String, Vec<String>), usize), MiscParseError> {
+    fn parse_fmt_string(&mut self, end_char: char) -> Result<((String, Vec<(usize, String)>), usize), MiscParseError> {
         let mut res: String = String::new();
-        let mut subs: Vec<String> = vec![];
+        let mut subs: Vec<(usize, String)> = vec![];
         loop {
             match self.chars.peek() {
                 None => return Err(MiscParseError::lex("Unexpected end of input when reading format string", None)),
@@ -144,7 +144,8 @@ impl<'input> Lexer<'input> {
                         Some((i, c)) => return Err(MiscParseError::lex(format!("Unrecognized escape sequence: \\{}", c).as_ref(), Some(i))),
                     }
                 },
-                Some((_, '{')) => {
+                Some((i, '{')) => {
+                    let i = *i;
                     self.chars.next();
                     let mut s = String::new();
                     loop {
@@ -155,7 +156,7 @@ impl<'input> Lexer<'input> {
                             Some((_, c)) => s.push(c),
                         }
                     }
-                    subs.push(s);
+                    subs.push((i, s));
                     res.push('{');
                 },
                 Some((i, c)) if *c == end_char => return Ok(((res, subs), *i)),

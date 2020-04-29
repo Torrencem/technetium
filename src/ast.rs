@@ -25,6 +25,25 @@ impl Literal {
             Literal::FormatString(s) => s.span,
         }
     }
+    
+    fn span_mut(&mut self) -> &mut Span {
+        match self {
+            Literal::Integer(_, s) => s,
+            Literal::Float(_, s) => s,
+            Literal::Str(_, s) => s,
+            Literal::FormatString(s) => &mut s.span,
+        }
+    }
+    
+    pub fn offset_spans(&mut self, offset: usize) {
+        if let Literal::FormatString(fs) = self {
+            fs.offset_spans(offset);
+        } else {
+            let l = self.span().start();
+            let r = self.span().end();
+            *self.span_mut() = Span::new(u32::from(l) + (offset as u32), u32::from(r) + (offset as u32));
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -38,6 +57,15 @@ impl ListLiteral {
         ListLiteral { 
             span: Span::new(l as u32, r as u32),
             values
+        }
+    }
+    
+    pub fn offset_spans(&mut self, offset: usize) {
+        let l = self.span.start();
+        let r = self.span.end();
+        self.span = Span::new(u32::from(l) + (offset as u32), u32::from(r) + (offset as u32));
+        for val in self.values.iter_mut() {
+            val.offset_spans(offset);
         }
     }
 }
@@ -55,6 +83,15 @@ impl TupleLiteral {
             values
         }
     }
+
+    pub fn offset_spans(&mut self, offset: usize) {
+        let l = self.span.start();
+        let r = self.span.end();
+        self.span = Span::new(u32::from(l) + (offset as u32), u32::from(r) + (offset as u32));
+        for val in self.values.iter_mut() {
+            val.offset_spans(offset);
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -69,6 +106,16 @@ impl FuncCall {
         FuncCall {
             span: Span::new(l as u32, r as u32),
             fname, arguments
+        }
+    }
+
+    pub fn offset_spans(&mut self, offset: usize) {
+        let l = self.span.start();
+        let r = self.span.end();
+        self.span = Span::new(u32::from(l) + (offset as u32), u32::from(r) + (offset as u32));
+        self.fname.offset_spans(offset);
+        for arg in self.arguments.iter_mut() {
+            arg.offset_spans(offset);
         }
     }
 }
@@ -88,6 +135,14 @@ impl AttrLookup {
             attribute,
         }
     }
+
+    pub fn offset_spans(&mut self, offset: usize) {
+        let l = self.span.start();
+        let r = self.span.end();
+        self.span = Span::new(u32::from(l) + (offset as u32), u32::from(r) + (offset as u32));
+        self.attribute.offset_spans(offset);
+        self.parent.offset_spans(offset);
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -106,6 +161,17 @@ impl MethodCall {
             fname, arguments
         }
     }
+
+    pub fn offset_spans(&mut self, offset: usize) {
+        let l = self.span.start();
+        let r = self.span.end();
+        self.span = Span::new(u32::from(l) + (offset as u32), u32::from(r) + (offset as u32));
+        self.fname.offset_spans(offset);
+        self.parent.offset_spans(offset);
+        for arg in self.arguments.iter_mut() {
+            arg.offset_spans(offset);
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -122,6 +188,14 @@ impl IndexedExpr {
             parent: Box::new(parent),
             index: Box::new(index),
         }
+    }
+
+    pub fn offset_spans(&mut self, offset: usize) {
+        let l = self.span.start();
+        let r = self.span.end();
+        self.span = Span::new(u32::from(l) + (offset as u32), u32::from(r) + (offset as u32));
+        self.index.offset_spans(offset);
+        self.parent.offset_spans(offset);
     }
 }
 
@@ -148,6 +222,19 @@ impl Expr {
             Expr::FuncCall(f) => f.span,
             Expr::AttrLookup(a) => a.span,
             Expr::IndexedExpr(e) => e.span,
+        }
+    }
+
+    pub fn offset_spans(&mut self, offset: usize) {
+        match self {
+            Expr::Variable(i) => i.offset_spans(offset),
+            Expr::Literal(l) => l.offset_spans(offset),
+            Expr::ListLiteral(l) => l.offset_spans(offset),
+            Expr::TupleLiteral(t) => t.offset_spans(offset),
+            Expr::MethodCall(m) => m.offset_spans(offset),
+            Expr::FuncCall(f) => f.offset_spans(offset),
+            Expr::AttrLookup(a) => a.offset_spans(offset),
+            Expr::IndexedExpr(e) => e.offset_spans(offset),
         }
     }
 }
@@ -270,19 +357,30 @@ pub struct FormatString {
 }
 
 impl FormatString {
-    pub fn new(val: String, substitutions: Vec<String>, l: usize, r: usize) -> Result<Self, MiscParseError> {
+    pub fn new(val: String, substitutions: Vec<(usize, String)>, l: usize, r: usize) -> Result<Self, MiscParseError> {
         let mut subs = vec![];
         for s in substitutions.iter() {
-            let lexer = Lexer::new(s.as_ref());
-            // TODO: Figure out error handling here. Propogating up is difficult because execution
-            // is in the parser, which isn't expecting and can't properly handle a Result<Self, ParseError> here
-            subs.push(script::ExprParser::new().parse(lexer)?);
+            let lexer = Lexer::new(s.1.as_ref());
+            let mut e = script::ExprParser::new().parse(lexer);
+            offset_parse_result_error_spans(&mut e, s.0);
+            let mut e = e?;
+            e.offset_spans(s.0);
+            subs.push(e);
         }
         Ok(FormatString {
             span: Span::new(l as u32, r as u32),
             val,
             substitutions: subs,
         })
+    }
+
+    pub fn offset_spans(&mut self, offset: usize) {
+        let l = self.span.start();
+        let r = self.span.end();
+        self.span = Span::new(u32::from(l) + (offset as u32), u32::from(r) + (offset as u32));
+        for sub in self.substitutions.iter_mut() {
+            sub.offset_spans(offset);
+        }
     }
 }
 
@@ -375,5 +473,11 @@ impl Identifier {
             span: Span::new(l as u32, r as u32),
             name
         }
+    }
+
+    pub fn offset_spans(&mut self, offset: usize) {
+        let l = self.span.start();
+        let r = self.span.end();
+        self.span = Span::new(u32::from(l) + (offset as u32), u32::from(r) + (offset as u32));
     }
 }

@@ -362,9 +362,9 @@ impl FormatString {
         for s in substitutions.iter() {
             let lexer = Lexer::new(s.1.as_ref());
             let mut e = script::ExprParser::new().parse(lexer);
-            offset_parse_result_error_spans(&mut e, s.0);
+            offset_parse_result_error_spans(&mut e, s.0 + 1);
             let mut e = e?;
-            e.offset_spans(s.0);
+            e.offset_spans(s.0 + 1);
             subs.push(e);
         }
         Ok(FormatString {

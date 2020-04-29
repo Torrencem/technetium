@@ -110,3 +110,31 @@ print(fib(x))
 
     Ok(())
 }
+
+#[test]
+fn recursive_format_error() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+r#"
+
+my_num = 100
+
+if my_num > 50 {
+	$ cat /dev/urandom | head -c {my_num * 3 * my_num.no_attr() }
+} else {
+	print(~"Number too small! The number is {my_num}")
+}
+
+print(5)
+
+"#);
+
+    cmd.assert()
+        .failure()
+        .stderr(predicate::str::contains("Attribute"))
+        .stderr(predicate::str::contains("method"))
+        .stderr(predicate::str::contains("int"))
+        .stderr(predicate::str::contains("my_num.no_attr()"));
+
+    Ok(())
+}

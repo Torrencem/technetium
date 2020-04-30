@@ -40,17 +40,27 @@
 </div>
 <div class="section" id="the-shell-operator">
 <h2><a class="toc-backref" href="#id1">The Shell Operator</a><a class="headerlink" href="#the-shell-operator" title="Permalink to this headline">¶</a></h2>
-<p>Rush is designed around making accessing shell commands as easy as possible. The core of this design is the <span class="xref std std-term">shell operator</span> ($). If you begin a line with the shell operator, it will be run on the command line:</p>
+<p>Technetium is designed around making accessing shell commands as easy as possible. The core of this design is the shell operator ($). If you begin a line with the shell operator, it will be run on the command line:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>my_name = &quot;matt&quot;
 $ echo {my_name}
 </pre></div>
 </div>
 <p>This code, when run, will invoke the <cite>echo</cite> command, substituting the value of the expression <cite>my_name</cite>, which has the effect of printing out <cite>matt</cite> to the console.</p>
-<p>The shell operator makes it very easy to write long chains of commands in a similar style to a bash script. Similar to in bash, each command will run synchronously and in the foreground. The shell operator can also be used to create <span class="xref std std-term">process objects</span>, which can be assigned to variables, spawned in the background, or even passed to functions:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>my_tmp_path = &quot;/tmp/hello&quot;
-$ mkdir {my_tmp_path}
-file_deleter = ($ rm -rf {my_tmp_path})
-global_defer(file_deleter)  # Run file_deleter on program exit
+<p>The shell operator makes it very easy to write long chains of commands in a similar style to a bash script. Similar to bash, each command will run synchronously and in the foreground. The shell operator can also be used to create process objects, which can be assigned to variables, spawned in the background, or even passed to functions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">delayed_command</span> <span class="o">=</span> <span class="n">sh</span><span class="p">(</span><span class="s2">&quot;sleep 10 &amp;&amp; echo Ten seconds have passed!&quot;</span><span class="p">)</span>
+<span class="n">delayed_command</span><span class="o">.</span><span class="n">spawn</span><span class="p">()</span>
+<span class="c1"># ... do more work ...</span>
+</pre></div>
+</div>
+<p>Technetium makes it very easy to surround shell code by easy to understand syntax:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>for n in range(10) {
+        if n &lt;= 5 {
+                $ mkdir {n}
+        } else {
+                $ mkdir {n}_other
+                $ touch {n}_other/index.html
+        }
+}
 </pre></div>
 </div>
 </div>
@@ -107,7 +117,7 @@ global_defer(file_deleter)  # Run file_deleter on program exit
       &copy;2020, Matt Torrence.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

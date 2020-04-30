@@ -1,6 +1,5 @@
 #![allow(unused)]
 #![allow(non_upper_case_globals)]
-#![feature(fn_traits)]
 #[macro_use] extern crate lalrpop_util;
 #[macro_use] extern crate lazy_static;
 #[macro_use] extern crate log;

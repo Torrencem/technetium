@@ -1,7 +1,6 @@
 
 This is a rough todo list of features I need to add to the language:
 
-* status (exit code) for shell objects
 * standard library: cd, get command line args, platform
 * mutable strings (should dup from constants, i.e. worry about "changing" GCD's)
 * generators

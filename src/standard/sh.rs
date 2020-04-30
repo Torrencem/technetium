@@ -98,6 +98,20 @@ impl ShObject {
             Ok(StringObject::new("".to_string()))
         }
     }
+    
+    pub fn exit_code(&self) -> io::Result<ObjectRef> {
+        let output = self.output.lock().unwrap();
+        if let Some(ref output) = *output {
+            let status = &output.status;
+            if let Some(val) = status.code() {
+                Ok(IntObject::new(val as i64))
+            } else {
+                Ok(BoolObject::new(status.success()))
+            }
+        } else {
+            Ok(StringObject::new("".to_string()))
+        }
+    }
 }
 
 impl Object for ShObject {
@@ -115,6 +129,7 @@ impl Object for ShObject {
            "join" => self.join()?,
            "stdout" => return Ok(self.stdout()?),
            "stderr" => return Ok(self.stderr()?),
+           "exit_code" => return Ok(self.exit_code()?),
            _ => return Err(RuntimeError::type_error("Unknown method".to_string())),
         }
 

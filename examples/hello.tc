@@ -5,3 +5,5 @@ program = sh("echo 123")
 
 program.join()
 
+print(program.exit_code())
+

@@ -138,3 +138,46 @@ print(5)
 
     Ok(())
 }
+
+
+#[test]
+fn recursive_lex_error() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+r#"
+
+# Pad it out a bit for offsetting to matter
+my_name = "Matt"
+
+print(~"My name is not {my_name * 1.2.3}")
+"#);
+
+    cmd.assert()
+        .failure()
+        .stderr(predicate::str::contains("Lex Error"))
+        .stderr(predicate::str::contains("decimal"))
+        .stderr(predicate::str::contains("my_name * 1.2.3"));
+
+    Ok(())
+}
+
+#[test]
+fn recursive_parse_error() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+r#"
+# more padding, to make sure offsets work correctly
+
+print(~"{val * * 2}")
+"#);
+
+    cmd.assert()
+        .failure()
+        .stderr(predicate::str::contains("Parse error"))
+        .stderr(predicate::str::contains("Mult"))
+        .stderr(predicate::str::contains("val * * 2"));
+
+    Ok(())
+}
+
+

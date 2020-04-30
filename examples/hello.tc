@@ -1,15 +1,9 @@
+my_val = "Hello there!"
 
-my_num = 1000
-
-case my_num + 20 of {
-	10 => print("no"),
-	100 => {
+case my_val of {
+    "baaad" => print("no"),
+	"Hello thar!" => {
 		print("no!")
 	},
-	1000 => {
-		print("no")
-	},
-	1020 => {
-		print("yes!")
-	},
+    "Hello there!" => print("yes!"),
 }

@@ -76,7 +76,7 @@ pub fn sub(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot subtract type {} and type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
     }
 }
@@ -110,7 +110,7 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot multiply type {} by type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
     }
 }
@@ -163,7 +163,7 @@ pub fn div(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot divide type {} by type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
     }
 }
@@ -197,7 +197,7 @@ pub fn mod_(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot mod type {} by type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
     }
 }
@@ -255,7 +255,7 @@ pub fn cmp_lt(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot compare type {} with type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
     }
 }
@@ -289,7 +289,7 @@ pub fn cmp_gt(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot compare type {} with type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
     }
 }
@@ -322,8 +322,14 @@ pub fn cmp_eq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let res = BoolObject::new(val_a.val == val_b.val);
             Ok(res)
         },
+        (a, b) if a == TypeId::of::<StringObject>() && b == TypeId::of::<StringObject>() => {
+            let val_a = a_any.downcast_ref::<StringObject>().unwrap();
+            let val_b = b_any.downcast_ref::<StringObject>().unwrap();
+            let res = BoolObject::new(val_a.val == val_b.val);
+            Ok(res)
+        },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot equate type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
     }
 }
@@ -356,8 +362,14 @@ pub fn cmp_neq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let res = BoolObject::new(val_a.val != val_b.val);
             Ok(res)
         },
+        (a, b) if a == TypeId::of::<StringObject>() && b == TypeId::of::<StringObject>() => {
+            let val_a = a_any.downcast_ref::<StringObject>().unwrap();
+            let val_b = b_any.downcast_ref::<StringObject>().unwrap();
+            let res = BoolObject::new(val_a.val != val_b.val);
+            Ok(res)
+        },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot equate type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
     }
 }
@@ -391,7 +403,7 @@ pub fn cmp_leq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot compare type {} with type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
     }
 }
@@ -425,7 +437,7 @@ pub fn cmp_geq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot compare type {} with type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
     }
 }

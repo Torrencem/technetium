@@ -374,6 +374,9 @@ impl CompileManager {
             let mut body = self.compile_statement_list(&body)?;
             res.push(Op::load(my_local));
             res.append(&mut self.compile_expr(&expr)?);
+            let debug_descr = self.context().dsd_gen();
+            self.context().debug_span_descriptors.insert(debug_descr, expr.span());
+            res.push(Op::debug(debug_descr));
             res.push(Op::cmp_neq);
             res.push(Op::cond_jmp(body.len() as i16 + 2));
             res.append(&mut body);

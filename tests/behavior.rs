@@ -347,6 +347,24 @@ case my_num + 20 of {
     cmd.assert()
         .success()
         .stdout(predicate::eq("yes!\n"));
+    
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+r#"
+my_val = "Hello there!"
+
+case my_val of {
+    "not really" => print("no"),
+	"Hello thar!" => {
+		print("no!")
+	},
+    "Hello there!" => print("yes!"),
+}
+"#);
+    
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("yes!\n"));
 
     Ok(())
 }

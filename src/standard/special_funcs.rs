@@ -8,6 +8,8 @@ use crate::bytecode::{ContextId, FrameId};
 use crate::error::*;
 use std::env;
 use std::path::Path;
+use sys_info::os_type;
+use sys_info::linux_os_release;
 
 use crate::{func_object, func_object_void};
 
@@ -44,6 +46,14 @@ func_object!(Cd, (1..=1), args -> {
     } else {
         Err(RuntimeError::type_error("Expected string as argument to cd".to_string()))
     }
+});
+
+func_object!(Os, (0..=0), args -> {
+    Ok(StringObject::new(os_type()?))
+});
+
+func_object!(LinuxDistro, (0..=0), args -> {
+    Ok(StringObject::new(linux_os_release()?.name.unwrap_or("Unknown".to_string())))
 });
 
 #[derive(Debug, Clone)]

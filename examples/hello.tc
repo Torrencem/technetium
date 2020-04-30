@@ -1,7 +1,2 @@
 
-$ mkdir hello_land
-
-cd("hello_land")
-
-$ touch my_name.txt
-
+print(~"Your operating system is {os()}, and you're on {linux_distro()}")

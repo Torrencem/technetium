@@ -150,9 +150,9 @@ impl<'input> Lexer<'input> {
                     let mut s = String::new();
                     loop {
                         match self.chars.next() {
-                            None => return Err(MiscParseError::lex("Unexpected end of input when reading format string",None)),
+                            None => return Err(MiscParseError::lex("Unexpected end of input when reading format string", None)),
                             Some((_, '}')) => break,
-                            Some((_, '\n')) => panic!(),
+                            Some((i, '\n')) => return Err(MiscParseError::lex("Unexpected newline when reading format (starting with {)", Some(i))),
                             Some((_, c)) => s.push(c),
                         }
                     }

@@ -4,6 +4,7 @@ use codespan::{Span, FileId};
 use codespan_reporting::diagnostic::{Diagnostic, Label};
 use crate::bytecode::Op;
 use crate::lexer::Tok;
+use sys_info;
 
 use lalrpop_util;
 
@@ -30,6 +31,17 @@ pub enum RuntimeErrorType {
     IndexOutOfBounds,
     ChildProcessError,
     IOError,
+    SysInfoError,
+}
+
+impl From<sys_info::Error> for RuntimeError {
+    fn from(error: sys_info::Error) -> Self {
+        RuntimeError {
+            err: RuntimeErrorType::SysInfoError,
+            help: error.to_string(),
+            span: None,
+        }
+    }
 }
 
 impl From<std::io::Error> for RuntimeError {

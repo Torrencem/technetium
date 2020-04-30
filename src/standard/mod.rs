@@ -18,6 +18,8 @@ lazy_static! {
         res.insert("range".to_string(), (STANDARD_CONTEXT_ID, 2));
         res.insert("sh".to_string(), (STANDARD_CONTEXT_ID, 3));
         res.insert("cd".to_string(), (STANDARD_CONTEXT_ID, 4));
+        res.insert("os".to_string(), (STANDARD_CONTEXT_ID, 5));
+        res.insert("linux_distro".to_string(), (STANDARD_CONTEXT_ID, 6));
         res
     };
 
@@ -28,6 +30,8 @@ lazy_static! {
         res.insert((STANDARD_CONTEXT_ID, 2), Arc::new(special_funcs::RangeFunc));
         res.insert((STANDARD_CONTEXT_ID, 3), Arc::new(sh::Sh));
         res.insert((STANDARD_CONTEXT_ID, 4), Arc::new(special_funcs::Cd));
+        res.insert((STANDARD_CONTEXT_ID, 5), Arc::new(special_funcs::Os));
+        res.insert((STANDARD_CONTEXT_ID, 6), Arc::new(special_funcs::LinuxDistro));
         res
     };
 }

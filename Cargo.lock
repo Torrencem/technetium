@@ -395,21 +395,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "marsh"
-version = "0.1.0"
-dependencies = [
- "assert_cmd",
- "clap",
- "codespan",
- "codespan-reporting",
- "lalrpop",
- "lalrpop-util",
- "lazy_static",
- "log",
- "predicates",
-]
-
-[[package]]
 name = "memchr"
 version = "2.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -785,6 +770,21 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-xid",
+]
+
+[[package]]
+name = "technetium"
+version = "0.1.0"
+dependencies = [
+ "assert_cmd",
+ "clap",
+ "codespan",
+ "codespan-reporting",
+ "lalrpop",
+ "lalrpop-util",
+ "lazy_static",
+ "log",
+ "predicates",
 ]
 
 [[package]]

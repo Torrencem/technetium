@@ -6,6 +6,8 @@ use std::sync::{Arc, Mutex};
 use crate::bytecode::NonLocalName;
 use crate::bytecode::{ContextId, FrameId};
 use crate::error::*;
+use std::env;
+use std::path::Path;
 
 use crate::{func_object, func_object_void};
 
@@ -24,12 +26,23 @@ func_object_void!(Print, (0..), args -> {
     println!();
 });
 
-func_object!(Exit, (1..1), args -> {
+func_object!(Exit, (1..=1), args -> {
     let arg_any = args[0].as_any();
     if let Some(int_obj) = arg_any.downcast_ref::<IntObject>() {
         exit(int_obj.val as i32)
     } else {
         exit(if args[0].truthy() { 1 } else { 0 })
+    }
+});
+
+func_object!(Cd, (1..=1), args -> {
+    let arg_any = args[0].as_any();
+    if let Some(str_obj) = arg_any.downcast_ref::<StringObject>() {
+        let path = Path::new(&str_obj.val);
+        env::set_current_dir(path)?;
+        Ok(VoidObject::new())
+    } else {
+        Err(RuntimeError::type_error("Expected string as argument to cd".to_string()))
     }
 });
 

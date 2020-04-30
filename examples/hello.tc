@@ -1,9 +1,7 @@
 
-my_num = 123
+$ mkdir hello_land
 
-program = sh("echo 123")
+cd("hello_land")
 
-program.join()
-
-print(program.exit_code())
+$ touch my_name.txt
 

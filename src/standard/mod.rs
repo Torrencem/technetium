@@ -17,6 +17,7 @@ lazy_static! {
         res.insert("exit".to_string(), (STANDARD_CONTEXT_ID, 1));
         res.insert("range".to_string(), (STANDARD_CONTEXT_ID, 2));
         res.insert("sh".to_string(), (STANDARD_CONTEXT_ID, 3));
+        res.insert("cd".to_string(), (STANDARD_CONTEXT_ID, 4));
         res
     };
 
@@ -26,6 +27,7 @@ lazy_static! {
         res.insert((STANDARD_CONTEXT_ID, 1), Arc::new(special_funcs::Exit));
         res.insert((STANDARD_CONTEXT_ID, 2), Arc::new(special_funcs::RangeFunc));
         res.insert((STANDARD_CONTEXT_ID, 3), Arc::new(sh::Sh));
+        res.insert((STANDARD_CONTEXT_ID, 4), Arc::new(special_funcs::Cd));
         res
     };
 }

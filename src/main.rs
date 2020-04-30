@@ -36,7 +36,7 @@ use log::Level;
 use lalrpop_util::ParseError;
 
 fn main() {
-    let matches = App::new("marsh")
+    let matches = App::new("technetium")
         .version(env!("CARGO_PKG_VERSION"))
         .author(env!("CARGO_PKG_AUTHORS"))
         .about(env!("CARGO_PKG_DESCRIPTION"))

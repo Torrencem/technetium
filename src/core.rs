@@ -30,38 +30,38 @@ impl<T: Object> ToAny for T {
 }
 
 pub trait Object : Any + ToAny + Send + Sync {
-    fn marsh_clone(&self) -> RuntimeResult<ObjectRef> {
-        Err(RuntimeError::type_error(format!("{} can not be cloned", self.marsh_type_name())))
+    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
+        Err(RuntimeError::type_error(format!("{} can not be cloned", self.technetium_type_name())))
     }
 
-    fn marsh_type_name(&self) -> String;
+    fn technetium_type_name(&self) -> String;
 
     fn to_string(&self) -> RuntimeResult<String> {
-        Err(RuntimeError::type_error(format!("{} can not be converted into a string", self.marsh_type_name())))
+        Err(RuntimeError::type_error(format!("{} can not be converted into a string", self.technetium_type_name())))
     }
 
     fn get_attr(&self, attr: String) -> RuntimeResult<ObjectRef> {
-        Err(RuntimeError::attribute_error(format!("{} has no attributes", self.marsh_type_name())))
+        Err(RuntimeError::attribute_error(format!("{} has no attributes", self.technetium_type_name())))
     }
 
     fn set_attr(&self, attr: String, val: ObjectRef) -> RuntimeResult<()> {
-        Err(RuntimeError::attribute_error(format!("Cannot set attributes of {}", self.marsh_type_name())))
+        Err(RuntimeError::attribute_error(format!("Cannot set attributes of {}", self.technetium_type_name())))
     }
 
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
-        Err(RuntimeError::attribute_error(format!("Cannot call method of {}", self.marsh_type_name())))
+        Err(RuntimeError::attribute_error(format!("Cannot call method of {}", self.technetium_type_name())))
     }
 
     fn call(&self, args: &[ObjectRef], locals: &mut HashMap<NonLocalName, ObjectRef>) -> RuntimeResult<ObjectRef> {
-        Err(RuntimeError::type_error(format!("Object of type {} is not callable", self.marsh_type_name())))
+        Err(RuntimeError::type_error(format!("Object of type {} is not callable", self.technetium_type_name())))
     }
 
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
-        Err(RuntimeError::type_error(format!("Object of type {} cannot be made into an iterator", self.marsh_type_name())))
+        Err(RuntimeError::type_error(format!("Object of type {} cannot be made into an iterator", self.technetium_type_name())))
     }
     
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
-        Err(RuntimeError::type_error(format!("Object of type {} cannot be iterated", self.marsh_type_name())))
+        Err(RuntimeError::type_error(format!("Object of type {} cannot be iterated", self.technetium_type_name())))
     }
 
     fn truthy(&self) -> bool {
@@ -86,11 +86,11 @@ impl BoolObject {
 }
 
 impl Object for BoolObject {
-    fn marsh_clone(&self) -> RuntimeResult<ObjectRef> {
+    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
         Ok(BoolObject::new(self.val))
     }
 
-    fn marsh_type_name(&self) -> String {
+    fn technetium_type_name(&self) -> String {
         "boolean".to_string()
     }
 
@@ -115,11 +115,11 @@ impl IntObject {
 }
 
 impl Object for IntObject {
-    fn marsh_clone(&self) -> RuntimeResult<ObjectRef> {
+    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
         Ok(IntObject::new(self.val))
     }
 
-    fn marsh_type_name(&self) -> String {
+    fn technetium_type_name(&self) -> String {
         "int".to_string()
     }
 
@@ -144,11 +144,11 @@ impl FloatObject {
 }
 
 impl Object for FloatObject {
-    fn marsh_clone(&self) -> RuntimeResult<ObjectRef> {
+    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
         Ok(FloatObject::new(self.val))
     }
 
-    fn marsh_type_name(&self) -> String {
+    fn technetium_type_name(&self) -> String {
         "int".to_string()
     }
 
@@ -173,11 +173,11 @@ impl StringObject {
 }
 
 impl Object for StringObject {
-    fn marsh_clone(&self) -> RuntimeResult<ObjectRef> {
+    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
         Ok(Arc::new(RustClone::clone(self)))
     }
 
-    fn marsh_type_name(&self) -> String {
+    fn technetium_type_name(&self) -> String {
         "string".to_string()
     }
 
@@ -200,7 +200,7 @@ pub struct Function {
 }
 
 impl Object for Function {
-    fn marsh_clone(&self) -> RuntimeResult<ObjectRef> {
+    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
         Ok(Arc::new(Function {
             nargs: self.nargs,
             name: self.name.clone(),
@@ -211,7 +211,7 @@ impl Object for Function {
         }))
     }
 
-    fn marsh_type_name(&self) -> String {
+    fn technetium_type_name(&self) -> String {
         "function".to_string()
     }
 
@@ -237,16 +237,16 @@ pub struct List {
 }
 
 impl Object for List {
-    fn marsh_clone(&self) -> RuntimeResult<ObjectRef> {
+    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
         let mut res_contents = vec![];
         let contents_ = self.contents.lock().unwrap();
         for val in contents_.iter() {
-            res_contents.push(val.marsh_clone()?);
+            res_contents.push(val.technetium_clone()?);
         }
         Ok(Arc::new(List { contents: Mutex::new(res_contents) }))
     }
 
-    fn marsh_type_name(&self) -> String {
+    fn technetium_type_name(&self) -> String {
         "list".to_string()
     }
 
@@ -285,7 +285,7 @@ pub struct ListIterator {
 }
 
 impl Object for ListIterator {
-    fn marsh_type_name(&self) -> String {
+    fn technetium_type_name(&self) -> String {
         "iterator(list)".to_string()
     }
 
@@ -306,15 +306,15 @@ pub struct Tuple {
 }
 
 impl Object for Tuple {
-    fn marsh_clone(&self) -> RuntimeResult<ObjectRef> {
+    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
         let mut res_contents = vec![];
         for val in self.contents.iter() {
-            res_contents.push(val.marsh_clone()?);
+            res_contents.push(val.technetium_clone()?);
         }
         Ok(Arc::new(Tuple { contents: res_contents }))
     }
 
-    fn marsh_type_name(&self) -> String {
+    fn technetium_type_name(&self) -> String {
         "tuple".to_string()
     }
 
@@ -347,7 +347,7 @@ impl VoidObject {
 }
 
 impl Object for VoidObject {
-    fn marsh_type_name(&self) -> String {
+    fn technetium_type_name(&self) -> String {
         "void".to_string()
     }
 

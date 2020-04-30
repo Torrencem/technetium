@@ -47,7 +47,7 @@ pub type DebugSpanDescriptor = u16;
 
 #[allow(non_camel_case_types)]
 #[derive(Copy, Clone, Debug)]
-/// An operation in the marsh virtual machine
+/// An operation in the technetium virtual machine
 pub enum Op {
     /// Do nothing
     nop,
@@ -599,7 +599,7 @@ impl<'code> Frame<'code> {
                 Op::push_const_clone(const_descr) => {
                     let obj = self.global_context.constant_descriptors.get(const_descr);
                     if let Some(obj) = obj {
-                        self.stack.push(obj.marsh_clone()?);
+                        self.stack.push(obj.technetium_clone()?);
                     } else {
                         return Err(RuntimeError::internal_error("Reference to constant that doesn't exist!".to_string()));
                     }

@@ -33,7 +33,7 @@ macro_rules! func_object_void {
         pub struct $id;
 
         impl Object for $id {
-            fn marsh_type_name(&self) -> String {
+            fn technetium_type_name(&self) -> String {
                 "builtin func".to_string()
             }
 
@@ -54,7 +54,7 @@ macro_rules! func_object {
         pub struct $id;
 
         impl Object for $id {
-            fn marsh_type_name(&self) -> String {
+            fn technetium_type_name(&self) -> String {
                 "builtin func".to_string()
             }
 

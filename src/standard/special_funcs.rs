@@ -41,11 +41,11 @@ pub struct Range {
 }
 
 impl Object for Range {
-    fn marsh_clone(&self) -> RuntimeResult<ObjectRef> {
+    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
         Ok(Arc::new(self.clone()))
     }
 
-    fn marsh_type_name(&self) -> String {
+    fn technetium_type_name(&self) -> String {
         "range".to_string()
     }
 
@@ -69,7 +69,7 @@ impl RangeIterator {
 }
 
 impl Object for RangeIterator {
-    fn marsh_type_name(&self) -> String {
+    fn technetium_type_name(&self) -> String {
         "iterator(range)".to_string()
     }
 

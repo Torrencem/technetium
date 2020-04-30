@@ -42,7 +42,7 @@ pub fn add(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             Ok(StringObject::new(res))
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.marsh_type_name(), b.marsh_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
     }
 }
@@ -76,7 +76,7 @@ pub fn sub(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.marsh_type_name(), b.marsh_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
     }
 }
@@ -110,7 +110,7 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.marsh_type_name(), b.marsh_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
     }
 }
@@ -129,7 +129,7 @@ pub fn negate(a: ObjectRef) -> RuntimeResult<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot negate type {}", a.marsh_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot negate type {}", a.technetium_type_name())))
         },
     }
 }
@@ -163,7 +163,7 @@ pub fn div(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.marsh_type_name(), b.marsh_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
     }
 }
@@ -197,7 +197,7 @@ pub fn mod_(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.marsh_type_name(), b.marsh_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
     }
 }
@@ -255,7 +255,7 @@ pub fn cmp_lt(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.marsh_type_name(), b.marsh_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
     }
 }
@@ -289,7 +289,7 @@ pub fn cmp_gt(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.marsh_type_name(), b.marsh_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
     }
 }
@@ -323,7 +323,7 @@ pub fn cmp_eq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.marsh_type_name(), b.marsh_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
     }
 }
@@ -357,7 +357,7 @@ pub fn cmp_neq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.marsh_type_name(), b.marsh_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
     }
 }
@@ -391,7 +391,7 @@ pub fn cmp_leq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.marsh_type_name(), b.marsh_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
     }
 }
@@ -425,7 +425,7 @@ pub fn cmp_geq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             Ok(res)
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.marsh_type_name(), b.marsh_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot add type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
     }
 }
@@ -473,7 +473,7 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             }
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot index type {} with type {}", a.marsh_type_name(), b.marsh_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot index type {} with type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
     }
 }
@@ -495,7 +495,7 @@ pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> 
             Ok(())
         },
         _ => {
-            Err(RuntimeError::type_error(format!("Cannot index type {} with type {}", a.marsh_type_name(), b.marsh_type_name())))
+            Err(RuntimeError::type_error(format!("Cannot index type {} with type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
     }
 }

@@ -1,6 +1,7 @@
 
 pub mod special_funcs;
 pub mod sh;
+pub mod math;
 
 use crate::core::*;
 use std::sync::Arc;
@@ -20,6 +21,16 @@ lazy_static! {
         res.insert("cd".to_string(), (STANDARD_CONTEXT_ID, 4));
         res.insert("os".to_string(), (STANDARD_CONTEXT_ID, 5));
         res.insert("linux_distro".to_string(), (STANDARD_CONTEXT_ID, 6));
+        res.insert("sin".to_string(), (STANDARD_CONTEXT_ID, 7));
+        res.insert("cos".to_string(), (STANDARD_CONTEXT_ID, 8));
+        res.insert("tan".to_string(), (STANDARD_CONTEXT_ID, 9));
+        res.insert("abs".to_string(), (STANDARD_CONTEXT_ID, 10));
+        res.insert("sqrt".to_string(), (STANDARD_CONTEXT_ID, 11));
+        res.insert("exp".to_string(), (STANDARD_CONTEXT_ID, 12));
+        res.insert("ln".to_string(), (STANDARD_CONTEXT_ID, 13));
+        res.insert("arcsin".to_string(), (STANDARD_CONTEXT_ID, 14));
+        res.insert("arccos".to_string(), (STANDARD_CONTEXT_ID, 15));
+        res.insert("arctan".to_string(), (STANDARD_CONTEXT_ID, 16));
         res
     };
 
@@ -32,6 +43,16 @@ lazy_static! {
         res.insert((STANDARD_CONTEXT_ID, 4), Arc::new(special_funcs::Cd));
         res.insert((STANDARD_CONTEXT_ID, 5), Arc::new(special_funcs::Os));
         res.insert((STANDARD_CONTEXT_ID, 6), Arc::new(special_funcs::LinuxDistro));
+        res.insert((STANDARD_CONTEXT_ID, 7), Arc::new(math::Sin));
+        res.insert((STANDARD_CONTEXT_ID, 8), Arc::new(math::Cos));
+        res.insert((STANDARD_CONTEXT_ID, 9), Arc::new(math::Tan));
+        res.insert((STANDARD_CONTEXT_ID, 10), Arc::new(math::Abs));
+        res.insert((STANDARD_CONTEXT_ID, 11), Arc::new(math::Sqrt));
+        res.insert((STANDARD_CONTEXT_ID, 12), Arc::new(math::Exp));
+        res.insert((STANDARD_CONTEXT_ID, 13), Arc::new(math::Ln));
+        res.insert((STANDARD_CONTEXT_ID, 14), Arc::new(math::Arcsin));
+        res.insert((STANDARD_CONTEXT_ID, 15), Arc::new(math::Arccos));
+        res.insert((STANDARD_CONTEXT_ID, 16), Arc::new(math::Arctan));
         res
     };
 }

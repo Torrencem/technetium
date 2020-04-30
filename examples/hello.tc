@@ -1,2 +1,4 @@
 
-print(~"Your operating system is {os()}, and you're on {linux_distro()}")
+# print(~"Your operating system is {os()}, and you're on {linux_distro()}")
+
+print(~"sin(1) = {sin(1)} = {sin(1.0)}")

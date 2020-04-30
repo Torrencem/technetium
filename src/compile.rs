@@ -363,7 +363,29 @@ impl CompileManager {
     }
 
     pub fn compile_case_of(&mut self, ast: &CaseOf) -> CompileResult {
-        unimplemented!()
+        let my_local = self.local_name_gen();
+        let mut res = vec![];
+        let mut exit_jmp_indices: Vec<usize> = vec![];
+
+        res.append(&mut self.compile_expr(&ast.condition)?);
+        res.push(Op::store(my_local));
+
+        for (expr, body) in ast.cases.iter() {
+            let mut body = self.compile_statement_list(&body)?;
+            res.push(Op::load(my_local));
+            res.append(&mut self.compile_expr(&expr)?);
+            res.push(Op::cmp_neq);
+            res.push(Op::cond_jmp(body.len() as i16 + 2));
+            res.append(&mut body);
+            exit_jmp_indices.push(res.len());
+            res.push(Op::jmp(0));
+        }
+
+        for index in exit_jmp_indices {
+            res[index] = Op::jmp(res.len() as i16 - index as i16);
+        }
+        
+        Ok(res)
     }
 
     pub fn compile_func_definition(&mut self, ast: &FuncDefinition) -> CompileResult {

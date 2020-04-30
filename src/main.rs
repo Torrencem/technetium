@@ -107,6 +107,8 @@ fn main() {
 
     let code = manager.compile_statement_list(&ast);
 
+    trace!("Bytecode {:?}", code);
+
     let compile_context = manager.context_stack.pop().unwrap();
 
     let code = code.unwrap_or_else(|e| {

@@ -1,10 +1,15 @@
 
-my_num = 100
+my_num = 1000
 
-if my_num > 50 {
-	$ cat /dev/urandom | head -c {my_num * 3 * my_num.no_attr() }
-} else {
-	print(~"Number too small! The number is {my_num}")
+case my_num + 20 of {
+	10 => print("no"),
+	100 => {
+		print("no!")
+	},
+	1000 => {
+		print("no")
+	},
+	1020 => {
+		print("yes!")
+	},
 }
-
-print(5)

@@ -321,3 +321,33 @@ if my_num > 50 {
 
     Ok(())
 }
+
+#[test]
+fn test_case_of() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+r#"
+my_num = 1000
+
+case my_num + 20 of {
+	10 => print("no"),
+	100 => {
+		print("no!")
+	},
+	1000 => {
+		print("no")
+	},
+	1020 => {
+		print("yes!")
+	},
+}
+
+"#);
+    
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("yes!\n"));
+
+    Ok(())
+}
+

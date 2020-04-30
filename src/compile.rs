@@ -198,7 +198,7 @@ impl CompileManager {
                 res.push(Op::push_global_default(name));
             },
             NameLookupResult::NotFound => {
-            return Err(CompileError::new(CompileErrorType::UndefinedVariable(ast.fname.span), format!("Undefined function: {}", ast.fname.name).as_ref()));
+            return Err(CompileError::new(CompileErrorType::UndefinedVariable(ast.fname.span), format!("Undefined function: {}", ast.fname.name)));
             },
         }
         for arg in ast.arguments.iter() {
@@ -262,7 +262,7 @@ impl CompileManager {
                         Ok(vec![Op::push_global_default(name)])
                     },
                     NameLookupResult::NotFound => {
-                        Err(CompileError::new(CompileErrorType::UndefinedVariable(ast.span()), format!("Undefined variable: {}", v.name).as_ref()))
+                        Err(CompileError::new(CompileErrorType::UndefinedVariable(ast.span()), format!("Undefined variable: {}", v.name)))
                     },
                 }
             },

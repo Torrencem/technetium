@@ -1,9 +1,7 @@
-my_val = "Hello there!"
 
-case my_val of {
-    "baaad" => print("no"),
-	"Hello thar!" => {
-		print("no!")
-	},
-    "Hello there!" => print("yes!"),
-}
+my_num = 123
+
+program = sh("echo 123")
+
+program.join()
+

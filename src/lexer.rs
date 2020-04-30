@@ -251,6 +251,7 @@ impl<'input> Lexer<'input> {
         loop {
             match self.chars.peek() {
                 Some((_, ' ')) | Some((_, '\t')) | Some((_, '\n')) => {self.chars.next();},
+                Some((_, '#')) => {self.chars.next(); self.comment_line();},
                 _ => return,
             }
         }
@@ -434,6 +435,7 @@ impl<'input> Iterator for Lexer<'input> {
                 },
                 Some((i, '#')) => {
                     let line_end = self.comment_line();
+                    self.eat_blank_lines();
                     return Some(Ok((i, Tok::Newline, line_end)));
                 },
                 Some((i, '~')) => {

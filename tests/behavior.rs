@@ -160,6 +160,20 @@ print("Hi again!")          # To whom?
         .success()
         .stdout(predicate::eq("Hello world!\nHi again!\n"));
 
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+r#"
+# blank here
+print("Hello world!")  # To the world
+# Fully blank line
+
+print("Hi again!")          # To whom?
+"#);
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("Hello world!\nHi again!\n"));
+
     Ok(())
 }
 
@@ -366,6 +380,27 @@ case my_val of {
         .success()
         .stdout(predicate::eq("yes!\n"));
 
+    Ok(())
+}
+
+#[test]
+fn test_sh_objects() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+r#"
+
+my_num = 123
+
+program = sh(~"echo {my_num}")
+
+program.join()
+
+print(~"program output was: {program.stdout()}")
+"#);
+    
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("program output was: 123\n\n")); // Second newline comes from output of echo
     Ok(())
 }
 

@@ -17,7 +17,10 @@ use std::fmt;
 
 use codespan::Span;
 
-/// Unique to each instance of a function
+pub type Bytecode = Vec<Op>;
+pub type CompileResult = std::result::Result<Bytecode, CompileError>;
+
+/// An identifier unique to each frame of computation
 pub type FrameId = u32;
 
 pub struct FrameIdGen {
@@ -30,6 +33,8 @@ lazy_static! {
     };
 }
 
+/// Generate a new unique FrameID. This uses a static counter behind
+/// a mutex to guarantee a unique ID.
 pub fn gen_frame_id() -> FrameId {
     let mut gen = FRAME_ID_GEN.lock().unwrap();
     let old = gen.last;
@@ -37,8 +42,11 @@ pub fn gen_frame_id() -> FrameId {
     old
 }
 
-/// Unique to each function in source code
+/// Unique to each function in source code. Unlike FrameId, multiple
+/// frames can share a ContextID if they came from the same function
+/// of source code.
 pub type ContextId = u16;
+
 pub type LocalName = u16;
 pub type NonLocalUnmappedName = (ContextId, u16);
 pub type NonLocalName = (FrameId, u16);
@@ -47,17 +55,22 @@ pub type DebugSpanDescriptor = u16;
 
 #[allow(non_camel_case_types)]
 #[derive(Copy, Clone, Debug)]
-/// An operation in the technetium virtual machine
+/// An operation on the technetium virtual machine
 pub enum Op {
     /// Do nothing
     nop,
     
     /// Store the object on the top of the stack in a local variable
     store(LocalName),
+
+    /// Store the object on the top of the stack in a local variable
+    /// in a different frame
     store_non_local(NonLocalUnmappedName),
     
     /// Load an object from a local variable
     load(LocalName),
+
+    /// Load an object from a local variable in a different frame
     load_non_local(NonLocalUnmappedName),
 
     /// Special for functions: Attach the current least_ancestor
@@ -107,7 +120,6 @@ pub enum Op {
     cmp_leq,
     cmp_geq,
 
-    /// Take the 2nd object on the stack, and take the 1st object as an index
     index_get,
 
     index_set,

@@ -1,3 +1,5 @@
+//! Lextime, Parsetime, Compiletime, and Runtime errors for technetium
+//!
 
 use std::fmt;
 use codespan::{Span, FileId};
@@ -8,13 +10,17 @@ use sys_info;
 
 use lalrpop_util;
 
+/// The result of a computation on the technetium runtime
 pub type RuntimeResult<T> = std::result::Result<T, RuntimeError>;
 
+/// An error from a computation on the technetium runtime
 #[derive(Clone, Debug)]
 pub struct RuntimeError {
-    err: RuntimeErrorType,
-    help: String,
-    span: Option<Span>,
+    pub err: RuntimeErrorType,
+    /// A short description helping diagnose what caused the error
+    pub help: String,
+    /// The segment of user code where the error occured, if applicable
+    pub span: Option<Span>,
 }
 
 impl fmt::Display for RuntimeError {
@@ -30,7 +36,9 @@ pub enum RuntimeErrorType {
     InternalError,
     IndexOutOfBounds,
     ChildProcessError,
+    /// Wrapping an std::io::Error
     IOError,
+    /// An error raised by the sys_info crate
     SysInfoError,
 }
 
@@ -55,46 +63,47 @@ impl From<std::io::Error> for RuntimeError {
 }
 
 impl RuntimeError {
-    pub fn type_error(message: String) -> Self {
+    pub fn type_error<S: ToString>(message: S) -> Self {
         RuntimeError {
             err: RuntimeErrorType::TypeError,
-            help: message,
+            help: message.to_string(),
             span: None,
         }
     }
     
-    pub fn attribute_error(message: String) -> Self {
+    pub fn attribute_error<S: ToString>(message: S) -> Self {
         RuntimeError {
             err: RuntimeErrorType::AttributeError,
-            help: message,
+            help: message.to_string(),
             span: None,
         }
     }
 
-    pub fn internal_error(message: String) -> Self {
+    pub fn internal_error<S: ToString>(message: S) -> Self {
         RuntimeError {
             err: RuntimeErrorType::InternalError,
-            help: message,
+            help: message.to_string(),
             span: None,
         }
     }
 
-    pub fn index_oob_error(message: String) -> Self {
+    pub fn index_oob_error<S: ToString>(message: S) -> Self {
         RuntimeError {
             err: RuntimeErrorType::IndexOutOfBounds,
-            help: message,
+            help: message.to_string(),
             span: None,
         }
     }
     
-    pub fn child_process_error(message: String) -> Self {
+    pub fn child_process_error<S: ToString>(message: S) -> Self {
         RuntimeError {
             err: RuntimeErrorType::ChildProcessError,
-            help: message,
+            help: message.to_string(),
             span: None,
         }
     }
-
+    
+    /// Attach a code location to an error, for reporting diagnostics to the user
     pub fn attach_span(self, span: Span) -> Self {
         RuntimeError {
             err: self.err,
@@ -102,7 +111,8 @@ impl RuntimeError {
             span: Some(span),
         }
     }
-
+    
+    /// Attach a code location to an error if it does not already have one
     pub fn weak_attach_span(self, span: Span) -> Self {
         match self.span {
             Some(val) => {
@@ -122,6 +132,7 @@ impl RuntimeError {
         }
     }
     
+    /// Create a diagnostic message from an error, for reporting to the user
     pub fn as_diagnostic<FileId>(&self, fileid: FileId) -> Diagnostic<FileId> {
         match self.span {
             Some(span) => Diagnostic::error()
@@ -135,6 +146,7 @@ impl RuntimeError {
     }
 }
 
+/// An error that has occured when translating code from the AST to bytecode
 #[derive(Debug, Clone)]
 pub struct CompileError {
     pub kind: CompileErrorType,
@@ -147,10 +159,11 @@ pub enum CompileErrorType {
 }
 
 impl CompileError {
-    pub fn new(kind: CompileErrorType, help: &str) -> Self {
+    pub fn new<S: ToString>(kind: CompileErrorType, help: S) -> Self {
         CompileError { kind, help: help.to_string() }
     }
-
+    
+    /// Create a diagnostic message from an error, for reporting to the user
     pub fn as_diagnostic<FileId>(&self, fileid: FileId) -> Diagnostic<FileId> {
         match self.kind {
             CompileErrorType::UndefinedVariable(span) => Diagnostic::error()
@@ -161,8 +174,6 @@ impl CompileError {
         }
     }
 }
-
-pub type CompileResult = std::result::Result<Vec<Op>, CompileError>;
 
 #[derive(Clone, Debug)]
 pub struct LexError {

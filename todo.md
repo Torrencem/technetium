@@ -3,7 +3,7 @@ This is a rough todo list of features I need to add to the language:
 
 * short circuiting (doesn't work because arguments are evaluated before being sent into function 'or')
 * either char type, or some other sane way of doing string indexing (s[0] = 'h')
-* remove .to_string() especially in bytecode where unnecessary because of generics.
+* remove .to_string() where applicable
 * slices
 * (+) for lists
 * generators

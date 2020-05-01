@@ -254,7 +254,7 @@ impl<'code> Frame<'code> {
                     if let Some(val) = res {
                         self.locals.insert((self.id, *local_name), val);
                     } else {
-                        return Err(RuntimeError::internal_error("Stored an empty stack!".to_string()));
+                        return Err(RuntimeError::internal_error("Stored an empty stack!"));
                     }
                 },
                 Op::store_non_local(nl_name) => {
@@ -262,7 +262,7 @@ impl<'code> Frame<'code> {
                     if let Some(val) = res {
                         self.locals.insert((*self.least_ancestors.get(&nl_name.0).unwrap(), nl_name.1), val);
                     } else {
-                        return Err(RuntimeError::internal_error("Stored an empty stack!".to_string()));
+                        return Err(RuntimeError::internal_error("Stored an empty stack!"));
                     }
                 },
                 Op::load(local_name) => {
@@ -270,7 +270,7 @@ impl<'code> Frame<'code> {
                     if let Some(val) = local {
                         self.stack.push(Arc::clone(val));
                     } else {
-                        return Err(RuntimeError::internal_error("Loaded a local that doesn't exist!".to_string()));
+                        return Err(RuntimeError::internal_error("Loaded a local that doesn't exist!"));
                     }
                 },
                 Op::load_non_local(nl_name) => {
@@ -278,7 +278,7 @@ impl<'code> Frame<'code> {
                     if let Some(val) = nl {
                         self.stack.push(Arc::clone(val));
                     } else {
-                        return Err(RuntimeError::internal_error("Loaded a local that doesn't exist!".to_string()));
+                        return Err(RuntimeError::internal_error("Loaded a local that doesn't exist!"));
                     }
                 },
                 Op::attach_ancestors => {
@@ -290,16 +290,16 @@ impl<'code> Frame<'code> {
                             assert!(la.is_none());
                             *la = Some(self.least_ancestors.clone());
                         } else {
-                            return Err(RuntimeError::internal_error("Tried to attach ancestors to non-function".to_string()));
+                            return Err(RuntimeError::internal_error("Tried to attach ancestors to non-function"));
                         }
                         self.stack.push(top);
                     } else {
-                        return Err(RuntimeError::internal_error("Tried to attach ancestors to nothing".to_string()));
+                        return Err(RuntimeError::internal_error("Tried to attach ancestors to nothing"));
                     }
                 },
                 Op::swap => {
                     if self.stack.len() < 2 {
-                        return Err(RuntimeError::internal_error("Stack is too small to swap!".to_string()));
+                        return Err(RuntimeError::internal_error("Stack is too small to swap!"));
                     }
                     let top = self.stack.pop().unwrap();
                     let snd = self.stack.pop().unwrap();
@@ -309,7 +309,7 @@ impl<'code> Frame<'code> {
                 Op::pop => {
                     let res = self.stack.pop();
                     if res.is_none() {
-                        return Err(RuntimeError::internal_error("Popped an empty stack!".to_string()));
+                        return Err(RuntimeError::internal_error("Popped an empty stack!"));
                     }
                 },
                 Op::dup => {
@@ -317,13 +317,13 @@ impl<'code> Frame<'code> {
                     if let Some(val) = dup {
                         self.stack.push(val);
                     } else {
-                        return Err(RuntimeError::internal_error("Dupped an empty stack!".to_string()));
+                        return Err(RuntimeError::internal_error("Dupped an empty stack!"));
                     }
                 },
                 Op::call_method(nargs) => {
                     let nargs = *nargs as usize;
                     if self.stack.len() < nargs + 2 {
-                        return Err(RuntimeError::internal_error("Called method on too small a stack!".to_string()));
+                        return Err(RuntimeError::internal_error("Called method on too small a stack!"));
                     }
                     let args: Vec<ObjectRef> = self.stack.drain((self.stack.len() - nargs)..).collect();
                     let name = self.stack.pop().unwrap();
@@ -334,13 +334,13 @@ impl<'code> Frame<'code> {
                         let res = try_debug!(self, ds, dsw, obj.call_method(val.as_ref(), &args));
                         self.stack.push(res);
                     } else {
-                        return Err(RuntimeError::internal_error("Method name not a string!".to_string()));
+                        return Err(RuntimeError::internal_error("Method name not a string!"));
                     }
                 },
                 Op::call_function(nargs) => {
                     let nargs = *nargs as usize;
                     if self.stack.len() < nargs + 1 {
-                        return Err(RuntimeError::internal_error("Called function object on too small a stack!".to_string()));
+                        return Err(RuntimeError::internal_error("Called function object on too small a stack!"));
                     }
                     let args: Vec<ObjectRef> = self.stack.drain((self.stack.len() - nargs)..).collect();
                     let func = self.stack.pop().unwrap();
@@ -349,7 +349,7 @@ impl<'code> Frame<'code> {
                 },
                 Op::get_attr => {
                     if self.stack.len() < 2 {
-                        return Err(RuntimeError::internal_error("Too small a stack to perform get_attr!".to_string()));
+                        return Err(RuntimeError::internal_error("Too small a stack to perform get_attr!"));
                     }
                     let attr = self.stack.pop().unwrap();
                     let obj = self.stack.pop().unwrap();
@@ -359,12 +359,12 @@ impl<'code> Frame<'code> {
                         let res = try_debug!(self, ds, dsw, obj.get_attr(val.clone()));
                         self.stack.push(res);
                     } else {
-                        return Err(RuntimeError::internal_error("Attribute name not a string!".to_string()));
+                        return Err(RuntimeError::internal_error("Attribute name not a string!"));
                     }
                 },
                 Op::set_attr => {
                     if self.stack.len() < 3 {
-                        return Err(RuntimeError::internal_error("Too small a stack to perform set_attr!".to_string()));
+                        return Err(RuntimeError::internal_error("Too small a stack to perform set_attr!"));
                     }
                     let toset = self.stack.pop().unwrap();
                     let attr = self.stack.pop().unwrap();
@@ -374,7 +374,7 @@ impl<'code> Frame<'code> {
                         let val = attr_name.val.lock().unwrap();
                         try_debug!(self, ds, dsw, obj.set_attr(val.clone(), toset));
                     } else {
-                        return Err(RuntimeError::internal_error("Attribute name not a string!".to_string()));
+                        return Err(RuntimeError::internal_error("Attribute name not a string!"));
                     }
                 },
                 Op::to_string => {
@@ -382,13 +382,13 @@ impl<'code> Frame<'code> {
                     if let Some(obj) = obj {
                         self.stack.push(StringObject::new(try_debug!(self, ds, dsw, obj.to_string())));
                     } else {
-                        return Err(RuntimeError::internal_error("to_string called on an empty stack!".to_string()));
+                        return Err(RuntimeError::internal_error("to_string called on an empty stack!"));
                     }
                 },
                 Op::fmt_string(num_args) => {
                     let len = *num_args as usize;
                     if self.stack.len() < len + 1 {
-                        return Err(RuntimeError::internal_error("Tried to format a string with an incorrect number of args!".to_string()));
+                        return Err(RuntimeError::internal_error("Tried to format a string with an incorrect number of args!"));
                     }
                     let mut objs: Vec<ObjectRef> = self.stack.drain((self.stack.len() - len)..).collect();
                     let subs = self.stack.pop();
@@ -418,15 +418,15 @@ impl<'code> Frame<'code> {
 
                             self.stack.push(StringObject::new(result_string));
                         } else {
-                            return Err(RuntimeError::internal_error("Tried to format a non-string!".to_string()));
+                            return Err(RuntimeError::internal_error("Tried to format a non-string!"));
                         }
                     } else {
-                        return Err(RuntimeError::internal_error("Tried to format an empty stack!".to_string()));
+                        return Err(RuntimeError::internal_error("Tried to format an empty stack!"));
                     }
                 },
                 Op::add => {
                     if self.stack.len() < 2 {
-                        return Err(RuntimeError::internal_error("Tried to add less than 2 things!".to_string()));
+                        return Err(RuntimeError::internal_error("Tried to add less than 2 things!"));
                     }
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
@@ -434,7 +434,7 @@ impl<'code> Frame<'code> {
                 },
                 Op::sub => {
                     if self.stack.len() < 2 {
-                        return Err(RuntimeError::internal_error("Tried to sub less than 2 things!".to_string()));
+                        return Err(RuntimeError::internal_error("Tried to sub less than 2 things!"));
                     }
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
@@ -442,7 +442,7 @@ impl<'code> Frame<'code> {
                 },
                 Op::mul => {
                     if self.stack.len() < 2 {
-                        return Err(RuntimeError::internal_error("Tried to mul less than 2 things!".to_string()));
+                        return Err(RuntimeError::internal_error("Tried to mul less than 2 things!"));
                     }
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
@@ -450,7 +450,7 @@ impl<'code> Frame<'code> {
                 },
                 Op::div => {
                     if self.stack.len() < 2 {
-                        return Err(RuntimeError::internal_error("Tried to div less than 2 things!".to_string()));
+                        return Err(RuntimeError::internal_error("Tried to div less than 2 things!"));
                     }
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
@@ -458,7 +458,7 @@ impl<'code> Frame<'code> {
                 },
                 Op::mod_ => {
                     if self.stack.len() < 2 {
-                        return Err(RuntimeError::internal_error("Tried to mod less than 2 things!".to_string()));
+                        return Err(RuntimeError::internal_error("Tried to mod less than 2 things!"));
                     }
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
@@ -466,21 +466,21 @@ impl<'code> Frame<'code> {
                 },
                 Op::not => {
                     if self.stack.len() < 1 {
-                        return Err(RuntimeError::internal_error("Tried to not nothing!".to_string()));
+                        return Err(RuntimeError::internal_error("Tried to not nothing!"));
                     }
                     let a = self.stack.pop().unwrap();
                     self.stack.push(try_debug!(self, ds, dsw, builtins::not(a)));
                 },
                 Op::neg => {
                     if self.stack.len() < 1 {
-                        return Err(RuntimeError::internal_error("Tried to negate nothing!".to_string()));
+                        return Err(RuntimeError::internal_error("Tried to negate nothing!"));
                     }
                     let a = self.stack.pop().unwrap();
                     self.stack.push(try_debug!(self, ds, dsw, builtins::negate(a)));
                 },
                 Op::or => {
                     if self.stack.len() < 2 {
-                        return Err(RuntimeError::internal_error("Tried to div less than 2 things!".to_string()));
+                        return Err(RuntimeError::internal_error("Tried to div less than 2 things!"));
                     }
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
@@ -488,7 +488,7 @@ impl<'code> Frame<'code> {
                 },
                 Op::and => {
                     if self.stack.len() < 2 {
-                        return Err(RuntimeError::internal_error("Tried to div less than 2 things!".to_string()));
+                        return Err(RuntimeError::internal_error("Tried to div less than 2 things!"));
                     }
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
@@ -496,7 +496,7 @@ impl<'code> Frame<'code> {
                 },
                 Op::cmp_lt => {
                     if self.stack.len() < 2 {
-                        return Err(RuntimeError::internal_error("Tried to compare less than 2 things!".to_string()));
+                        return Err(RuntimeError::internal_error("Tried to compare less than 2 things!"));
                     }
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
@@ -504,7 +504,7 @@ impl<'code> Frame<'code> {
                 },
                 Op::cmp_gt => {
                     if self.stack.len() < 2 {
-                        return Err(RuntimeError::internal_error("Tried to compare less than 2 things!".to_string()));
+                        return Err(RuntimeError::internal_error("Tried to compare less than 2 things!"));
                     }
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
@@ -512,7 +512,7 @@ impl<'code> Frame<'code> {
                 },
                 Op::cmp_eq => {
                     if self.stack.len() < 2 {
-                        return Err(RuntimeError::internal_error("Tried to compare less than 2 things!".to_string()));
+                        return Err(RuntimeError::internal_error("Tried to compare less than 2 things!"));
                     }
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
@@ -520,7 +520,7 @@ impl<'code> Frame<'code> {
                 },
                 Op::cmp_neq => {
                     if self.stack.len() < 2 {
-                        return Err(RuntimeError::internal_error("Tried to compare less than 2 things!".to_string()));
+                        return Err(RuntimeError::internal_error("Tried to compare less than 2 things!"));
                     }
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
@@ -528,7 +528,7 @@ impl<'code> Frame<'code> {
                 },
                 Op::cmp_leq => {
                     if self.stack.len() < 2 {
-                        return Err(RuntimeError::internal_error("Tried to compare less than 2 things!".to_string()));
+                        return Err(RuntimeError::internal_error("Tried to compare less than 2 things!"));
                     }
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
@@ -536,7 +536,7 @@ impl<'code> Frame<'code> {
                 },
                 Op::cmp_geq => {
                     if self.stack.len() < 2 {
-                        return Err(RuntimeError::internal_error("Tried to compare less than 2 things!".to_string()));
+                        return Err(RuntimeError::internal_error("Tried to compare less than 2 things!"));
                     }
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
@@ -544,7 +544,7 @@ impl<'code> Frame<'code> {
                 },
                 Op::index_get => {
                     if self.stack.len() < 2 {
-                        return Err(RuntimeError::internal_error("Tried to index less than 2 things!".to_string()));
+                        return Err(RuntimeError::internal_error("Tried to index less than 2 things!"));
                     }
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
@@ -552,7 +552,7 @@ impl<'code> Frame<'code> {
                 },
                 Op::index_set => {
                     if self.stack.len() < 3 {
-                        return Err(RuntimeError::internal_error("Tried to index less than 2 things!".to_string()));
+                        return Err(RuntimeError::internal_error("Tried to index less than 2 things!"));
                     }
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
@@ -564,7 +564,7 @@ impl<'code> Frame<'code> {
                     if let Some(val) = val {
                         self.stack.push(try_debug!(self, ds, dsw, val.make_iter()));
                     } else {
-                        return Err(RuntimeError::internal_error("Tried to call make_iter on nothing!".to_string()));
+                        return Err(RuntimeError::internal_error("Tried to call make_iter on nothing!"));
                     }
                 },
                 Op::take_iter(offset) => {
@@ -585,7 +585,7 @@ impl<'code> Frame<'code> {
                             continue;
                         }
                     } else {
-                        return Err(RuntimeError::internal_error("Tried to call make_iter on nothing!".to_string()));
+                        return Err(RuntimeError::internal_error("Tried to call make_iter on nothing!"));
                     }
                 },
                 Op::mklist(len) => {
@@ -615,7 +615,7 @@ impl<'code> Frame<'code> {
                     if let Some(obj) = obj {
                         self.stack.push(Arc::clone(obj));
                     } else {
-                        return Err(RuntimeError::internal_error("Reference to constant that doesn't exist!".to_string()));
+                        return Err(RuntimeError::internal_error("Reference to constant that doesn't exist!"));
                     }
                 },
                 Op::push_const_clone(const_descr) => {
@@ -623,7 +623,7 @@ impl<'code> Frame<'code> {
                     if let Some(obj) = obj {
                         self.stack.push(obj.technetium_clone()?);
                     } else {
-                        return Err(RuntimeError::internal_error("Reference to constant that doesn't exist!".to_string()));
+                        return Err(RuntimeError::internal_error("Reference to constant that doesn't exist!"));
                     }
                 },
                 Op::push_global_default(const_descr) => {
@@ -631,7 +631,7 @@ impl<'code> Frame<'code> {
                     if let Some(obj) = obj {
                         self.stack.push(Arc::clone(obj));
                     } else {
-                        return Err(RuntimeError::internal_error("Reference to a global default that doesn't exist!".to_string()));
+                        return Err(RuntimeError::internal_error("Reference to a global default that doesn't exist!"));
                     }
                 },
                 Op::jmp(offset) => {
@@ -658,7 +658,7 @@ impl<'code> Frame<'code> {
                             continue;
                         }
                     } else {
-                        return Err(RuntimeError::internal_error("cond_jmp on an empty stack!".to_string()));
+                        return Err(RuntimeError::internal_error("cond_jmp on an empty stack!"));
                     }
                 },
                 Op::ret => {
@@ -666,7 +666,7 @@ impl<'code> Frame<'code> {
                     if let Some(val) = res {
                         return Ok(val);
                     } else {
-                        return Err(RuntimeError::internal_error("Returned an empty stack!".to_string()));
+                        return Err(RuntimeError::internal_error("Returned an empty stack!"));
                     }
                 },
                 Op::sh => {
@@ -688,17 +688,17 @@ impl<'code> Frame<'code> {
                                     return Err(err);
                                 }
                             } else {
-                                let mut err = RuntimeError::child_process_error("Child process failed to start".to_string());
+                                let mut err = RuntimeError::child_process_error("Child process failed to start");
                                 if let Some(ds) = ds {
                                     return Err(err.attach_span(*self.global_context.debug_descriptors.get(&ds).unwrap()));
                                 }
                                 return Err(err);
                             }
                         } else {
-                            return Err(RuntimeError::internal_error("Tried to call sh on a non-string!".to_string()));
+                            return Err(RuntimeError::internal_error("Tried to call sh on a non-string!"));
                         }
                     } else {
-                        return Err(RuntimeError::internal_error("Tried to call sh on an empty stack!".to_string()));
+                        return Err(RuntimeError::internal_error("Tried to call sh on an empty stack!"));
                     }
                 },
                 Op::debug(symb) => {

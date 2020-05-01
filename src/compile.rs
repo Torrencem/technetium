@@ -156,7 +156,7 @@ impl CompileManager {
             }
         };
         self.context().constant_descriptors.insert(descr, constant);
-        Ok(vec![Op::push_const(descr)])
+        Ok(vec![Op::push_const_clone(descr)])
     }
 
     pub fn compile_list_literal(&mut self, ast: &ListLiteral) -> CompileResult {

@@ -165,20 +165,21 @@ impl Object for FloatObject {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct StringObject {
-    pub val: String
+    pub val: Mutex<String>
 }
 
 impl StringObject {
     pub fn new(s: String) -> ObjectRef {
-        Arc::new(StringObject { val: s })
+        Arc::new(StringObject { val: Mutex::new(s) })
     }
 }
 
 impl Object for StringObject {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        Ok(Arc::new(RustClone::clone(self)))
+        let val = self.val.lock().unwrap();
+        Ok(StringObject::new(val.clone()))
     }
 
     fn technetium_type_name(&self) -> String {
@@ -186,11 +187,13 @@ impl Object for StringObject {
     }
 
     fn to_string(&self) -> RuntimeResult<String> {
-        Ok(RustClone::clone(&self.val))
+        let val = self.val.lock().unwrap();
+        Ok(val.clone())
     }
 
     fn truthy(&self) -> bool {
-        self.val != ""
+        let val = self.val.lock().unwrap();
+        *val != ""
     }
 }
 

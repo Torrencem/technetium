@@ -33,12 +33,12 @@ pub fn add(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         },
         (a, _) if a == TypeId::of::<StringObject>() => {
             let a = a_any.downcast_ref::<StringObject>().unwrap();
-            let res = format!("{}{}", a.val, b.to_string()?);
+            let res = format!("{}{}", a.val.lock().unwrap(), b.to_string()?);
             Ok(StringObject::new(res))
         },
         (_, b) if b == TypeId::of::<StringObject>() => {
             let b = b_any.downcast_ref::<StringObject>().unwrap();
-            let res = format!("{}{}", a.to_string()?, b.val);
+            let res = format!("{}{}", a.to_string()?, b.val.lock().unwrap());
             Ok(StringObject::new(res))
         },
         _ => {
@@ -322,11 +322,16 @@ pub fn cmp_eq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let res = BoolObject::new(val_a.val == val_b.val);
             Ok(res)
         },
-        (a, b) if a == TypeId::of::<StringObject>() && b == TypeId::of::<StringObject>() => {
+        (a_, b_) if a_ == TypeId::of::<StringObject>() && b_ == TypeId::of::<StringObject>() => {
             let val_a = a_any.downcast_ref::<StringObject>().unwrap();
             let val_b = b_any.downcast_ref::<StringObject>().unwrap();
-            let res = BoolObject::new(val_a.val == val_b.val);
-            Ok(res)
+            // Check for alias to avoid deadlock
+            if Arc::ptr_eq(&a, &b) {
+                Ok(BoolObject::new(true))   
+            } else {
+                let res = BoolObject::new(*val_a.val.lock().unwrap() == *val_b.val.lock().unwrap());
+                Ok(res)
+            }
         },
         _ => {
             Err(RuntimeError::type_error(format!("Cannot equate type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
@@ -362,11 +367,16 @@ pub fn cmp_neq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let res = BoolObject::new(val_a.val != val_b.val);
             Ok(res)
         },
-        (a, b) if a == TypeId::of::<StringObject>() && b == TypeId::of::<StringObject>() => {
+        (a_, b_) if a_ == TypeId::of::<StringObject>() && b_ == TypeId::of::<StringObject>() => {
             let val_a = a_any.downcast_ref::<StringObject>().unwrap();
             let val_b = b_any.downcast_ref::<StringObject>().unwrap();
-            let res = BoolObject::new(val_a.val != val_b.val);
-            Ok(res)
+            // Check for alias to avoid deadlock
+            if Arc::ptr_eq(&a, &b) {
+                Ok(BoolObject::new(false))   
+            } else {
+                let res = BoolObject::new(*val_a.val.lock().unwrap() != *val_b.val.lock().unwrap());
+                Ok(res)
+            }
         },
         _ => {
             Err(RuntimeError::type_error(format!("Cannot equate type {} to type {}", a.technetium_type_name(), b.technetium_type_name())))
@@ -476,7 +486,7 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             if val_b.val < 0 {
                 return Err(RuntimeError::index_oob_error("Negative index".to_string()));
             }
-            let c = val_a.val.chars().nth(val_b.val as u64 as usize);
+            let c = val_a.val.lock().unwrap().chars().nth(val_b.val as u64 as usize);
             if let Some(c) = c {
                 let s = format!("{}", c);
                 Ok(StringObject::new(s))

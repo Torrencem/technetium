@@ -328,7 +328,8 @@ impl<'code> Frame<'code> {
                     let obj = self.stack.pop().unwrap();
                     let name = name.as_any();
                     if let Some(method_name) = name.downcast_ref::<StringObject>() {
-                        let res = try_debug!(self, ds, dsw, obj.call_method(method_name.val.as_ref(), &args));
+                        let val = method_name.val.lock().unwrap();
+                        let res = try_debug!(self, ds, dsw, obj.call_method(val.as_ref(), &args));
                         self.stack.push(res);
                     } else {
                         return Err(RuntimeError::internal_error("Method name not a string!".to_string()));
@@ -352,7 +353,8 @@ impl<'code> Frame<'code> {
                     let obj = self.stack.pop().unwrap();
                     let attr = attr.as_any();
                     if let Some(attr_name) = attr.downcast_ref::<StringObject>() {
-                        let res = try_debug!(self, ds, dsw, obj.get_attr(RustClone::clone(&attr_name.val)));
+                        let val = attr_name.val.lock().unwrap();
+                        let res = try_debug!(self, ds, dsw, obj.get_attr(val.clone()));
                         self.stack.push(res);
                     } else {
                         return Err(RuntimeError::internal_error("Attribute name not a string!".to_string()));
@@ -367,7 +369,8 @@ impl<'code> Frame<'code> {
                     let obj = self.stack.pop().unwrap();
                     let attr = attr.as_any();
                     if let Some(attr_name) = attr.downcast_ref::<StringObject>() {
-                        try_debug!(self, ds, dsw, obj.set_attr(RustClone::clone(&attr_name.val), toset));
+                        let val = attr_name.val.lock().unwrap();
+                        try_debug!(self, ds, dsw, obj.set_attr(val.clone(), toset));
                     } else {
                         return Err(RuntimeError::internal_error("Attribute name not a string!".to_string()));
                     }
@@ -390,7 +393,8 @@ impl<'code> Frame<'code> {
                     if let Some(subs) = subs {
                         if let Some(string) = subs.as_any().downcast_ref::<StringObject>() {
                             let mut result_string = String::new();
-                            let mut chars = string.val.chars().peekable();
+                            let val = string.val.lock().unwrap();
+                            let mut chars = val.chars().peekable();
                             loop {
                                 match chars.next() {
                                     Some('\\') => {
@@ -664,7 +668,7 @@ impl<'code> Frame<'code> {
                     if let Some(top) = top {
                         let top = top.as_any();
                         if let Some(top) = top.downcast_ref::<StringObject>() {
-                            let arg = top.val.clone();
+                            let arg = top.val.lock().unwrap().clone();
                             let mut command = Command::new("sh");
                             let process = command.stdin(Stdio::piped()).spawn();
                             if let Ok(mut child) = process {

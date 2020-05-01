@@ -140,7 +140,8 @@ impl Object for ShObject {
 func_object!(Sh, (1..=1), args -> {
     let arg_any = args[0].as_any();
     if let Some(str_obj) = arg_any.downcast_ref::<StringObject>() {
-        Ok(ShObject::new(str_obj.val.clone()))
+        let val = str_obj.val.lock().unwrap();
+        Ok(ShObject::new(val.clone()))
     } else {
         Err(RuntimeError::type_error("Incorrect type as argument to sh; expected string".to_string()))
     }

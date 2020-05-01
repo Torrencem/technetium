@@ -40,7 +40,8 @@ func_object!(Exit, (1..=1), args -> {
 func_object!(Cd, (1..=1), args -> {
     let arg_any = args[0].as_any();
     if let Some(str_obj) = arg_any.downcast_ref::<StringObject>() {
-        let path = Path::new(&str_obj.val);
+        let val = str_obj.val.lock().unwrap();
+        let path = Path::new(&*val);
         env::set_current_dir(path)?;
         Ok(VoidObject::new())
     } else {

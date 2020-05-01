@@ -404,3 +404,22 @@ print(~"program output was: {program.stdout()}")
     Ok(())
 }
 
+#[test]
+fn test_no_string_deadlock() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+r#"
+a = "hello"
+
+b = a
+
+print(a == b)
+print(a != b)
+"#);
+    
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("true\nfalse\n"));
+    Ok(())
+}
+

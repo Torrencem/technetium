@@ -1,7 +1,8 @@
 
 This is a rough todo list of features I need to add to the language:
 
-* boolean literals (true, false)
+* check size of Op to make sure it's 8 (or else change u32 -> u16)
+* short circuiting (doesn't work because arguments are evaluated before being sent into function 'or')
 * either char type, or some other sane way of doing string indexing (s[0] = 'h')
 * slices
 * (+) for lists

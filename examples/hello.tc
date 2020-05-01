@@ -3,9 +3,9 @@
 
 # print(~"sin({1.0}) = {sin(1)} = {sin(1.0)}")
 
+print(false && true)
 
-a = "hello"
+print(true && true)
 
-b = a
+print(false || true)
 
-print(a == b)

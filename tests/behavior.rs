@@ -423,3 +423,20 @@ print(a != b)
     Ok(())
 }
 
+#[test]
+fn test_bool_literals() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+r#"
+print(false && true)
+
+print(true && true)
+
+print(false || true)
+"#);
+    
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("false\ntrue\ntrue\n"));
+    Ok(())
+}

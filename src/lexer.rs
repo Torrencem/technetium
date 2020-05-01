@@ -45,6 +45,7 @@ pub enum Tok {
     Identifier(String),
     Int(i64),
     Float(f64),
+    Bool(bool),
     StringLit(String),
     FormatStringLit(String, Vec<(usize, String)>),
     ShStatement(String, Vec<(usize, String)>),
@@ -64,6 +65,8 @@ pub enum Tok {
 pub fn get_keywords() -> HashMap<String, Tok> {
     let mut res = HashMap::new();
     
+    res.insert("false".to_string(), Tok::Bool(false));
+    res.insert("true".to_string(), Tok::Bool(true));
     res.insert("if".to_string(), Tok::If);
     res.insert("then".to_string(), Tok::Then);
     res.insert("else".to_string(), Tok::Else);

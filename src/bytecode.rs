@@ -138,6 +138,8 @@ pub enum Op {
     push_int(i32),
 
     push_float(f32),
+
+    push_bool(bool),
     
     /// Push a constant referred to by a global constant descriptor
     push_const(GlobalConstantDescriptor),
@@ -602,6 +604,10 @@ impl<'code> Frame<'code> {
                 },
                 Op::push_float(f_val) => {
                     let obj = FloatObject::new(*f_val as f64);
+                    self.stack.push(obj);
+                },
+                Op::push_bool(b_val) => {
+                    let obj = BoolObject::new(*b_val);
                     self.stack.push(obj);
                 },
                 Op::push_const(const_descr) => {

@@ -148,6 +148,9 @@ impl CompileManager {
                 }
                 FloatObject::new(*val)
             },
+            Literal::Bool(val, _) => {
+                BoolObject::new(*val)
+            },
             Literal::Str(val, _) => {
                 StringObject::new(RustClone::clone(val))
             },

@@ -265,7 +265,7 @@ impl Object for List {
        match method {
             "length" => {
                 if args.len() > 0 {
-                    Err(RuntimeError::type_error("length expects 0 args".to_string()))
+                    Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
                     Ok(IntObject::new(self.contents.lock().unwrap().len() as i64))
                 }
@@ -333,7 +333,7 @@ impl Object for Tuple {
        match method {
             "length" => {
                 if args.len() > 0 {
-                    Err(RuntimeError::type_error("length expects 0 args".to_string()))
+                    Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
                     Ok(IntObject::new(self.contents.len() as i64))
                 }

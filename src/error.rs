@@ -200,7 +200,7 @@ impl LexError {
             Some(loc) => {
                 let loc = loc as u32;
                 Diagnostic::error()
-                    .with_message("Lex Error".to_string())
+                    .with_message("Lex Error")
                     .with_labels(vec![
                         Label::primary(fileid, Span::new(loc, loc+1)).with_message(&self.message),
                     ])
@@ -244,14 +244,14 @@ pub fn parse_error_to_diagnostic<FileId>(p: &ParseError, fileid: FileId) -> Diag
     match p {
         ParseError::InvalidToken { location: l } => {
                 Diagnostic::error()
-                    .with_message("Parse error: Invalid Token".to_string())
+                    .with_message("Parse error: Invalid Token")
                     .with_labels(vec![
                         Label::primary(fileid, Span::new(*l as u32, *l as u32 + 1)).with_message("Invalid or unknown token"),
                     ])
         },
         ParseError::UnrecognizedEOF { location: l, expected: e } => {
                 Diagnostic::error()
-                    .with_message("Parse error: Unrecognized End of Input".to_string())
+                    .with_message("Parse error: Unrecognized End of Input")
                     .with_labels(vec![
                         Label::primary(fileid, Span::new(*l as u32, *l as u32 + 1)).with_message("Invalid EOI"),
                     ])
@@ -261,7 +261,7 @@ pub fn parse_error_to_diagnostic<FileId>(p: &ParseError, fileid: FileId) -> Diag
         },
         ParseError::UnrecognizedToken { token: t, expected: e } => {
             Diagnostic::error()
-                .with_message("Parse error: Unrecognized or unexpected token".to_string())
+                .with_message("Parse error: Unrecognized or unexpected token")
                 .with_labels(vec![
                     Label::primary(fileid, Span::new(t.0 as u32, t.2 as u32)).with_message(format!("Did not expect {:?} here", t.1)),
                 ])
@@ -271,7 +271,7 @@ pub fn parse_error_to_diagnostic<FileId>(p: &ParseError, fileid: FileId) -> Diag
         },
         ParseError::ExtraToken { token: t } => {
             Diagnostic::error()
-                .with_message("Parse error: extra token".to_string())
+                .with_message("Parse error: extra token")
                 .with_labels(vec![
                     Label::primary(fileid, Span::new(t.0 as u32, t.2 as u32)).with_message(format!("Did not expect {:?} here", t.1)),
                 ])

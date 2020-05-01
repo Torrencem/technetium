@@ -109,6 +109,7 @@ impl ShObject {
                 Ok(BoolObject::new(status.success()))
             }
         } else {
+            // TODO: Should this be like this?
             Ok(StringObject::new("".to_string()))
         }
     }
@@ -121,7 +122,7 @@ impl Object for ShObject {
 
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
         if args.len() != 0 {
-            return Err(RuntimeError::type_error("Unexpected arguments to method call".to_string()));
+            return Err(RuntimeError::type_error("Unexpected arguments to method call"));
         }
 
         match method {
@@ -130,7 +131,7 @@ impl Object for ShObject {
            "stdout" => return Ok(self.stdout()?),
            "stderr" => return Ok(self.stderr()?),
            "exit_code" => return Ok(self.exit_code()?),
-           _ => return Err(RuntimeError::type_error("Unknown method".to_string())),
+           _ => return Err(RuntimeError::type_error("Unknown method")),
         }
 
         Ok(VoidObject::new())
@@ -143,6 +144,6 @@ func_object!(Sh, (1..=1), args -> {
         let val = str_obj.val.lock().unwrap();
         Ok(ShObject::new(val.clone()))
     } else {
-        Err(RuntimeError::type_error("Incorrect type as argument to sh; expected string".to_string()))
+        Err(RuntimeError::type_error("Incorrect type as argument to sh; expected string"))
     }
 });

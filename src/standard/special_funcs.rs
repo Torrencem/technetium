@@ -45,7 +45,7 @@ func_object!(Cd, (1..=1), args -> {
         env::set_current_dir(path)?;
         Ok(VoidObject::new())
     } else {
-        Err(RuntimeError::type_error("Expected string as argument to cd".to_string()))
+        Err(RuntimeError::type_error("Expected string as argument to cd"))
     }
 });
 
@@ -118,7 +118,7 @@ func_object!(RangeFunc, (1..=3), args -> {
                 step: 1,
             }))
         } else {
-            Err(RuntimeError::type_error("Expected integer arguments to range".to_string()))
+            Err(RuntimeError::type_error("Expected integer arguments to range"))
         }
     } else if args.len() == 2 {
         if let Some(int_obj_a) = args[0].as_any().downcast_ref::<IntObject>() {
@@ -129,10 +129,10 @@ func_object!(RangeFunc, (1..=3), args -> {
                     step: 1,
                 }))
             } else {
-                Err(RuntimeError::type_error("Expected integer arguments to range".to_string()))
+                Err(RuntimeError::type_error("Expected integer arguments to range"))
             }
         } else {
-            Err(RuntimeError::type_error("Expected integer arguments to range".to_string()))
+            Err(RuntimeError::type_error("Expected integer arguments to range"))
         }
     } else {
         if let Some(int_obj_a) = args[0].as_any().downcast_ref::<IntObject>() {
@@ -144,13 +144,13 @@ func_object!(RangeFunc, (1..=3), args -> {
                         step: int_obj_c.val,
                     }))
                 } else {
-                    Err(RuntimeError::type_error("Expected integer arguments to range".to_string()))
+                    Err(RuntimeError::type_error("Expected integer arguments to range"))
                 }
             } else {
-                Err(RuntimeError::type_error("Expected integer arguments to range".to_string()))
+                Err(RuntimeError::type_error("Expected integer arguments to range"))
             }
         } else {
-            Err(RuntimeError::type_error("Expected integer arguments to range".to_string()))
+            Err(RuntimeError::type_error("Expected integer arguments to range"))
         }
     }
 });

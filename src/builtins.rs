@@ -460,10 +460,10 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let val_a = a_any.downcast_ref::<List>().unwrap().contents.lock().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
             if val_b.val < 0 {
-                return Err(RuntimeError::index_oob_error("Negative index".to_string()));
+                return Err(RuntimeError::index_oob_error("Negative index"));
             }
             if (val_b.val as u64 as usize) >= val_a.len() {
-                return Err(RuntimeError::index_oob_error("Index out of bounds".to_string()));
+                return Err(RuntimeError::index_oob_error("Index out of bounds"));
             }
             let res = Arc::clone(&val_a[val_b.val as u64 as usize]);
             Ok(res)
@@ -472,10 +472,10 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let val_a = a_any.downcast_ref::<Tuple>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
             if val_b.val < 0 {
-                return Err(RuntimeError::index_oob_error("Negative index".to_string()));
+                return Err(RuntimeError::index_oob_error("Negative index"));
             }
             if (val_b.val as u64 as usize) >= val_a.contents.len() {
-                return Err(RuntimeError::index_oob_error("Index out of bounds".to_string()));
+                return Err(RuntimeError::index_oob_error("Index out of bounds"));
             }
             let res = Arc::clone(&val_a.contents[val_b.val as u64 as usize]);
             Ok(res)
@@ -484,7 +484,7 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let val_a = a_any.downcast_ref::<StringObject>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
             if val_b.val < 0 {
-                return Err(RuntimeError::index_oob_error("Negative index".to_string()));
+                return Err(RuntimeError::index_oob_error("Negative index"));
             }
             let c = val_a.val.lock().unwrap().chars().nth(val_b.val as u64 as usize);
             if let Some(c) = c {
@@ -508,10 +508,10 @@ pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> 
             let mut val_a = a_any.downcast_ref::<List>().unwrap().contents.lock().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
             if val_b.val < 0 {
-                return Err(RuntimeError::index_oob_error("Negative index".to_string()));
+                return Err(RuntimeError::index_oob_error("Negative index"));
             }
             if (val_b.val as u64 as usize) >= val_a.len() {
-                return Err(RuntimeError::index_oob_error("Index out of bounds".to_string()));
+                return Err(RuntimeError::index_oob_error("Index out of bounds"));
             }
             val_a[val_b.val as u64 as usize] = c;
             Ok(())

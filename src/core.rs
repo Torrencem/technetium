@@ -8,6 +8,8 @@ use crate::bytecode::{NonLocalName, ContextId, FrameId};
 use std::sync::Mutex;
 use std::collections::HashMap;
 
+use dtoa;
+
 use std::fmt;
 
 use crate::error::*;
@@ -153,7 +155,9 @@ impl Object for FloatObject {
     }
 
     fn to_string(&self) -> RuntimeResult<String> {
-        Ok(format!("{}", self.val))
+        let mut res: Vec<u8> = vec![];
+        dtoa::write(&mut res, self.val);
+        Ok(String::from_utf8(res).unwrap())
     }
 
     fn truthy(&self) -> bool {

@@ -4,6 +4,7 @@ This is a rough todo list of features I need to add to the language:
 * short circuiting (doesn't work because arguments are evaluated before being sent into function 'or')
 * run a formatter and clippy
 * `type`, `to_string`, and `copy` functions
+* type conversion functions
 * slices
 * examples in README.md
 * (+) for lists

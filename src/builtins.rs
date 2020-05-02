@@ -254,6 +254,12 @@ pub fn cmp_lt(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let res = BoolObject::new(val_a.val < val_b.val);
             Ok(res)
         },
+        (a, b) if a == TypeId::of::<CharObject>() && b == TypeId::of::<CharObject>() => {
+            let val_a = a_any.downcast_ref::<CharObject>().unwrap();
+            let val_b = b_any.downcast_ref::<CharObject>().unwrap();
+            let res = BoolObject::new(val_a.val < val_b.val);
+            Ok(res)
+        },
         _ => {
             Err(RuntimeError::type_error(format!("Cannot compare type {} with type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
@@ -285,6 +291,12 @@ pub fn cmp_gt(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
             let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
             let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = BoolObject::new(val_a.val > val_b.val);
+            Ok(res)
+        },
+        (a, b) if a == TypeId::of::<CharObject>() && b == TypeId::of::<CharObject>() => {
+            let val_a = a_any.downcast_ref::<CharObject>().unwrap();
+            let val_b = b_any.downcast_ref::<CharObject>().unwrap();
             let res = BoolObject::new(val_a.val > val_b.val);
             Ok(res)
         },
@@ -424,6 +436,12 @@ pub fn cmp_leq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let res = BoolObject::new(val_a.val <= val_b.val);
             Ok(res)
         },
+        (a, b) if a == TypeId::of::<CharObject>() && b == TypeId::of::<CharObject>() => {
+            let val_a = a_any.downcast_ref::<CharObject>().unwrap();
+            let val_b = b_any.downcast_ref::<CharObject>().unwrap();
+            let res = BoolObject::new(val_a.val <= val_b.val);
+            Ok(res)
+        },
         _ => {
             Err(RuntimeError::type_error(format!("Cannot compare type {} with type {}", a.technetium_type_name(), b.technetium_type_name())))
         },
@@ -455,6 +473,12 @@ pub fn cmp_geq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
             let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
             let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = BoolObject::new(val_a.val >= val_b.val);
+            Ok(res)
+        },
+        (a, b) if a == TypeId::of::<CharObject>() && b == TypeId::of::<CharObject>() => {
+            let val_a = a_any.downcast_ref::<CharObject>().unwrap();
+            let val_b = b_any.downcast_ref::<CharObject>().unwrap();
             let res = BoolObject::new(val_a.val >= val_b.val);
             Ok(res)
         },

@@ -39,7 +39,7 @@ func_object!(Exit, (1..=1), args -> {
 func_object!(Cd, (1..=1), args -> {
     let arg_any = args[0].as_any();
     if let Some(str_obj) = arg_any.downcast_ref::<StringObject>() {
-        let val = str_obj.val.lock().unwrap();
+        let val = str_obj.val.lock()?;
         let path = Path::new(&*val);
         env::set_current_dir(path)?;
         Ok(VoidObject::new())
@@ -105,7 +105,7 @@ impl Object for RangeIterator {
     }
 
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
-        let mut _curr = self.curr.lock().unwrap();
+        let mut _curr = self.curr.lock()?;
         if (self.inner.step < 0 && *_curr <= self.inner.end)
             || (self.inner.step > 0 && *_curr >= self.inner.end)
         {

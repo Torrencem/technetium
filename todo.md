@@ -4,7 +4,6 @@ This is a rough todo list of features I need to add to the language:
 * slices
 * split standard into more files
 * split tests/behavior.rs into more files
-* get rid of all .lock().unwrap(), make MutexError's a RuntimeError
 * generators
 * run clippy
 * multi-file programs (import from another file)

@@ -234,7 +234,7 @@ impl StringObject {
 
 impl Object for StringObject {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        let val = self.val.lock().unwrap();
+        let val = self.val.lock()?;
         Ok(StringObject::new(val.clone()))
     }
 
@@ -243,7 +243,7 @@ impl Object for StringObject {
     }
 
     fn to_string(&self) -> RuntimeResult<String> {
-        let val = self.val.lock().unwrap();
+        let val = self.val.lock()?;
         Ok(val.clone())
     }
 
@@ -258,14 +258,14 @@ impl Object for StringObject {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
-                    Ok(IntObject::new(self.val.lock().unwrap().len() as i64))
+                    Ok(IntObject::new(self.val.lock()?.len() as i64))
                 }
             },
             "escape" => {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
-                    Ok(StringObject::new(self.val.lock().unwrap().escape_default().collect()))
+                    Ok(StringObject::new(self.val.lock()?.escape_default().collect()))
                 }
             },
             _ => Err(RuntimeError::type_error(format!(
@@ -323,8 +323,7 @@ impl Object for Function {
             locals,
             Arc::clone(&self.context),
             self.least_ancestors
-                .lock()
-                .unwrap()
+                .lock()?
                 .as_ref()
                 .unwrap()
                 .clone(),
@@ -344,7 +343,7 @@ pub struct List {
 impl Object for List {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
         let mut res_contents = vec![];
-        let contents_ = self.contents.lock().unwrap();
+        let contents_ = self.contents.lock()?;
         for val in contents_.iter() {
             res_contents.push(val.technetium_clone()?);
         }
@@ -361,7 +360,7 @@ impl Object for List {
         let mut res = String::new();
         res.push('[');
         let mut first = true;
-        let vals = self.contents.lock().unwrap();
+        let vals = self.contents.lock()?;
         for val in vals.iter() {
             if first {
                 first = false;
@@ -384,7 +383,7 @@ impl Object for List {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
-                    Ok(IntObject::new(self.contents.lock().unwrap().len() as i64))
+                    Ok(IntObject::new(self.contents.lock()?.len() as i64))
                 }
             }
             _ => Err(RuntimeError::type_error(format!(
@@ -398,8 +397,7 @@ impl Object for List {
         let iter = ListIterator {
             contents: self
                 .contents
-                .lock()
-                .unwrap()
+                .lock()?
                 .iter()
                 .map(|val| Arc::clone(val))
                 .collect(),
@@ -421,7 +419,7 @@ impl Object for ListIterator {
     }
 
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
-        let mut index = self.index.lock().unwrap();
+        let mut index = self.index.lock()?;
         if *index >= self.contents.len() {
             Ok(None)
         } else {

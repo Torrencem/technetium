@@ -6,6 +6,7 @@ use crate::lexer::Tok;
 use codespan::{FileId, Span};
 use codespan_reporting::diagnostic::{Diagnostic, Label};
 use std::fmt;
+use std::sync;
 use sys_info;
 
 use lalrpop_util;
@@ -40,6 +41,8 @@ pub enum RuntimeErrorType {
     IOError,
     /// An error raised by the sys_info crate
     SysInfoError,
+    /// An error raised by trying to lock() a poisoned mutex on an Object
+    PoisonError,
 }
 
 impl From<sys_info::Error> for RuntimeError {
@@ -56,6 +59,16 @@ impl From<std::io::Error> for RuntimeError {
     fn from(error: std::io::Error) -> Self {
         RuntimeError {
             err: RuntimeErrorType::IOError,
+            help: error.to_string(),
+            span: None,
+        }
+    }
+}
+
+impl<T> From<sync::PoisonError<T>> for RuntimeError {
+    fn from(error: sync::PoisonError<T>) -> Self {
+        RuntimeError {
+            err: RuntimeErrorType::PoisonError,
             help: error.to_string(),
             span: None,
         }

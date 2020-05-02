@@ -33,24 +33,24 @@ pub fn add(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         }
         (a, _) if a == TypeId::of::<StringObject>() => {
             let a = a_any.downcast_ref::<StringObject>().unwrap();
-            let res = format!("{}{}", a.val.lock().unwrap(), b.to_string()?);
+            let res = format!("{}{}", a.val.lock()?, b.to_string()?);
             Ok(StringObject::new(res))
         }
         (_, b) if b == TypeId::of::<StringObject>() => {
             let b = b_any.downcast_ref::<StringObject>().unwrap();
-            let res = format!("{}{}", a.to_string()?, b.val.lock().unwrap());
+            let res = format!("{}{}", a.to_string()?, b.val.lock()?);
             Ok(StringObject::new(res))
         }
         (a_, b_) if a_ == TypeId::of::<List>() && b_ == TypeId::of::<List>() => {
             let val_a = a_any.downcast_ref::<List>().unwrap();
             let val_b = b_any.downcast_ref::<List>().unwrap();
             if Arc::ptr_eq(&a, &b) {
-                let mut res = val_a.contents.lock().unwrap().clone();
-                res.append(&mut val_a.contents.lock().unwrap().clone());
+                let mut res = val_a.contents.lock()?.clone();
+                res.append(&mut val_a.contents.lock()?.clone());
                 Ok(Arc::new(List { contents: Mutex::new(res) }))
             } else {
-                let mut res = val_a.contents.lock().unwrap().clone();
-                res.append(&mut val_b.contents.lock().unwrap().clone());
+                let mut res = val_a.contents.lock()?.clone();
+                res.append(&mut val_b.contents.lock()?.clone());
                 Ok(Arc::new(List { contents: Mutex::new(res) }))
             }
         }
@@ -127,7 +127,7 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             Ok(res)
         }
         (a, b) if a == TypeId::of::<List>() && b == TypeId::of::<IntObject>() => {
-            let val_a = a_any.downcast_ref::<List>().unwrap().contents.lock().unwrap();
+            let val_a = a_any.downcast_ref::<List>().unwrap().contents.lock()?;
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
             let mut res: Vec<ObjectRef> = vec![];
             for _ in (0..val_b.val) {
@@ -139,7 +139,7 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         }
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<List>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let val_b = b_any.downcast_ref::<List>().unwrap().contents.lock().unwrap();
+            let val_b = b_any.downcast_ref::<List>().unwrap().contents.lock()?;
             let mut res: Vec<ObjectRef> = vec![];
             for _ in (0..val_a.val) {
                 for obj_ref in val_b.iter() {
@@ -397,7 +397,7 @@ pub fn cmp_eq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             if Arc::ptr_eq(&a, &b) {
                 Ok(BoolObject::new(true))
             } else {
-                let res = BoolObject::new(*val_a.val.lock().unwrap() == *val_b.val.lock().unwrap());
+                let res = BoolObject::new(*val_a.val.lock()? == *val_b.val.lock()?);
                 Ok(res)
             }
         }
@@ -450,7 +450,7 @@ pub fn cmp_neq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             if Arc::ptr_eq(&a, &b) {
                 Ok(BoolObject::new(false))
             } else {
-                let res = BoolObject::new(*val_a.val.lock().unwrap() != *val_b.val.lock().unwrap());
+                let res = BoolObject::new(*val_a.val.lock()? != *val_b.val.lock()?);
                 Ok(res)
             }
         }

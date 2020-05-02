@@ -1,11 +1,11 @@
 //! Lextime, Parsetime, Compiletime, and Runtime errors for technetium
 //!
 
-use std::fmt;
-use codespan::{Span, FileId};
-use codespan_reporting::diagnostic::{Diagnostic, Label};
 use crate::bytecode::Op;
 use crate::lexer::Tok;
+use codespan::{FileId, Span};
+use codespan_reporting::diagnostic::{Diagnostic, Label};
+use std::fmt;
 use sys_info;
 
 use lalrpop_util;
@@ -70,7 +70,7 @@ impl RuntimeError {
             span: None,
         }
     }
-    
+
     pub fn attribute_error<S: ToString>(message: S) -> Self {
         RuntimeError {
             err: RuntimeErrorType::AttributeError,
@@ -94,7 +94,7 @@ impl RuntimeError {
             span: None,
         }
     }
-    
+
     pub fn child_process_error<S: ToString>(message: S) -> Self {
         RuntimeError {
             err: RuntimeErrorType::ChildProcessError,
@@ -102,7 +102,7 @@ impl RuntimeError {
             span: None,
         }
     }
-    
+
     /// Attach a code location to an error, for reporting diagnostics to the user
     pub fn attach_span(self, span: Span) -> Self {
         RuntimeError {
@@ -111,37 +111,30 @@ impl RuntimeError {
             span: Some(span),
         }
     }
-    
+
     /// Attach a code location to an error if it does not already have one
     pub fn weak_attach_span(self, span: Span) -> Self {
         match self.span {
-            Some(val) => {
-                RuntimeError {
-                    err: self.err,
-                    help: self.help,
-                    span: Some(val),
-                }
+            Some(val) => RuntimeError {
+                err: self.err,
+                help: self.help,
+                span: Some(val),
             },
-            None => {
-                RuntimeError {
-                    err: self.err,
-                    help: self.help,
-                    span: Some(span),
-                }
-            }
+            None => RuntimeError {
+                err: self.err,
+                help: self.help,
+                span: Some(span),
+            },
         }
     }
-    
+
     /// Create a diagnostic message from an error, for reporting to the user
     pub fn as_diagnostic<FileId>(&self, fileid: FileId) -> Diagnostic<FileId> {
         match self.span {
             Some(span) => Diagnostic::error()
                 .with_message(format!("Runtime Error: {:?}", self.err))
-                .with_labels(vec![
-                    Label::primary(fileid, span).with_message(&self.help),
-                ]),
-            None => Diagnostic::error()
-                .with_message(&self.help),
+                .with_labels(vec![Label::primary(fileid, span).with_message(&self.help)]),
+            None => Diagnostic::error().with_message(&self.help),
         }
     }
 }
@@ -160,16 +153,19 @@ pub enum CompileErrorType {
 
 impl CompileError {
     pub fn new<S: ToString>(kind: CompileErrorType, help: S) -> Self {
-        CompileError { kind, help: help.to_string() }
+        CompileError {
+            kind,
+            help: help.to_string(),
+        }
     }
-    
+
     /// Create a diagnostic message from an error, for reporting to the user
     pub fn as_diagnostic<FileId>(&self, fileid: FileId) -> Diagnostic<FileId> {
         match self.kind {
             CompileErrorType::UndefinedVariable(span) => Diagnostic::error()
                 .with_message(self.help.clone())
                 .with_labels(vec![
-                    Label::primary(fileid, span).with_message("Undefined variable"),
+                    Label::primary(fileid, span).with_message("Undefined variable")
                 ]),
         }
     }
@@ -185,7 +181,7 @@ impl LexError {
     pub fn new(message: &str, loc: Option<usize>) -> Self {
         LexError {
             message: message.to_owned(),
-            loc
+            loc,
         }
     }
 
@@ -202,11 +198,10 @@ impl LexError {
                 Diagnostic::error()
                     .with_message("Lex Error")
                     .with_labels(vec![
-                        Label::primary(fileid, Span::new(loc, loc+1)).with_message(&self.message),
+                        Label::primary(fileid, Span::new(loc, loc + 1)).with_message(&self.message)
                     ])
-            },
-            None => Diagnostic::error()
-                .with_message(&self.message),
+            }
+            None => Diagnostic::error().with_message(&self.message),
         }
     }
 }
@@ -221,7 +216,7 @@ impl MiscParseError {
     pub fn lex(message: &str, loc: Option<usize>) -> Self {
         MiscParseError::Lex(LexError {
             message: message.to_owned(),
-            loc
+            loc,
         })
     }
 
@@ -242,40 +237,42 @@ impl MiscParseError {
 
 pub fn parse_error_to_diagnostic<FileId>(p: &ParseError, fileid: FileId) -> Diagnostic<FileId> {
     match p {
-        ParseError::InvalidToken { location: l } => {
-                Diagnostic::error()
-                    .with_message("Parse error: Invalid Token")
-                    .with_labels(vec![
-                        Label::primary(fileid, Span::new(*l as u32, *l as u32 + 1)).with_message("Invalid or unknown token"),
-                    ])
-        },
-        ParseError::UnrecognizedEOF { location: l, expected: e } => {
-                Diagnostic::error()
-                    .with_message("Parse error: Unrecognized End of Input")
-                    .with_labels(vec![
-                        Label::primary(fileid, Span::new(*l as u32, *l as u32 + 1)).with_message("Invalid EOI"),
-                    ])
-                    .with_notes(vec![
-                        format!("Expected one of {:?} after this point", e)
-                    ])
-        },
-        ParseError::UnrecognizedToken { token: t, expected: e } => {
-            Diagnostic::error()
-                .with_message("Parse error: Unrecognized or unexpected token")
-                .with_labels(vec![
-                    Label::primary(fileid, Span::new(t.0 as u32, t.2 as u32)).with_message(format!("Did not expect {:?} here", t.1)),
-                ])
-                .with_notes(vec![
-                    format!("Expected one of {:?}", e)
-                ])
-        },
-        ParseError::ExtraToken { token: t } => {
-            Diagnostic::error()
-                .with_message("Parse error: extra token")
-                .with_labels(vec![
-                    Label::primary(fileid, Span::new(t.0 as u32, t.2 as u32)).with_message(format!("Did not expect {:?} here", t.1)),
-                ])
-        },
+        ParseError::InvalidToken { location: l } => Diagnostic::error()
+            .with_message("Parse error: Invalid Token")
+            .with_labels(vec![Label::primary(
+                fileid,
+                Span::new(*l as u32, *l as u32 + 1),
+            )
+            .with_message("Invalid or unknown token")]),
+        ParseError::UnrecognizedEOF {
+            location: l,
+            expected: e,
+        } => Diagnostic::error()
+            .with_message("Parse error: Unrecognized End of Input")
+            .with_labels(vec![Label::primary(
+                fileid,
+                Span::new(*l as u32, *l as u32 + 1),
+            )
+            .with_message("Invalid EOI")])
+            .with_notes(vec![format!("Expected one of {:?} after this point", e)]),
+        ParseError::UnrecognizedToken {
+            token: t,
+            expected: e,
+        } => Diagnostic::error()
+            .with_message("Parse error: Unrecognized or unexpected token")
+            .with_labels(vec![Label::primary(
+                fileid,
+                Span::new(t.0 as u32, t.2 as u32),
+            )
+            .with_message(format!("Did not expect {:?} here", t.1))])
+            .with_notes(vec![format!("Expected one of {:?}", e)]),
+        ParseError::ExtraToken { token: t } => Diagnostic::error()
+            .with_message("Parse error: extra token")
+            .with_labels(vec![Label::primary(
+                fileid,
+                Span::new(t.0 as u32, t.2 as u32),
+            )
+            .with_message(format!("Did not expect {:?} here", t.1))]),
         ParseError::User { error: e } => e.as_diagnostic(fileid),
     }
 }
@@ -296,18 +293,16 @@ impl From<ParseError> for MiscParseError {
 
 pub fn offset_parse_error_spans(p: &mut ParseError, offset: usize) {
     match p {
-        ParseError::InvalidToken { location: l } => {
-            *l += offset
-        },
-        ParseError::UnrecognizedEOF { location: l, expected: e } => {
-            *l += offset
-        },
-        ParseError::UnrecognizedToken { token: t, expected: e } => {
-            *t = (t.0 + offset, t.1.clone(), t.2 + offset)
-        },
-        ParseError::ExtraToken { token: t } => {
-            *t = (t.0 + offset, t.1.clone(), t.2 + offset)
-        },
+        ParseError::InvalidToken { location: l } => *l += offset,
+        ParseError::UnrecognizedEOF {
+            location: l,
+            expected: e,
+        } => *l += offset,
+        ParseError::UnrecognizedToken {
+            token: t,
+            expected: e,
+        } => *t = (t.0 + offset, t.1.clone(), t.2 + offset),
+        ParseError::ExtraToken { token: t } => *t = (t.0 + offset, t.1.clone(), t.2 + offset),
         ParseError::User { error: e } => e.offset_spans(offset),
     }
 }

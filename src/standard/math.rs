@@ -1,14 +1,13 @@
-
-use crate::core::*;
 use crate::builtins::*;
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 use crate::bytecode::NonLocalName;
 use crate::bytecode::{ContextId, FrameId};
+use crate::core::*;
 use crate::error::*;
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 
 use std::io::{self, Write};
-use std::process::{Command, Child, Stdio, Output};
+use std::process::{Child, Command, Output, Stdio};
 
 use std::f64;
 

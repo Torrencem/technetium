@@ -1,15 +1,14 @@
-
-use crate::core::*;
 use crate::builtins::*;
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 use crate::bytecode::NonLocalName;
 use crate::bytecode::{ContextId, FrameId};
+use crate::core::*;
 use crate::error::*;
+use std::collections::HashMap;
 use std::env;
 use std::path::Path;
-use sys_info::os_type;
+use std::sync::{Arc, Mutex};
 use sys_info::linux_os_release;
+use sys_info::os_type;
 
 use crate::{func_object, func_object_void};
 
@@ -100,7 +99,8 @@ impl Object for RangeIterator {
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
         let mut _curr = self.curr.lock().unwrap();
         if (self.inner.step < 0 && *_curr <= self.inner.end)
-        || (self.inner.step > 0 && *_curr >= self.inner.end) {
+            || (self.inner.step > 0 && *_curr >= self.inner.end)
+        {
             return Ok(None);
         }
         let old = *_curr;

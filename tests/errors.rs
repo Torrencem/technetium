@@ -8,11 +8,12 @@ type TestError = Box<dyn std::error::Error>;
 fn attribute_error() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
     cmd.write_stdin(
-r#"
+        r#"
 x = 10
 
 print(x.incorrect)
-"#);
+"#,
+    );
 
     cmd.assert()
         .failure()
@@ -27,17 +28,18 @@ print(x.incorrect)
 fn method_error() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
     cmd.write_stdin(
-r#"
+        r#"
 x = 10
 
 print(x.incorrect())
-"#);
+"#,
+    );
 
     cmd.assert()
         .failure()
         .stderr(predicate::str::contains("print(x.incorrect())")) // Gives the correct line
         .stderr(predicate::str::contains("Runtime Error: AttributeError")) // Gives the correct type of error
-        .stderr(predicate::str::contains("method")) 
+        .stderr(predicate::str::contains("method"))
         .stderr(predicate::str::contains("int")); // Mentions the type
 
     Ok(())
@@ -47,24 +49,26 @@ print(x.incorrect())
 fn index_oob() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
     cmd.write_stdin(
-r#"
+        r#"
 l = [1, 2, 3]
 
 print(l[3])
-"#);
+"#,
+    );
 
     cmd.assert()
         .failure()
         .stderr(predicate::str::contains("print(l[3])")) // Gives the correct line
         .stderr(predicate::str::contains("Index out of bounds")); // Mentions the variable
-    
+
     let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
     cmd.write_stdin(
-r#"
+        r#"
 l = [1, 2, 3]
 
 l[3] += 1
-"#);
+"#,
+    );
 
     cmd.assert()
         .failure()
@@ -78,11 +82,12 @@ l[3] += 1
 fn unknown_variable() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
     cmd.write_stdin(
-r#"
+        r#"
 x = 10
 
 print(y)
-"#);
+"#,
+    );
 
     cmd.assert()
         .failure()
@@ -96,11 +101,12 @@ print(y)
 fn unknown_variable2() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
     cmd.write_stdin(
-r#"
+        r#"
 x = 10
 
 print(fib(x))
-"#);
+"#,
+    );
 
     cmd.assert()
         .failure()
@@ -115,7 +121,7 @@ print(fib(x))
 fn recursive_format_error() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
     cmd.write_stdin(
-r#"
+        r#"
 
 my_num = 100
 
@@ -127,7 +133,8 @@ if my_num > 50 {
 
 print(5)
 
-"#);
+"#,
+    );
 
     cmd.assert()
         .failure()
@@ -139,18 +146,18 @@ print(5)
     Ok(())
 }
 
-
 #[test]
 fn recursive_lex_error() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
     cmd.write_stdin(
-r#"
+        r#"
 
 # Pad it out a bit for offsetting to matter
 my_name = "Matt"
 
 print(~"My name is not {my_name * 1.2.3}")
-"#);
+"#,
+    );
 
     cmd.assert()
         .failure()
@@ -165,11 +172,12 @@ print(~"My name is not {my_name * 1.2.3}")
 fn recursive_parse_error() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
     cmd.write_stdin(
-r#"
+        r#"
 # more padding, to make sure offsets work correctly
 
 print(~"{val * * 2}")
-"#);
+"#,
+    );
 
     cmd.assert()
         .failure()
@@ -179,5 +187,3 @@ print(~"{val * * 2}")
 
     Ok(())
 }
-
-

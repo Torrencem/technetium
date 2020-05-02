@@ -1,12 +1,11 @@
-
-use codespan::Span;
 use crate::compile::*;
+use codespan::Span;
 
+use crate::error::*;
+use crate::lexer;
 use crate::lexer::Lexer;
 use crate::script;
 use lalrpop_util;
-use crate::lexer;
-use crate::error::*;
 
 #[derive(Clone, Debug)]
 pub enum Literal {
@@ -29,7 +28,7 @@ impl Literal {
             Literal::FormatString(s) => s.span,
         }
     }
-    
+
     fn span_mut(&mut self) -> &mut Span {
         match self {
             Literal::Integer(_, s) => s,
@@ -40,14 +39,17 @@ impl Literal {
             Literal::FormatString(s) => &mut s.span,
         }
     }
-    
+
     pub fn offset_spans(&mut self, offset: usize) {
         if let Literal::FormatString(fs) = self {
             fs.offset_spans(offset);
         } else {
             let l = self.span().start();
             let r = self.span().end();
-            *self.span_mut() = Span::new(u32::from(l) + (offset as u32), u32::from(r) + (offset as u32));
+            *self.span_mut() = Span::new(
+                u32::from(l) + (offset as u32),
+                u32::from(r) + (offset as u32),
+            );
         }
     }
 }
@@ -60,16 +62,19 @@ pub struct ListLiteral {
 
 impl ListLiteral {
     pub fn new(values: Vec<Expr>, l: usize, r: usize) -> Self {
-        ListLiteral { 
+        ListLiteral {
             span: Span::new(l as u32, r as u32),
-            values
+            values,
         }
     }
-    
+
     pub fn offset_spans(&mut self, offset: usize) {
         let l = self.span.start();
         let r = self.span.end();
-        self.span = Span::new(u32::from(l) + (offset as u32), u32::from(r) + (offset as u32));
+        self.span = Span::new(
+            u32::from(l) + (offset as u32),
+            u32::from(r) + (offset as u32),
+        );
         for val in self.values.iter_mut() {
             val.offset_spans(offset);
         }
@@ -84,16 +89,19 @@ pub struct TupleLiteral {
 
 impl TupleLiteral {
     pub fn new(values: Vec<Expr>, l: usize, r: usize) -> Self {
-        TupleLiteral { 
+        TupleLiteral {
             span: Span::new(l as u32, r as u32),
-            values
+            values,
         }
     }
 
     pub fn offset_spans(&mut self, offset: usize) {
         let l = self.span.start();
         let r = self.span.end();
-        self.span = Span::new(u32::from(l) + (offset as u32), u32::from(r) + (offset as u32));
+        self.span = Span::new(
+            u32::from(l) + (offset as u32),
+            u32::from(r) + (offset as u32),
+        );
         for val in self.values.iter_mut() {
             val.offset_spans(offset);
         }
@@ -111,14 +119,18 @@ impl FuncCall {
     pub fn new(fname: Identifier, arguments: Vec<Expr>, l: usize, r: usize) -> Self {
         FuncCall {
             span: Span::new(l as u32, r as u32),
-            fname, arguments
+            fname,
+            arguments,
         }
     }
 
     pub fn offset_spans(&mut self, offset: usize) {
         let l = self.span.start();
         let r = self.span.end();
-        self.span = Span::new(u32::from(l) + (offset as u32), u32::from(r) + (offset as u32));
+        self.span = Span::new(
+            u32::from(l) + (offset as u32),
+            u32::from(r) + (offset as u32),
+        );
         self.fname.offset_spans(offset);
         for arg in self.arguments.iter_mut() {
             arg.offset_spans(offset);
@@ -145,7 +157,10 @@ impl AttrLookup {
     pub fn offset_spans(&mut self, offset: usize) {
         let l = self.span.start();
         let r = self.span.end();
-        self.span = Span::new(u32::from(l) + (offset as u32), u32::from(r) + (offset as u32));
+        self.span = Span::new(
+            u32::from(l) + (offset as u32),
+            u32::from(r) + (offset as u32),
+        );
         self.attribute.offset_spans(offset);
         self.parent.offset_spans(offset);
     }
@@ -164,14 +179,18 @@ impl MethodCall {
         MethodCall {
             span: Span::new(l as u32, r as u32),
             parent: Box::new(parent),
-            fname, arguments
+            fname,
+            arguments,
         }
     }
 
     pub fn offset_spans(&mut self, offset: usize) {
         let l = self.span.start();
         let r = self.span.end();
-        self.span = Span::new(u32::from(l) + (offset as u32), u32::from(r) + (offset as u32));
+        self.span = Span::new(
+            u32::from(l) + (offset as u32),
+            u32::from(r) + (offset as u32),
+        );
         self.fname.offset_spans(offset);
         self.parent.offset_spans(offset);
         for arg in self.arguments.iter_mut() {
@@ -199,7 +218,10 @@ impl IndexedExpr {
     pub fn offset_spans(&mut self, offset: usize) {
         let l = self.span.start();
         let r = self.span.end();
-        self.span = Span::new(u32::from(l) + (offset as u32), u32::from(r) + (offset as u32));
+        self.span = Span::new(
+            u32::from(l) + (offset as u32),
+            u32::from(r) + (offset as u32),
+        );
         self.index.offset_spans(offset);
         self.parent.offset_spans(offset);
     }
@@ -257,7 +279,9 @@ impl ForLoop {
     pub fn new(binding: Identifier, iter: Expr, body: StatementList, l: usize, r: usize) -> Self {
         ForLoop {
             span: Span::new(l as u32, r as u32),
-            binding, iter, body
+            binding,
+            iter,
+            body,
         }
     }
 }
@@ -273,7 +297,8 @@ impl WhileLoop {
     pub fn new(cond: Expr, body: StatementList, l: usize, r: usize) -> Self {
         WhileLoop {
             span: Span::new(l as u32, r as u32),
-            cond, body
+            cond,
+            body,
         }
     }
 }
@@ -289,14 +314,22 @@ pub struct IfStatement {
 #[derive(Clone, Debug)]
 pub enum IfTail {
     ElseIf(Box<IfStatement>),
-    Else(StatementList)
+    Else(StatementList),
 }
 
 impl IfStatement {
-    pub fn new(condition: Expr, then_body: StatementList, tail: Option<IfTail>, l: usize, r: usize) -> Self {
+    pub fn new(
+        condition: Expr,
+        then_body: StatementList,
+        tail: Option<IfTail>,
+        l: usize,
+        r: usize,
+    ) -> Self {
         IfStatement {
             span: Span::new(l as u32, r as u32),
-            condition, then_body, tail
+            condition,
+            then_body,
+            tail,
         }
     }
 }
@@ -312,7 +345,8 @@ impl CaseOf {
     pub fn new(condition: Expr, cases: Vec<(Expr, StatementList)>, l: usize, r: usize) -> Self {
         CaseOf {
             span: Span::new(l as u32, r as u32),
-            condition, cases,
+            condition,
+            cases,
         }
     }
 }
@@ -326,10 +360,18 @@ pub struct FuncDefinition {
 }
 
 impl FuncDefinition {
-    pub fn new(name: Identifier, args: Vec<Identifier>, body: StatementList, l: usize, r: usize) -> Self {
+    pub fn new(
+        name: Identifier,
+        args: Vec<Identifier>,
+        body: StatementList,
+        l: usize,
+        r: usize,
+    ) -> Self {
         FuncDefinition {
             span: Span::new(l as u32, r as u32),
-            name, args, body
+            name,
+            args,
+            body,
         }
     }
 }
@@ -344,7 +386,7 @@ impl ReturnStatement {
     pub fn new(ret: Expr, l: usize, r: usize) -> Self {
         ReturnStatement {
             span: Span::new(l as u32, r as u32),
-            ret
+            ret,
         }
     }
 }
@@ -363,7 +405,12 @@ pub struct FormatString {
 }
 
 impl FormatString {
-    pub fn new(val: String, substitutions: Vec<(usize, String)>, l: usize, r: usize) -> Result<Self, MiscParseError> {
+    pub fn new(
+        val: String,
+        substitutions: Vec<(usize, String)>,
+        l: usize,
+        r: usize,
+    ) -> Result<Self, MiscParseError> {
         let mut subs = vec![];
         for s in substitutions.iter() {
             let lexer = Lexer::new(s.1.as_ref());
@@ -383,7 +430,10 @@ impl FormatString {
     pub fn offset_spans(&mut self, offset: usize) {
         let l = self.span.start();
         let r = self.span.end();
-        self.span = Span::new(u32::from(l) + (offset as u32), u32::from(r) + (offset as u32));
+        self.span = Span::new(
+            u32::from(l) + (offset as u32),
+            u32::from(r) + (offset as u32),
+        );
         for sub in self.substitutions.iter_mut() {
             sub.offset_spans(offset);
         }
@@ -418,7 +468,8 @@ impl Assignment {
     pub fn new(lhs: AssignmentLHS, val: Expr, l: usize, r: usize) -> Self {
         Assignment {
             span: Span::new(l as u32, r as u32),
-            lhs, val
+            lhs,
+            val,
         }
     }
 }
@@ -462,7 +513,7 @@ impl StatementList {
     pub fn new(statements: Vec<Statement>, l: usize, r: usize) -> Self {
         StatementList {
             span: Span::new(l as u32, r as u32),
-            statements
+            statements,
         }
     }
 }
@@ -477,13 +528,16 @@ impl Identifier {
     pub fn new(name: String, l: usize, r: usize) -> Self {
         Identifier {
             span: Span::new(l as u32, r as u32),
-            name
+            name,
         }
     }
 
     pub fn offset_spans(&mut self, offset: usize) {
         let l = self.span.start();
         let r = self.span.end();
-        self.span = Span::new(u32::from(l) + (offset as u32), u32::from(r) + (offset as u32));
+        self.span = Span::new(
+            u32::from(l) + (offset as u32),
+            u32::from(r) + (offset as u32),
+        );
     }
 }

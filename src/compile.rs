@@ -1,17 +1,16 @@
-
 use crate::ast::*;
-use crate::core::*;
 use crate::bytecode::*;
+use crate::core::*;
 use crate::error::*;
 use crate::standard::Default_Namespace_Descriptors;
 use crate::standard::STANDARD_CONTEXT_ID;
-use std::collections::HashMap;
-use std::sync::{Mutex, Arc};
-use std::clone::Clone as RustClone;
-use std::result::Result as RustResult;
-use codespan::{Span, FileId};
+use codespan::{FileId, Span};
 use codespan_reporting::diagnostic::{Diagnostic, Label};
+use std::clone::Clone as RustClone;
+use std::collections::HashMap;
 use std::i32;
+use std::result::Result as RustResult;
+use std::sync::{Arc, Mutex};
 
 /// Determine if a f64 is exactly representable as a f32
 fn is_exact_float(val: f64) -> bool {
@@ -104,7 +103,7 @@ impl CompileManager {
     pub fn context(&mut self) -> &mut CompileContext {
         self.context_stack.last_mut().unwrap()
     }
-   
+
     pub fn local_name_gen(&mut self) -> LocalName {
         let old = self.local_index_last;
         self.local_index_last += 1;
@@ -136,27 +135,20 @@ impl CompileManager {
         let descr = self.context().gcd_gen();
         let constant: ObjectRef = match ast {
             Literal::Integer(val, _) => {
-                if *val < i32::MAX as i64 &&
-                   *val > i32::MIN as i64 {
+                if *val < i32::MAX as i64 && *val > i32::MIN as i64 {
                     return Ok(vec![Op::push_int(*val as i32)]);
                 }
                 IntObject::new(*val)
-            },
+            }
             Literal::Float(val, _) => {
                 if is_exact_float(*val) {
                     return Ok(vec![Op::push_float(*val as f32)]);
                 }
                 FloatObject::new(*val)
-            },
-            Literal::Bool(val, _) => {
-                BoolObject::new(*val)
-            },
-            Literal::Str(val, _) => {
-                StringObject::new(RustClone::clone(val))
-            },
-            Literal::Char(val, _) => {
-                CharObject::new(*val)
-            },
+            }
+            Literal::Bool(val, _) => BoolObject::new(*val),
+            Literal::Str(val, _) => StringObject::new(RustClone::clone(val)),
+            Literal::Char(val, _) => CharObject::new(*val),
             Literal::FormatString(f) => {
                 return self.compile_format_string(&f);
             }
@@ -173,7 +165,7 @@ impl CompileManager {
         res.push(Op::mklist(ast.values.len() as u16));
         Ok(res)
     }
-    
+
     pub fn compile_tuple_literal(&mut self, ast: &TupleLiteral) -> CompileResult {
         let mut res = vec![];
         for item in ast.values.iter() {
@@ -196,23 +188,28 @@ impl CompileManager {
         match self.name_lookup(&ast.fname.name) {
             NameLookupResult::MyLocal(name) => {
                 res.push(Op::load(name));
-            },
+            }
             NameLookupResult::ExternLocal(name) => {
                 res.push(Op::load_non_local(name));
-            },
+            }
             NameLookupResult::Global(name) => {
                 res.push(Op::push_global_default(name));
-            },
+            }
             NameLookupResult::NotFound => {
-            return Err(CompileError::new(CompileErrorType::UndefinedVariable(ast.fname.span), format!("Undefined function: {}", ast.fname.name)));
-            },
+                return Err(CompileError::new(
+                    CompileErrorType::UndefinedVariable(ast.fname.span),
+                    format!("Undefined function: {}", ast.fname.name),
+                ));
+            }
         }
         for arg in ast.arguments.iter() {
             res.append(&mut self.compile_expr(arg)?);
         }
 
         let debug_descr = self.context().dsd_gen();
-        self.context().debug_span_descriptors.insert(debug_descr, ast.span);
+        self.context()
+            .debug_span_descriptors
+            .insert(debug_descr, ast.span);
         res.push(Op::weak_debug(debug_descr));
 
         res.push(Op::call_function(ast.arguments.len() as u8));
@@ -224,11 +221,15 @@ impl CompileManager {
         res.append(&mut self.compile_expr(&*ast.parent)?);
         let const_descr = self.context().gcd_gen();
         let name_val = StringObject::new(RustClone::clone(&ast.attribute.name));
-        self.context().constant_descriptors.insert(const_descr, name_val);
+        self.context()
+            .constant_descriptors
+            .insert(const_descr, name_val);
         res.push(Op::push_const(const_descr));
 
         let debug_descr = self.context().dsd_gen();
-        self.context().debug_span_descriptors.insert(debug_descr, ast.span);
+        self.context()
+            .debug_span_descriptors
+            .insert(debug_descr, ast.span);
         res.push(Op::debug(debug_descr));
 
         res.push(Op::get_attr);
@@ -240,14 +241,18 @@ impl CompileManager {
         res.append(&mut self.compile_expr(&*ast.parent)?);
         let const_descr = self.context().gcd_gen();
         let name_val = StringObject::new(RustClone::clone(&ast.fname.name));
-        self.context().constant_descriptors.insert(const_descr, name_val);
+        self.context()
+            .constant_descriptors
+            .insert(const_descr, name_val);
         res.push(Op::push_const(const_descr));
         for arg in ast.arguments.iter() {
             res.append(&mut self.compile_expr(arg)?);
         }
-        
+
         let debug_descr = self.context().dsd_gen();
-        self.context().debug_span_descriptors.insert(debug_descr, ast.span);
+        self.context()
+            .debug_span_descriptors
+            .insert(debug_descr, ast.span);
         res.push(Op::weak_debug(debug_descr));
 
         res.push(Op::call_method(ast.arguments.len() as u8));
@@ -256,21 +261,14 @@ impl CompileManager {
 
     pub fn compile_expr(&mut self, ast: &Expr) -> CompileResult {
         match ast {
-            Expr::Variable(v) => {
-                match self.name_lookup(&v.name) {
-                    NameLookupResult::MyLocal(name) => {
-                        Ok(vec![Op::load(name)])
-                    },
-                    NameLookupResult::ExternLocal(name) => {
-                        Ok(vec![Op::load_non_local(name)])
-                    },
-                    NameLookupResult::Global(name) => {
-                        Ok(vec![Op::push_global_default(name)])
-                    },
-                    NameLookupResult::NotFound => {
-                        Err(CompileError::new(CompileErrorType::UndefinedVariable(ast.span()), format!("Undefined variable: {}", v.name)))
-                    },
-                }
+            Expr::Variable(v) => match self.name_lookup(&v.name) {
+                NameLookupResult::MyLocal(name) => Ok(vec![Op::load(name)]),
+                NameLookupResult::ExternLocal(name) => Ok(vec![Op::load_non_local(name)]),
+                NameLookupResult::Global(name) => Ok(vec![Op::push_global_default(name)]),
+                NameLookupResult::NotFound => Err(CompileError::new(
+                    CompileErrorType::UndefinedVariable(ast.span()),
+                    format!("Undefined variable: {}", v.name),
+                )),
             },
             Expr::Literal(l) => self.compile_literal(l),
             Expr::ListLiteral(l) => self.compile_list_literal(l),
@@ -288,7 +286,9 @@ impl CompileManager {
         res.append(&mut self.compile_expr(&*ast.index)?);
 
         let debug_descr = self.context().dsd_gen();
-        self.context().debug_span_descriptors.insert(debug_descr, ast.span);
+        self.context()
+            .debug_span_descriptors
+            .insert(debug_descr, ast.span);
         res.push(Op::debug(debug_descr));
 
         res.push(Op::index_get);
@@ -301,19 +301,22 @@ impl CompileManager {
         res.append(&mut self.compile_expr(&ast.iter)?);
 
         let debug_descr = self.context().dsd_gen();
-        self.context().debug_span_descriptors.insert(debug_descr, ast.iter.span());
+        self.context()
+            .debug_span_descriptors
+            .insert(debug_descr, ast.iter.span());
         res.push(Op::debug(debug_descr));
 
         // Turn it into an iterator
         res.push(Op::make_iter);
-        
+
         // Override any variable of the appropriate name
         let local_name = self.local_name_gen();
         let cid = self.context().context_id;
-        self.local_index.insert((cid, ast.binding.name.clone()), local_name);
+        self.local_index
+            .insert((cid, ast.binding.name.clone()), local_name);
 
         let mut body = self.compile_statement_list(&ast.body)?;
-        
+
         res.push(Op::dup);
         let skip_body_offset = body.len() as u16 as i16 + 3;
         let back_to_dup_offset = -(body.len() as u16 as i16) - 4;
@@ -325,7 +328,7 @@ impl CompileManager {
         res.append(&mut body);
 
         res.push(Op::jmp(back_to_dup_offset));
-        
+
         Ok(res)
     }
 
@@ -347,15 +350,9 @@ impl CompileManager {
         let mut cond = self.compile_expr(&ast.condition)?;
         let mut body2 = self.compile_statement_list(&ast.then_body)?;
         let mut body1 = match ast.tail {
-            Some(IfTail::ElseIf(ref ifstmt)) => {
-                self.compile_if_statement(ifstmt)?
-            },
-            Some(IfTail::Else(ref stmtlist)) => {
-                self.compile_statement_list(stmtlist)?
-            },
-            None => {
-                vec![]
-            }
+            Some(IfTail::ElseIf(ref ifstmt)) => self.compile_if_statement(ifstmt)?,
+            Some(IfTail::Else(ref stmtlist)) => self.compile_statement_list(stmtlist)?,
+            None => vec![],
         };
         let skip_body1_offset = body1.len() + 2;
         let skip_body2_offset = body2.len() + 1;
@@ -381,7 +378,9 @@ impl CompileManager {
             res.push(Op::load(my_local));
             res.append(&mut self.compile_expr(&expr)?);
             let debug_descr = self.context().dsd_gen();
-            self.context().debug_span_descriptors.insert(debug_descr, expr.span());
+            self.context()
+                .debug_span_descriptors
+                .insert(debug_descr, expr.span());
             res.push(Op::debug(debug_descr));
             res.push(Op::cmp_neq);
             res.push(Op::cond_jmp(body.len() as i16 + 2));
@@ -393,7 +392,7 @@ impl CompileManager {
         for index in exit_jmp_indices {
             res[index] = Op::jmp(res.len() as i16 - index as i16);
         }
-        
+
         Ok(res)
     }
 
@@ -402,19 +401,26 @@ impl CompileManager {
         // for recursive functions
         let my_local = self.local_name_gen();
         let cid = self.context().context_id;
-        self.local_index.insert((cid, ast.name.name.clone()), my_local);
+        self.local_index
+            .insert((cid, ast.name.name.clone()), my_local);
 
         let mut sub_context = CompileContext::new(self.context_id_gen());
         for arg in ast.args.iter() {
             let name = self.local_name_gen();
-            self.local_index.insert((sub_context.context_id, arg.name.clone()), name);
+            self.local_index
+                .insert((sub_context.context_id, arg.name.clone()), name);
         }
         let sub_context_id = sub_context.context_id;
         self.context_stack.push(sub_context);
 
         let mut func_code = vec![];
         for arg in ast.args.iter() {
-            func_code.push(Op::store(*self.local_index.get(&(sub_context_id, arg.name.clone())).unwrap()));
+            func_code.push(Op::store(
+                *self
+                    .local_index
+                    .get(&(sub_context_id, arg.name.clone()))
+                    .unwrap(),
+            ));
         }
 
         func_code.append(&mut self.compile_statement_list(&ast.body)?);
@@ -432,7 +438,9 @@ impl CompileManager {
             code: func_code,
         };
         let my_descr = self.context().gcd_gen();
-        self.context().constant_descriptors.insert(my_descr, Arc::new(function_obj));
+        self.context()
+            .constant_descriptors
+            .insert(my_descr, Arc::new(function_obj));
         let mut res = vec![];
         res.push(Op::push_const_clone(my_descr));
         res.push(Op::attach_ancestors);
@@ -450,9 +458,13 @@ impl CompileManager {
     pub fn compile_format_string(&mut self, ast: &FormatString) -> CompileResult {
         let mut res = vec![];
         let name_descr = self.context().gcd_gen();
-        self.context().constant_descriptors.insert(name_descr, StringObject::new(ast.val.clone()));
+        self.context()
+            .constant_descriptors
+            .insert(name_descr, StringObject::new(ast.val.clone()));
         let debug_descr = self.context().dsd_gen();
-        self.context().debug_span_descriptors.insert(debug_descr, ast.span);
+        self.context()
+            .debug_span_descriptors
+            .insert(debug_descr, ast.span);
         res.push(Op::push_const(name_descr));
         for subs in ast.substitutions.iter().rev() {
             res.append(&mut self.compile_expr(subs)?);
@@ -461,12 +473,14 @@ impl CompileManager {
         res.push(Op::fmt_string(ast.substitutions.len() as u8));
         Ok(res)
     }
-    
+
     pub fn compile_sh_statement(&mut self, ast: &ShStatement) -> CompileResult {
         let mut res = vec![];
         res.append(&mut self.compile_format_string(&ast.inner)?);
         let debug_descr = self.context().dsd_gen();
-        self.context().debug_span_descriptors.insert(debug_descr, ast.span);
+        self.context()
+            .debug_span_descriptors
+            .insert(debug_descr, ast.span);
         res.push(Op::debug(debug_descr));
         res.push(Op::sh);
         Ok(res)
@@ -480,26 +494,30 @@ impl CompileManager {
                 match self.name_lookup(&id.name) {
                     NameLookupResult::MyLocal(index) => {
                         res.push(Op::store(index));
-                    },
+                    }
                     NameLookupResult::ExternLocal(name) => {
                         res.push(Op::store_non_local(name));
-                    },
+                    }
                     _ => {
                         let local_name = self.local_name_gen();
                         let cid = self.context().context_id;
-                        self.local_index.insert(RustClone::clone(&(cid, id.name.clone())), local_name);
+                        self.local_index
+                            .insert(RustClone::clone(&(cid, id.name.clone())), local_name);
                         res.push(Op::store(local_name));
                     }
                 }
-            },
+            }
             AssignmentLHS::AttrLookup(a_lookup) => {
                 res.append(&mut self.compile_expr(&a_lookup.parent)?);
                 let name_descr = self.context().gcd_gen();
-                self.context().constant_descriptors.insert(name_descr, StringObject::new(a_lookup.attribute.name.clone()));
+                self.context().constant_descriptors.insert(
+                    name_descr,
+                    StringObject::new(a_lookup.attribute.name.clone()),
+                );
                 res.push(Op::push_const(name_descr));
                 res.append(&mut self.compile_expr(&ast.val)?);
                 res.push(Op::set_attr);
-            },
+            }
             AssignmentLHS::Indexed(indexed) => {
                 res.append(&mut self.compile_expr(&indexed.parent)?);
                 res.append(&mut self.compile_expr(&indexed.index)?);

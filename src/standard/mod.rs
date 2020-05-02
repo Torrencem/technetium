@@ -1,13 +1,12 @@
-
-pub mod special_funcs;
-pub mod sh;
 pub mod math;
+pub mod sh;
+pub mod special_funcs;
 
+use crate::bytecode::{ContextId, FrameId, GlobalConstantDescriptor, GlobalContext};
 use crate::core::*;
-use std::sync::Arc;
-use crate::bytecode::{GlobalContext, GlobalConstantDescriptor, ContextId, FrameId};
-use std::collections::HashMap;
 use crate::error::*;
+use std::collections::HashMap;
+use std::sync::Arc;
 
 pub static STANDARD_CONTEXT_ID: ContextId = 0;
 
@@ -33,7 +32,6 @@ lazy_static! {
         res.insert("arctan".to_string(), (STANDARD_CONTEXT_ID, 16));
         res
     };
-
     pub static ref Default_Namespace: HashMap<GlobalConstantDescriptor, ObjectRef> = {
         let mut res: HashMap<GlobalConstantDescriptor, ObjectRef> = HashMap::new();
         res.insert((STANDARD_CONTEXT_ID, 0), Arc::new(special_funcs::Print));
@@ -42,7 +40,10 @@ lazy_static! {
         res.insert((STANDARD_CONTEXT_ID, 3), Arc::new(sh::Sh));
         res.insert((STANDARD_CONTEXT_ID, 4), Arc::new(special_funcs::Cd));
         res.insert((STANDARD_CONTEXT_ID, 5), Arc::new(special_funcs::Os));
-        res.insert((STANDARD_CONTEXT_ID, 6), Arc::new(special_funcs::LinuxDistro));
+        res.insert(
+            (STANDARD_CONTEXT_ID, 6),
+            Arc::new(special_funcs::LinuxDistro),
+        );
         res.insert((STANDARD_CONTEXT_ID, 7), Arc::new(math::Sin));
         res.insert((STANDARD_CONTEXT_ID, 8), Arc::new(math::Cos));
         res.insert((STANDARD_CONTEXT_ID, 9), Arc::new(math::Tan));
@@ -88,9 +89,17 @@ macro_rules! func_object {
                 "builtin func".to_string()
             }
 
-            fn call(&self, $args: &[ObjectRef], _locals: &mut HashMap<NonLocalName, ObjectRef>) -> RuntimeResult<ObjectRef> {
+            fn call(
+                &self,
+                $args: &[ObjectRef],
+                _locals: &mut HashMap<NonLocalName, ObjectRef>,
+            ) -> RuntimeResult<ObjectRef> {
                 if !$args_range.contains(&$args.len()) {
-                    return Err(RuntimeError::type_error(format!("Incorrect number of arguments: expected {:?}, got {}", $args_range, $args.len())));
+                    return Err(RuntimeError::type_error(format!(
+                        "Incorrect number of arguments: expected {:?}, got {}",
+                        $args_range,
+                        $args.len()
+                    )));
                 }
                 $call
             }

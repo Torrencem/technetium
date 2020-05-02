@@ -1,14 +1,13 @@
-
-use crate::core::*;
 use crate::builtins::*;
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 use crate::bytecode::NonLocalName;
 use crate::bytecode::{ContextId, FrameId};
+use crate::core::*;
 use crate::error::*;
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 
 use std::io::{self, Write};
-use std::process::{Command, Child, Stdio, Output};
+use std::process::{Child, Command, Output, Stdio};
 
 use crate::func_object;
 
@@ -42,15 +41,16 @@ impl ShObject {
         let mut state_ = self.state.lock().unwrap();
         let mut child_ = self.child.lock().unwrap();
         let mut cmd = Command::new("sh")
-                    .stdin(Stdio::piped())
-                    .stdout(Stdio::piped())
-                    .spawn()?;
-        cmd.stdin.as_mut().unwrap().write_all(self.argument.clone().as_bytes());
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .spawn()?;
+        cmd.stdin
+            .as_mut()
+            .unwrap()
+            .write_all(self.argument.clone().as_bytes());
         if let ShObjectState::Prepared = *state_ {
             *state_ = ShObjectState::Running;
-            *child_ = Some(
-                cmd
-            );
+            *child_ = Some(cmd);
         }
         Ok(())
     }
@@ -80,25 +80,25 @@ impl ShObject {
         if let Some(ref output) = *output {
             let bytes = &output.stdout;
             Ok(StringObject::new(
-                String::from_utf8_lossy(bytes).into_owned()
+                String::from_utf8_lossy(bytes).into_owned(),
             ))
         } else {
             Ok(StringObject::new("".to_string()))
         }
     }
-    
+
     pub fn stderr(&self) -> io::Result<ObjectRef> {
         let output = self.output.lock().unwrap();
         if let Some(ref output) = *output {
             let bytes = &output.stderr;
             Ok(StringObject::new(
-                String::from_utf8_lossy(bytes).into_owned()
+                String::from_utf8_lossy(bytes).into_owned(),
             ))
         } else {
             Ok(StringObject::new("".to_string()))
         }
     }
-    
+
     pub fn exit_code(&self) -> io::Result<ObjectRef> {
         let output = self.output.lock().unwrap();
         if let Some(ref output) = *output {
@@ -122,16 +122,18 @@ impl Object for ShObject {
 
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
         if args.len() != 0 {
-            return Err(RuntimeError::type_error("Unexpected arguments to method call"));
+            return Err(RuntimeError::type_error(
+                "Unexpected arguments to method call",
+            ));
         }
 
         match method {
-           "spawn" => self.spawn()?,
-           "join" => self.join()?,
-           "stdout" => return Ok(self.stdout()?),
-           "stderr" => return Ok(self.stderr()?),
-           "exit_code" => return Ok(self.exit_code()?),
-           _ => return Err(RuntimeError::type_error("Unknown method")),
+            "spawn" => self.spawn()?,
+            "join" => self.join()?,
+            "stdout" => return Ok(self.stdout()?),
+            "stderr" => return Ok(self.stderr()?),
+            "exit_code" => return Ok(self.exit_code()?),
+            _ => return Err(RuntimeError::type_error("Unknown method")),
         }
 
         Ok(VoidObject::new())

@@ -1,12 +1,11 @@
-
-use std::sync::Arc;
+use crate::bytecode;
+use crate::bytecode::Op;
+use crate::bytecode::{ContextId, FrameId, NonLocalName};
 use std::any::Any;
 use std::clone::Clone as RustClone;
-use crate::bytecode::Op;
-use crate::bytecode;
-use crate::bytecode::{NonLocalName, ContextId, FrameId};
-use std::sync::Mutex;
 use std::collections::HashMap;
+use std::sync::Arc;
+use std::sync::Mutex;
 
 use dtoa;
 
@@ -31,39 +30,67 @@ impl<T: Object> ToAny for T {
     }
 }
 
-pub trait Object : Any + ToAny + Send + Sync {
+pub trait Object: Any + ToAny + Send + Sync {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        Err(RuntimeError::type_error(format!("{} can not be cloned", self.technetium_type_name())))
+        Err(RuntimeError::type_error(format!(
+            "{} can not be cloned",
+            self.technetium_type_name()
+        )))
     }
 
     fn technetium_type_name(&self) -> String;
 
     fn to_string(&self) -> RuntimeResult<String> {
-        Err(RuntimeError::type_error(format!("{} can not be converted into a string", self.technetium_type_name())))
+        Err(RuntimeError::type_error(format!(
+            "{} can not be converted into a string",
+            self.technetium_type_name()
+        )))
     }
 
     fn get_attr(&self, attr: String) -> RuntimeResult<ObjectRef> {
-        Err(RuntimeError::attribute_error(format!("{} has no attributes", self.technetium_type_name())))
+        Err(RuntimeError::attribute_error(format!(
+            "{} has no attributes",
+            self.technetium_type_name()
+        )))
     }
 
     fn set_attr(&self, attr: String, val: ObjectRef) -> RuntimeResult<()> {
-        Err(RuntimeError::attribute_error(format!("Cannot set attributes of {}", self.technetium_type_name())))
+        Err(RuntimeError::attribute_error(format!(
+            "Cannot set attributes of {}",
+            self.technetium_type_name()
+        )))
     }
 
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
-        Err(RuntimeError::attribute_error(format!("Cannot call method of {}", self.technetium_type_name())))
+        Err(RuntimeError::attribute_error(format!(
+            "Cannot call method of {}",
+            self.technetium_type_name()
+        )))
     }
 
-    fn call(&self, args: &[ObjectRef], locals: &mut HashMap<NonLocalName, ObjectRef>) -> RuntimeResult<ObjectRef> {
-        Err(RuntimeError::type_error(format!("Object of type {} is not callable", self.technetium_type_name())))
+    fn call(
+        &self,
+        args: &[ObjectRef],
+        locals: &mut HashMap<NonLocalName, ObjectRef>,
+    ) -> RuntimeResult<ObjectRef> {
+        Err(RuntimeError::type_error(format!(
+            "Object of type {} is not callable",
+            self.technetium_type_name()
+        )))
     }
 
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
-        Err(RuntimeError::type_error(format!("Object of type {} cannot be made into an iterator", self.technetium_type_name())))
+        Err(RuntimeError::type_error(format!(
+            "Object of type {} cannot be made into an iterator",
+            self.technetium_type_name()
+        )))
     }
-    
+
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
-        Err(RuntimeError::type_error(format!("Object of type {} cannot be iterated", self.technetium_type_name())))
+        Err(RuntimeError::type_error(format!(
+            "Object of type {} cannot be iterated",
+            self.technetium_type_name()
+        )))
     }
 
     fn truthy(&self) -> bool {
@@ -167,7 +194,7 @@ impl Object for FloatObject {
 
 #[derive(Clone, Debug)]
 pub struct CharObject {
-    pub val: char
+    pub val: char,
 }
 
 impl CharObject {
@@ -196,7 +223,7 @@ impl Object for CharObject {
 
 #[derive(Debug)]
 pub struct StringObject {
-    pub val: Mutex<String>
+    pub val: Mutex<String>,
 }
 
 impl StringObject {
@@ -254,19 +281,38 @@ impl Object for Function {
     fn truthy(&self) -> bool {
         true
     }
-    
-    fn call(&self, args: &[ObjectRef], locals: &mut HashMap<NonLocalName, ObjectRef>) -> RuntimeResult<ObjectRef> {
+
+    fn call(
+        &self,
+        args: &[ObjectRef],
+        locals: &mut HashMap<NonLocalName, ObjectRef>,
+    ) -> RuntimeResult<ObjectRef> {
         if args.len() != self.nargs {
-            return Err(RuntimeError::type_error(format!("Incorrect number of arguments given to {}: expected {}, got {}", self.name, self.nargs, args.len())));
+            return Err(RuntimeError::type_error(format!(
+                "Incorrect number of arguments given to {}: expected {}, got {}",
+                self.name,
+                self.nargs,
+                args.len()
+            )));
         }
-        let mut frame = bytecode::Frame::new(&self.code, locals, Arc::clone(&self.context), self.least_ancestors.lock().unwrap().as_ref().unwrap().clone(), self.context_id);
+        let mut frame = bytecode::Frame::new(
+            &self.code,
+            locals,
+            Arc::clone(&self.context),
+            self.least_ancestors
+                .lock()
+                .unwrap()
+                .as_ref()
+                .unwrap()
+                .clone(),
+            self.context_id,
+        );
         for arg in args.iter().rev() {
             frame.stack.push(Arc::clone(arg));
         }
         frame.run()
     }
 }
-
 
 pub struct List {
     pub contents: Mutex<Vec<ObjectRef>>,
@@ -279,7 +325,9 @@ impl Object for List {
         for val in contents_.iter() {
             res_contents.push(val.technetium_clone()?);
         }
-        Ok(Arc::new(List { contents: Mutex::new(res_contents) }))
+        Ok(Arc::new(List {
+            contents: Mutex::new(res_contents),
+        }))
     }
 
     fn technetium_type_name(&self) -> String {
@@ -291,23 +339,30 @@ impl Object for List {
     }
 
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
-       match method {
+        match method {
             "length" => {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
                     Ok(IntObject::new(self.contents.lock().unwrap().len() as i64))
                 }
-            },
-            _ => {
-                Err(RuntimeError::type_error(format!("list has no method {}", method)))
-            },
-       }
+            }
+            _ => Err(RuntimeError::type_error(format!(
+                "list has no method {}",
+                method
+            ))),
+        }
     }
 
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
         let iter = ListIterator {
-            contents: self.contents.lock().unwrap().iter().map(|val| Arc::clone(val)).collect(),
+            contents: self
+                .contents
+                .lock()
+                .unwrap()
+                .iter()
+                .map(|val| Arc::clone(val))
+                .collect(),
             index: Mutex::new(0),
         };
 
@@ -347,7 +402,9 @@ impl Object for Tuple {
         for val in self.contents.iter() {
             res_contents.push(val.technetium_clone()?);
         }
-        Ok(Arc::new(Tuple { contents: res_contents }))
+        Ok(Arc::new(Tuple {
+            contents: res_contents,
+        }))
     }
 
     fn technetium_type_name(&self) -> String {
@@ -359,18 +416,19 @@ impl Object for Tuple {
     }
 
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
-       match method {
+        match method {
             "length" => {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
                     Ok(IntObject::new(self.contents.len() as i64))
                 }
-            },
-            _ => {
-                Err(RuntimeError::type_error(format!("list has no method {}", method)))
-            },
-       }
+            }
+            _ => Err(RuntimeError::type_error(format!(
+                "list has no method {}",
+                method
+            ))),
+        }
     }
 }
 

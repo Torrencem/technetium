@@ -1,6 +1,5 @@
-
-use log::{Record, Level, Metadata};
-use log::{SetLoggerError, LevelFilter};
+use log::{Level, Metadata, Record};
+use log::{LevelFilter, SetLoggerError};
 
 struct Logger {
     level: Level,

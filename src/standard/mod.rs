@@ -37,6 +37,7 @@ lazy_static! {
         res.insert("bool".to_string(), (STANDARD_CONTEXT_ID, 20));
         res.insert("int".to_string(), (STANDARD_CONTEXT_ID, 21));
         res.insert("float".to_string(), (STANDARD_CONTEXT_ID, 22));
+        res.insert("char".to_string(), (STANDARD_CONTEXT_ID, 23));
         res
     };
     pub static ref Default_Namespace: HashMap<GlobalConstantDescriptor, ObjectRef> = {
@@ -64,6 +65,7 @@ lazy_static! {
         res.insert((STANDARD_CONTEXT_ID, 20), Arc::new(conversion::Bool));
         res.insert((STANDARD_CONTEXT_ID, 21), Arc::new(conversion::Int));
         res.insert((STANDARD_CONTEXT_ID, 22), Arc::new(conversion::Float));
+        res.insert((STANDARD_CONTEXT_ID, 23), Arc::new(conversion::Char));
         res
     };
 }

@@ -560,3 +560,20 @@ print(bool(f) && bool(i) && bool(s) && bool(si))
     Ok(())
 }
 
+#[test]
+fn test_char_conversions() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+        r#"
+c = '💯'
+
+print(int(c))
+print(char(int(c)))
+"#,
+    );
+
+    cmd.assert().success().stdout(predicate::eq("128175\n💯\n"));
+
+    Ok(())
+}
+

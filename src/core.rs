@@ -165,6 +165,35 @@ impl Object for FloatObject {
     }
 }
 
+#[derive(Clone, Debug)]
+pub struct CharObject {
+    pub val: char
+}
+
+impl CharObject {
+    pub fn new(c: char) -> ObjectRef {
+        Arc::new(CharObject { val: c })
+    }
+}
+
+impl Object for CharObject {
+    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
+        Ok(Arc::new(self.clone()))
+    }
+
+    fn technetium_type_name(&self) -> String {
+        "char".to_string()
+    }
+
+    fn to_string(&self) -> RuntimeResult<String> {
+        Ok(self.val.to_string())
+    }
+
+    fn truthy(&self) -> bool {
+        !self.val.is_whitespace()
+    }
+}
+
 #[derive(Debug)]
 pub struct StringObject {
     pub val: Mutex<String>

@@ -13,6 +13,7 @@ pub enum Literal {
     Integer(i64, Span),
     Float(f64, Span),
     Str(String, Span),
+    Char(char, Span),
     Bool(bool, Span),
     FormatString(FormatString),
 }
@@ -23,6 +24,7 @@ impl Literal {
             Literal::Integer(_, s) => *s,
             Literal::Float(_, s) => *s,
             Literal::Str(_, s) => *s,
+            Literal::Char(_, s) => *s,
             Literal::Bool(_, s) => *s,
             Literal::FormatString(s) => s.span,
         }
@@ -33,6 +35,7 @@ impl Literal {
             Literal::Integer(_, s) => s,
             Literal::Float(_, s) => s,
             Literal::Str(_, s) => s,
+            Literal::Char(_, s) => s,
             Literal::Bool(_, s) => s,
             Literal::FormatString(s) => &mut s.span,
         }

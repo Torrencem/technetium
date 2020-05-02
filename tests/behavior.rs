@@ -440,3 +440,24 @@ print(false || true)
         .stdout(predicate::eq("false\ntrue\ntrue\n"));
     Ok(())
 }
+
+#[test]
+fn test_char_indexing() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+r#"
+my_name = "matt"
+
+my_name[0] = 'M'
+
+print(my_name)
+print(my_name[2])
+"#);
+    
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("Matt\nt\n"));
+    Ok(())
+}
+
+

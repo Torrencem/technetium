@@ -47,6 +47,7 @@ pub enum Tok {
     Float(f64),
     Bool(bool),
     StringLit(String),
+    CharLit(char),
     FormatStringLit(String, Vec<(usize, String)>),
     ShStatement(String, Vec<(usize, String)>),
     If,
@@ -122,6 +123,28 @@ impl<'input> Lexer<'input> {
                     res.push(c);
                 },
             }
+        }
+    }
+    
+    fn parse_char_lit(&mut self) -> Result<char, MiscParseError> {
+        match self.chars.next() {
+            None => Err(MiscParseError::lex("Unexpected end of input when reading character literal", None)),
+            Some((_, '\\')) => {
+                // Escaped character
+                match self.chars.next() {
+                    None => return Err(MiscParseError::lex("Unexpected end of input when reading character literal", None)),
+                    Some((_, 'n')) => Ok('\n'),
+                    Some((_, 't')) => Ok('\t'),
+                    Some((_, '\'')) => Ok('\''),
+                    Some((_, '\\')) => Ok('\\'),
+                    Some((i, c)) => Err(MiscParseError::lex(format!("Unrecognized escape sequence: \\{}", c).as_ref(), Some(i))),
+                }
+            },
+            Some((i, '\'')) => return Err(MiscParseError::lex("Empty character literal", Some(i))),
+            Some((i, '\n')) => return Err(MiscParseError::lex("Unexpected end of line before end of character literal", Some(i))),
+            Some((_, c)) => {
+                return Ok(c);
+            },
         }
     }
     
@@ -427,6 +450,18 @@ impl<'input> Iterator for Lexer<'input> {
                     }
                     let (s, i2) = lit.unwrap();
                     return Some(Ok((i, Tok::StringLit(s), i2)));
+                },
+                Some((i, '\'')) => {
+                    let lit = self.parse_char_lit();
+                    if let Err(e) = lit {
+                        return Some(Err(e));
+                    }
+                    let c = lit.unwrap();
+                    match self.chars.next() {
+                        None => return Some(Err(MiscParseError::lex("Unexpected end of input when reading character literal", None))),
+                        Some((i2, '\'')) => return Some(Ok((i, Tok::CharLit(c), i2))),
+                        Some((i2, _)) => return Some(Err(MiscParseError::lex("Too many values in character literal", Some(i2)))),
+                    }
                 },
                 Some((i, '$')) => {
                     let lit = self.parse_fmt_string('\n');

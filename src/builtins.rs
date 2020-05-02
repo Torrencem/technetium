@@ -322,6 +322,12 @@ pub fn cmp_eq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let res = BoolObject::new(val_a.val == val_b.val);
             Ok(res)
         },
+        (a, b) if a == TypeId::of::<CharObject>() && b == TypeId::of::<CharObject>() => {
+            let val_a = a_any.downcast_ref::<CharObject>().unwrap();
+            let val_b = b_any.downcast_ref::<CharObject>().unwrap();
+            let res = BoolObject::new(val_a.val == val_b.val);
+            Ok(res)
+        },
         (a_, b_) if a_ == TypeId::of::<StringObject>() && b_ == TypeId::of::<StringObject>() => {
             let val_a = a_any.downcast_ref::<StringObject>().unwrap();
             let val_b = b_any.downcast_ref::<StringObject>().unwrap();
@@ -364,6 +370,12 @@ pub fn cmp_neq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
             let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
             let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
+            let res = BoolObject::new(val_a.val != val_b.val);
+            Ok(res)
+        },
+        (a, b) if a == TypeId::of::<CharObject>() && b == TypeId::of::<CharObject>() => {
+            let val_a = a_any.downcast_ref::<CharObject>().unwrap();
+            let val_b = b_any.downcast_ref::<CharObject>().unwrap();
             let res = BoolObject::new(val_a.val != val_b.val);
             Ok(res)
         },
@@ -488,8 +500,7 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             }
             let c = val_a.val.lock().unwrap().chars().nth(val_b.val as u64 as usize);
             if let Some(c) = c {
-                let s = format!("{}", c);
-                Ok(StringObject::new(s))
+                Ok(CharObject::new(c))
             } else {
                 Err(RuntimeError::index_oob_error(format!("Index out of bounds")))
             }
@@ -514,6 +525,21 @@ pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> 
                 return Err(RuntimeError::index_oob_error("Index out of bounds"));
             }
             val_a[val_b.val as u64 as usize] = c;
+            Ok(())
+        },
+        (a, b) if a == TypeId::of::<StringObject>() && b == TypeId::of::<IntObject>() && c.as_any().is::<CharObject>() => {
+            let mut val_a = a_any.downcast_ref::<StringObject>().unwrap().val.lock().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let index = val_b.val as u64 as usize;
+            let val_c = c.as_any().downcast_ref::<CharObject>().unwrap();
+            let ch = val_c.val;
+            if val_b.val < 0 {
+                return Err(RuntimeError::index_oob_error("Negative index"));
+            }
+            if (val_b.val as u64 as usize) >= val_a.len() {
+                return Err(RuntimeError::index_oob_error("Index out of bounds"));
+            }
+            val_a.replace_range(index..index+1, &ch.to_string());
             Ok(())
         },
         _ => {

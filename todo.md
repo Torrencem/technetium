@@ -3,6 +3,8 @@ This is a rough todo list of features I need to add to the language:
 
 * short circuiting (doesn't work because arguments are evaluated before being sent into function 'or')
 * either char type, or some other sane way of doing string indexing (s[0] = 'h')
+* run a formatter and clippy
+* `type` and `to_string` functions
 * slices
 * examples in README.md
 * (+) for lists

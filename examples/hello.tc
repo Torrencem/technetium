@@ -3,9 +3,9 @@
 
 # print(~"sin({1.0}) = {sin(1)} = {sin(1.0)}")
 
-print(false && true)
+my_name = "matt"
 
-print(true && true)
+my_name[0] = 'M'
 
-print(false || true)
+print(my_name)
 

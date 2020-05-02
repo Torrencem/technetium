@@ -154,6 +154,9 @@ impl CompileManager {
             Literal::Str(val, _) => {
                 StringObject::new(RustClone::clone(val))
             },
+            Literal::Char(val, _) => {
+                CharObject::new(*val)
+            },
             Literal::FormatString(f) => {
                 return self.compile_format_string(&f);
             }

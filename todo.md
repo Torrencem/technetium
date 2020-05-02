@@ -1,7 +1,7 @@
 
 This is a rough todo list of features I need to add to the language:
 
-* type conversion functions
+* type conversion function "char"
 * slices
 * (+) for lists, strings
 * generators

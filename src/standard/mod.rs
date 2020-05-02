@@ -1,6 +1,7 @@
 pub mod math;
 pub mod sh;
 pub mod special_funcs;
+pub mod conversion;
 
 use crate::bytecode::{ContextId, FrameId, GlobalConstantDescriptor, GlobalContext};
 use crate::core::*;
@@ -33,6 +34,9 @@ lazy_static! {
         res.insert("type".to_string(), (STANDARD_CONTEXT_ID, 17));
         res.insert("string".to_string(), (STANDARD_CONTEXT_ID, 18));
         res.insert("clone".to_string(), (STANDARD_CONTEXT_ID, 19));
+        res.insert("bool".to_string(), (STANDARD_CONTEXT_ID, 20));
+        res.insert("int".to_string(), (STANDARD_CONTEXT_ID, 21));
+        res.insert("float".to_string(), (STANDARD_CONTEXT_ID, 22));
         res
     };
     pub static ref Default_Namespace: HashMap<GlobalConstantDescriptor, ObjectRef> = {
@@ -55,8 +59,11 @@ lazy_static! {
         res.insert((STANDARD_CONTEXT_ID, 15), Arc::new(math::Arccos));
         res.insert((STANDARD_CONTEXT_ID, 16), Arc::new(math::Arctan));
         res.insert((STANDARD_CONTEXT_ID, 17), Arc::new(special_funcs::Type));
-        res.insert((STANDARD_CONTEXT_ID, 18), Arc::new(special_funcs::ToString_));
+        res.insert((STANDARD_CONTEXT_ID, 18), Arc::new(conversion::String_));
         res.insert((STANDARD_CONTEXT_ID, 19), Arc::new(special_funcs::Clone_));
+        res.insert((STANDARD_CONTEXT_ID, 20), Arc::new(conversion::Bool));
+        res.insert((STANDARD_CONTEXT_ID, 21), Arc::new(conversion::Int));
+        res.insert((STANDARD_CONTEXT_ID, 22), Arc::new(conversion::Float));
         res
     };
 }

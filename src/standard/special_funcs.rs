@@ -60,10 +60,6 @@ func_object!(Type, (1..=1), args -> {
     Ok(StringObject::new(args[0].technetium_type_name()))
 });
 
-func_object!(ToString_, (1..=1), args -> {
-    Ok(StringObject::new(args[0].to_string()?))
-});
-
 func_object!(Clone_, (1..=1), args -> {
     Ok(args[0].technetium_clone()?)
 });

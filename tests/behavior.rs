@@ -539,4 +539,24 @@ print(a)
     Ok(())
 }
 
+#[test]
+fn test_conversions() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+        r#"
+f = 3.14
+i = 3
+s = "3.14"
+si = "3"
+print(int(f) == i)
+print(abs(float(s) - f) < 0.001)
+print(int(si) == i)
+print(bool(f) && bool(i) && bool(s) && bool(si))
+"#,
+    );
+
+    cmd.assert().success().stdout(predicate::eq("true\ntrue\ntrue\ntrue\n"));
+
+    Ok(())
+}
 

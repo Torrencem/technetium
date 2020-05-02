@@ -1,6 +1,7 @@
 use crate::bytecode;
 use crate::bytecode::Op;
 use crate::bytecode::{ContextId, FrameId, NonLocalName};
+use crate::builtins::index_get;
 use std::any::Any;
 use std::clone::Clone as RustClone;
 use std::collections::HashMap;
@@ -427,6 +428,94 @@ impl Object for ListIterator {
             *index += 1;
             Ok(Some(Arc::clone(&self.contents[old])))
         }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Slice {
+    pub parent: ObjectRef,
+    pub start: i64,
+    pub stop: Option<i64>,
+    pub step: i64,
+}
+
+impl Object for Slice {
+    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
+        Ok(Arc::new(Slice {
+            parent: Arc::clone(&self.parent),
+            start: self.start,
+            stop: self.stop,
+            step: self.step,
+        }))
+    }
+
+    fn technetium_type_name(&self) -> String {
+        "slice".to_string()
+    }
+
+    fn make_iter(&self) -> RuntimeResult<ObjectRef> {
+        Ok(Arc::new(SliceIterator {
+            parent: Arc::clone(&self.parent),
+            curr: Mutex::new(self.start),
+            stop: self.stop,
+            step: self.step,
+        }))
+    }
+
+    fn to_string(&self) -> RuntimeResult<String> {
+        let mut res = String::new();
+        res.push('[');
+        let mut first = true;
+        let mut curr_index = self.start;
+        loop {
+            if let Some(stop) = self.stop {
+                if self.step < 0 && curr_index <= stop
+                || self.step > 0 && curr_index >= stop {
+                    break;
+                }
+            }
+            let val = index_get(Arc::clone(&self.parent), IntObject::new(curr_index));
+            if let Ok(val_) = val {
+                if first {
+                    first = false;
+                } else {
+                    res.push_str(", ");
+                }
+                res.push_str(val_.to_string()?.as_ref());
+            } else {
+                break;
+            }
+            curr_index += self.step;
+        }
+        res.push(']');
+        Ok(res)
+    }
+}
+
+#[derive(Debug)]
+pub struct SliceIterator {
+    pub parent: ObjectRef,
+    pub curr: Mutex<i64>,
+    pub stop: Option<i64>,
+    pub step: i64,
+}
+
+impl Object for SliceIterator {
+    fn technetium_type_name(&self) -> String {
+        "iterator(slice)".to_string()
+    }
+
+    fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
+        let mut curr_ = self.curr.lock()?;
+        if let Some(stop) = self.stop {
+            if self.step < 0 && *curr_ <= stop
+            || self.step > 0 && *curr_ >= stop {
+                return Ok(None);
+            }
+        }
+        let old = index_get(Arc::clone(&self.parent), IntObject::new(*curr_));
+        *curr_ += self.step;
+        Ok(old.ok())
     }
 }
 

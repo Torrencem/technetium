@@ -1,7 +1,6 @@
 
 This is a rough todo list of features I need to add to the language:
 
-* slices
 * split standard into more files
 * split tests/behavior.rs into more files
 * replace weak\_debug with a vec of debug spans

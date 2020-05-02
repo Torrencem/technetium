@@ -27,6 +27,7 @@ pub enum Tok {
     Plus,
     Minus,
     Mod,
+    Colon,
     Greater,
     Lesser,
     Neq,
@@ -394,6 +395,7 @@ impl<'input> Iterator for Lexer<'input> {
                 Some((i, '}')) => return Some(Ok((i, Tok::CloseBrace, i + 1))),
                 Some((i, ',')) => return Some(Ok((i, Tok::Comma, i + 1))),
                 Some((i, '.')) => return Some(Ok((i, Tok::Dot, i + 1))),
+                Some((i, ':')) => return Some(Ok((i, Tok::Colon, i + 1))),
                 Some((i, '+')) => match self.chars.peek() {
                     Some((_, '=')) => {
                         self.chars.next();

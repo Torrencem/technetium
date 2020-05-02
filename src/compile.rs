@@ -300,6 +300,7 @@ impl CompileManager {
             Expr::FuncCall(f) => self.compile_func_call(f),
             Expr::AttrLookup(a) => self.compile_attr_lookup(a),
             Expr::IndexedExpr(i) => self.compile_indexed_expr(i),
+            Expr::SlicedExpr(s) => self.compile_sliced_expr(s),
         }
     }
 
@@ -315,6 +316,37 @@ impl CompileManager {
         res.push(Op::debug(debug_descr));
 
         res.push(Op::index_get);
+        Ok(res)
+    }
+
+    pub fn compile_sliced_expr(&mut self, ast: &SlicedExpr) -> CompileResult {
+        let mut res = vec![];
+        res.append(&mut self.compile_expr(&*ast.parent)?);
+        match &ast.start {
+            Some(start_expr) => {
+                res.append(&mut self.compile_expr(&*start_expr)?);
+            }
+            None => {
+                res.push(Op::push_void);
+            }
+        }
+        match &ast.end {
+            Some(end_expr) => {
+                res.append(&mut self.compile_expr(&*end_expr)?);
+            }
+            None => {
+                res.push(Op::push_void);
+            }
+        }
+        match &ast.step {
+            Some(step_expr) => {
+                res.append(&mut self.compile_expr(&*step_expr)?);
+            }
+            None => {
+                res.push(Op::push_void);
+            }
+        }
+        res.push(Op::make_slice);
         Ok(res)
     }
 

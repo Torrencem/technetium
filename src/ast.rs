@@ -228,6 +228,46 @@ impl IndexedExpr {
 }
 
 #[derive(Clone, Debug)]
+pub struct SlicedExpr {
+    pub span: Span,
+    pub parent: Box<Expr>,
+    pub start: Option<Box<Expr>>,
+    pub end: Option<Box<Expr>>,
+    pub step: Option<Box<Expr>>,
+}
+
+impl SlicedExpr {
+    pub fn new(parent: Expr, start: Option<Expr>, end: Option<Expr>, step: Option<Expr>, l: usize, r: usize) -> Self {
+        SlicedExpr {
+            span: Span::new(l as u32, r as u32),
+            parent: Box::new(parent),
+            start: start.map(|val| Box::new(val)),
+            end: end.map(|val| Box::new(val)),
+            step: step.map(|val| Box::new(val)),
+        }
+    }
+
+    pub fn offset_spans(&mut self, offset: usize) {
+        let l = self.span.start();
+        let r = self.span.end();
+        self.span = Span::new(
+            u32::from(l) + (offset as u32),
+            u32::from(r) + (offset as u32),
+        );
+        self.parent.offset_spans(offset);
+        for one in self.start.iter_mut() {
+            one.offset_spans(offset);
+        }
+        for one in self.end.iter_mut() {
+            one.offset_spans(offset);
+        }
+        for one in self.step.iter_mut() {
+            one.offset_spans(offset);
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
 pub enum Expr {
     Variable(Identifier),
     Literal(Literal),
@@ -237,6 +277,7 @@ pub enum Expr {
     FuncCall(FuncCall),
     AttrLookup(AttrLookup),
     IndexedExpr(IndexedExpr),
+    SlicedExpr(SlicedExpr),
 }
 
 impl Expr {
@@ -250,6 +291,7 @@ impl Expr {
             Expr::FuncCall(f) => f.span,
             Expr::AttrLookup(a) => a.span,
             Expr::IndexedExpr(e) => e.span,
+            Expr::SlicedExpr(e) => e.span,
         }
     }
 
@@ -263,6 +305,7 @@ impl Expr {
             Expr::FuncCall(f) => f.offset_spans(offset),
             Expr::AttrLookup(a) => a.offset_spans(offset),
             Expr::IndexedExpr(e) => e.offset_spans(offset),
+            Expr::SlicedExpr(e) => e.offset_spans(offset),
         }
     }
 }

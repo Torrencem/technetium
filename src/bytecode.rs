@@ -11,8 +11,11 @@ use std::process::{Command, Stdio};
 
 use crate::builtins;
 use crate::standard::Default_Namespace;
+use crate::standard::conversion;
 
 use std::fmt;
+
+use std::any::TypeId;
 
 use codespan::Span;
 
@@ -121,6 +124,8 @@ pub enum Op {
 
     index_set,
 
+    make_slice,
+
     /// Transform the object on the top of the stack into an interator object
     make_iter,
 
@@ -146,6 +151,8 @@ pub enum Op {
 
     /// Push a constant built in object / default (see: standard)
     push_global_default(GlobalConstantDescriptor),
+
+    push_void,
 
     /// Jump to a relative offset in the instructions
     jmp(i16),
@@ -646,6 +653,39 @@ impl<'code> Frame<'code> {
                     let c = self.stack.pop().unwrap();
                     try_debug!(self, ds, dsw, builtins::index_set(c, b, a))
                 }
+                Op::make_slice => {
+                    if self.stack.len() < 4 {
+                        return Err(RuntimeError::internal_error(
+                                "Tried to make a slice with too few arguments"
+                        ));
+                    }
+                    let step = self.stack.pop().unwrap();
+                    let step = if step.as_any().type_id() == TypeId::of::<VoidObject>() {
+                        1
+                    } else {
+                        conversion::to_int(step)?
+                    };
+                    let stop = self.stack.pop().unwrap();
+                    let stop = if stop.as_any().type_id() == TypeId::of::<VoidObject>() {
+                        None
+                    } else {
+                        Some(conversion::to_int(stop)?)
+                    };
+                    let start = self.stack.pop().unwrap();
+                    let start = if start.as_any().type_id() == TypeId::of::<VoidObject>() {
+                        0
+                    } else {
+                        conversion::to_int(start)?
+                    };
+                    let parent = self.stack.pop().unwrap();
+                    let slice = Slice {
+                            parent,
+                            start,
+                            stop,
+                            step,
+                    };
+                    self.stack.push(Arc::new(slice));
+                }
                 Op::make_iter => {
                     let val = self.stack.pop();
                     if let Some(val) = val {
@@ -734,6 +774,9 @@ impl<'code> Frame<'code> {
                             "Reference to a global default that doesn't exist!",
                         ));
                     }
+                }
+                Op::push_void => {
+                    self.stack.push(VoidObject::new())
                 }
                 Op::jmp(offset) => {
                     if *offset > 0 {

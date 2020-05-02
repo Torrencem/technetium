@@ -56,6 +56,18 @@ func_object!(LinuxDistro, (0..=0), args -> {
     Ok(StringObject::new(linux_os_release()?.name.unwrap_or("Unknown".to_string())))
 });
 
+func_object!(Type, (1..=1), args -> {
+    Ok(StringObject::new(args[0].technetium_type_name()))
+});
+
+func_object!(ToString_, (1..=1), args -> {
+    Ok(StringObject::new(args[0].to_string()?))
+});
+
+func_object!(Clone_, (1..=1), args -> {
+    Ok(args[0].technetium_clone()?)
+});
+
 #[derive(Debug, Clone)]
 pub struct Range {
     start: i64,

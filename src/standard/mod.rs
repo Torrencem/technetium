@@ -30,6 +30,9 @@ lazy_static! {
         res.insert("arcsin".to_string(), (STANDARD_CONTEXT_ID, 14));
         res.insert("arccos".to_string(), (STANDARD_CONTEXT_ID, 15));
         res.insert("arctan".to_string(), (STANDARD_CONTEXT_ID, 16));
+        res.insert("type".to_string(), (STANDARD_CONTEXT_ID, 17));
+        res.insert("string".to_string(), (STANDARD_CONTEXT_ID, 18));
+        res.insert("clone".to_string(), (STANDARD_CONTEXT_ID, 19));
         res
     };
     pub static ref Default_Namespace: HashMap<GlobalConstantDescriptor, ObjectRef> = {
@@ -40,10 +43,7 @@ lazy_static! {
         res.insert((STANDARD_CONTEXT_ID, 3), Arc::new(sh::Sh));
         res.insert((STANDARD_CONTEXT_ID, 4), Arc::new(special_funcs::Cd));
         res.insert((STANDARD_CONTEXT_ID, 5), Arc::new(special_funcs::Os));
-        res.insert(
-            (STANDARD_CONTEXT_ID, 6),
-            Arc::new(special_funcs::LinuxDistro),
-        );
+        res.insert((STANDARD_CONTEXT_ID, 6), Arc::new(special_funcs::LinuxDistro));
         res.insert((STANDARD_CONTEXT_ID, 7), Arc::new(math::Sin));
         res.insert((STANDARD_CONTEXT_ID, 8), Arc::new(math::Cos));
         res.insert((STANDARD_CONTEXT_ID, 9), Arc::new(math::Tan));
@@ -54,6 +54,9 @@ lazy_static! {
         res.insert((STANDARD_CONTEXT_ID, 14), Arc::new(math::Arcsin));
         res.insert((STANDARD_CONTEXT_ID, 15), Arc::new(math::Arccos));
         res.insert((STANDARD_CONTEXT_ID, 16), Arc::new(math::Arctan));
+        res.insert((STANDARD_CONTEXT_ID, 17), Arc::new(special_funcs::Type));
+        res.insert((STANDARD_CONTEXT_ID, 18), Arc::new(special_funcs::ToString_));
+        res.insert((STANDARD_CONTEXT_ID, 19), Arc::new(special_funcs::Clone_));
         res
     };
 }

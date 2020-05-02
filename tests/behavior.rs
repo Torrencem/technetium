@@ -505,3 +505,38 @@ print(false && exit(1))
 
     Ok(())
 }
+
+#[test]
+fn test_clone() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+        r#"
+a = "Hello"
+b = clone(a)
+
+b[0] = 'h'
+
+print(a)
+"#,
+    );
+
+    cmd.assert().success().stdout(predicate::eq("Hello\n"));
+
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+        r#"
+a = "Hello"
+b = a
+
+b[0] = 'h'
+
+print(a)
+"#,
+    );
+
+    cmd.assert().success().stdout(predicate::eq("hello\n"));
+
+    Ok(())
+}
+
+

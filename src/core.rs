@@ -251,6 +251,29 @@ impl Object for StringObject {
         let val = self.val.lock().unwrap();
         *val != ""
     }
+
+    fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
+        match method {
+            "length" => {
+                if args.len() > 0 {
+                    Err(RuntimeError::type_error("length expects 0 args"))
+                } else {
+                    Ok(IntObject::new(self.val.lock().unwrap().len() as i64))
+                }
+            },
+            "escape" => {
+                if args.len() > 0 {
+                    Err(RuntimeError::type_error("length expects 0 args"))
+                } else {
+                    Ok(StringObject::new(self.val.lock().unwrap().escape_default().collect()))
+                }
+            },
+            _ => Err(RuntimeError::type_error(format!(
+                "string has no method {}",
+                method
+            ))),
+        }
+    }
 }
 
 pub struct Function {

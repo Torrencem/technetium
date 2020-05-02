@@ -593,3 +593,18 @@ print(s.escape())
     Ok(())
 }
 
+#[test]
+fn test_list_arith() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+        r#"
+l = [1] * 3 + [2] * 3
+
+print(l)
+"#,
+    );
+
+    cmd.assert().success().stdout(predicate::eq("[1, 1, 1, 2, 2, 2]\n"));
+
+    Ok(())
+}

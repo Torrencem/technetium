@@ -357,6 +357,23 @@ impl Object for List {
         "list".to_string()
     }
 
+    fn to_string(&self) -> RuntimeResult<String> {
+        let mut res = String::new();
+        res.push('[');
+        let mut first = true;
+        let vals = self.contents.lock().unwrap();
+        for val in vals.iter() {
+            if first {
+                first = false;
+            } else {
+                res.push_str(", ");
+            }
+            res.push_str(&val.to_string()?);
+        }
+        res.push(']');
+        Ok(res)
+    }
+
     fn truthy(&self) -> bool {
         self.contents.lock().unwrap().len() != 0
     }

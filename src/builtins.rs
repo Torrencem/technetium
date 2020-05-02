@@ -1,7 +1,7 @@
 use crate::core::*;
 use crate::error::*;
 use std::any::TypeId;
-use std::sync::Arc;
+use std::sync::{Mutex, Arc};
 
 pub fn add(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
@@ -40,6 +40,19 @@ pub fn add(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let b = b_any.downcast_ref::<StringObject>().unwrap();
             let res = format!("{}{}", a.to_string()?, b.val.lock().unwrap());
             Ok(StringObject::new(res))
+        }
+        (a_, b_) if a_ == TypeId::of::<List>() && b_ == TypeId::of::<List>() => {
+            let val_a = a_any.downcast_ref::<List>().unwrap();
+            let val_b = b_any.downcast_ref::<List>().unwrap();
+            if Arc::ptr_eq(&a, &b) {
+                let mut res = val_a.contents.lock().unwrap().clone();
+                res.append(&mut val_a.contents.lock().unwrap().clone());
+                Ok(Arc::new(List { contents: Mutex::new(res) }))
+            } else {
+                let mut res = val_a.contents.lock().unwrap().clone();
+                res.append(&mut val_b.contents.lock().unwrap().clone());
+                Ok(Arc::new(List { contents: Mutex::new(res) }))
+            }
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot add type {} to type {}",
@@ -112,6 +125,28 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
             let res = FloatObject::new(val_a.val * val_b.val);
             Ok(res)
+        }
+        (a, b) if a == TypeId::of::<List>() && b == TypeId::of::<IntObject>() => {
+            let val_a = a_any.downcast_ref::<List>().unwrap().contents.lock().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap();
+            let mut res: Vec<ObjectRef> = vec![];
+            for _ in (0..val_b.val) {
+                for obj_ref in val_a.iter() {
+                    res.push(Arc::clone(obj_ref));
+                }
+            }
+            Ok(Arc::new(List { contents: Mutex::new(res) }))
+        }
+        (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<List>() => {
+            let val_a = a_any.downcast_ref::<IntObject>().unwrap();
+            let val_b = b_any.downcast_ref::<List>().unwrap().contents.lock().unwrap();
+            let mut res: Vec<ObjectRef> = vec![];
+            for _ in (0..val_a.val) {
+                for obj_ref in val_b.iter() {
+                    res.push(Arc::clone(obj_ref));
+                }
+            }
+            Ok(Arc::new(List { contents: Mutex::new(res) }))
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot multiply type {} by type {}",

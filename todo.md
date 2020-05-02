@@ -4,6 +4,7 @@ This is a rough todo list of features I need to add to the language:
 * type conversion function "char"
 * "escape" function based on https://doc.rust-lang.org/std/primitive.char.html#method.escape_default
 * slices
+* split standard into more files
 * (+) for lists, strings
 * generators
 * run clippy

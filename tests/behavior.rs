@@ -464,3 +464,44 @@ print(my_name[2])
     cmd.assert().success().stdout(predicate::eq("Matt\nt\n"));
     Ok(())
 }
+
+#[test]
+fn test_short_circuiting() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+        r#"
+print(true || exit(1))
+"#,
+    );
+
+    cmd.assert().success().stdout(predicate::eq("true\n"));
+
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+        r#"
+print(false || exit(0))
+"#,
+    );
+
+    cmd.assert().success().stdout(predicate::eq(""));
+
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+        r#"
+print(true && exit(0))
+"#,
+    );
+
+    cmd.assert().success().stdout(predicate::eq(""));
+    
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+        r#"
+print(false && exit(1))
+"#,
+    );
+
+    cmd.assert().success().stdout(predicate::eq("false\n"));
+
+    Ok(())
+}

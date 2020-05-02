@@ -179,6 +179,29 @@ impl CompileManager {
         let mut res = vec![];
         let builtins = builtin_functions();
         if let Some(op) = builtins.get(&ast.fname.name) {
+            // Special case <and> and <or> for short-circuiting
+            if &ast.fname.name == "<and>" {
+                assert!(ast.arguments.len() == 2);
+                res.append(&mut self.compile_expr(&ast.arguments[0])?);
+                let mut short_arg_2 = self.compile_expr(&ast.arguments[1])?;
+                res.push(Op::push_bool(false));
+                res.push(Op::swap);
+                res.push(Op::not);
+                res.push(Op::cond_jmp(short_arg_2.len() as u16 as i16 + 2));
+                res.push(Op::pop);
+                res.append(&mut short_arg_2);
+                return Ok(res);
+            } else if &ast.fname.name == "<or>" {
+                assert!(ast.arguments.len() == 2);
+                res.append(&mut self.compile_expr(&ast.arguments[0])?);
+                let mut short_arg_2 = self.compile_expr(&ast.arguments[1])?;
+                res.push(Op::push_bool(true));
+                res.push(Op::swap);
+                res.push(Op::cond_jmp(short_arg_2.len() as u16 as i16 + 2));
+                res.push(Op::pop);
+                res.append(&mut short_arg_2);
+                return Ok(res);
+            }
             for arg in ast.arguments.iter() {
                 res.append(&mut self.compile_expr(arg)?);
             }

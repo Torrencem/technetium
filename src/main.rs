@@ -81,7 +81,7 @@ fn main() {
 
     let file_id = files.add(
         match matches.value_of("INPUT") {
-            Some(file_name) => file_name.clone(),
+            Some(file_name) => file_name,
             None => "<anonymous>",
         },
         &input,

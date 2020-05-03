@@ -2,6 +2,7 @@ pub mod math;
 pub mod sh;
 pub mod special_funcs;
 pub mod conversion;
+pub mod string;
 
 use crate::bytecode::{ContextId, FrameId, GlobalConstantDescriptor, GlobalContext};
 use crate::core::*;

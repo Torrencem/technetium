@@ -1,7 +1,8 @@
 
 This is a rough todo list of features I need to add to the language:
 
-* .lines() iterator of string
+* .lines() clones; it could not, if Object methods took Arc instead of &self
+* .lines() also uses chars .nth when it probably shouldn't
 * more examples in readme
 * replace weak\_debug with a vec of debug spans
 * negative indexing a la python (check [::-1])

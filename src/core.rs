@@ -2,6 +2,7 @@ use crate::bytecode;
 use crate::bytecode::Op;
 use crate::bytecode::{ContextId, FrameId, NonLocalName};
 use crate::builtins::index_get;
+use crate::standard;
 use std::any::Any;
 use std::clone::Clone as RustClone;
 use std::collections::HashMap;
@@ -42,10 +43,10 @@ pub trait Object: Any + ToAny + Send + Sync {
     fn technetium_type_name(&self) -> String;
 
     fn to_string(&self) -> RuntimeResult<String> {
-        Err(RuntimeError::type_error(format!(
-            "{} can not be converted into a string",
+        Ok(format!(
+            "<{}>",
             self.technetium_type_name()
-        )))
+        ))
     }
 
     fn get_attr(&self, attr: String) -> RuntimeResult<ObjectRef> {
@@ -267,6 +268,15 @@ impl Object for StringObject {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
                     Ok(StringObject::new(self.val.lock()?.escape_default().collect()))
+                }
+            },
+            "lines" => {
+                if args.len() > 0 {
+                    Err(RuntimeError::type_error("lines expects 0 args"))
+                } else {
+                    Ok(Arc::new(standard::string::Lines {
+                        parent: Arc::new(StringObject { val: Mutex::new(self.val.lock()?.clone()) }),
+                    }))
                 }
             },
             _ => Err(RuntimeError::type_error(format!(

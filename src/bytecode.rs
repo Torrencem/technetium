@@ -255,6 +255,7 @@ impl<'code> Frame<'code> {
                 stale_weak_debug_symb = true;
             }
             let instr = self.code.get(self.curr_instruction);
+            trace!("instruction: {:?}", instr);
             if let None = instr {
                 return Ok(VoidObject::new());
             }

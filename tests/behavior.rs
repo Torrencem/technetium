@@ -624,6 +624,19 @@ print(list[2:-1:-1])
     );
 
     cmd.assert().success().stdout(predicate::eq("[1, 5]\n[2, 10]\n[1, 2, 5]\n[5, 2, 1]\n"));
+    
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+        r#"
+list = [1, 2, 5, 10]
+
+list[::2][1] = 100
+
+print(list)
+"#,
+    );
+
+    cmd.assert().success().stdout(predicate::eq("[1, 2, 100, 10]\n"));
 
     Ok(())
 }

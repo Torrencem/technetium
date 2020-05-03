@@ -663,19 +663,31 @@ impl<'code> Frame<'code> {
                     let step = if step.as_any().type_id() == TypeId::of::<VoidObject>() {
                         1
                     } else {
-                        conversion::to_int(step)?
+                        if let Some(int_obj) = step.as_any().downcast_ref::<IntObject>() {
+                            int_obj.val
+                        } else {
+                            return Err(RuntimeError::type_error("Slice created with non-integer argument"));
+                        }
                     };
                     let stop = self.stack.pop().unwrap();
                     let stop = if stop.as_any().type_id() == TypeId::of::<VoidObject>() {
                         None
                     } else {
-                        Some(conversion::to_int(stop)?)
+                        if let Some(int_obj) = stop.as_any().downcast_ref::<IntObject>() {
+                            Some(int_obj.val)
+                        } else {
+                            return Err(RuntimeError::type_error("Slice created with non-integer argument"));
+                        }
                     };
                     let start = self.stack.pop().unwrap();
                     let start = if start.as_any().type_id() == TypeId::of::<VoidObject>() {
                         0
                     } else {
-                        conversion::to_int(start)?
+                        if let Some(int_obj) = start.as_any().downcast_ref::<IntObject>() {
+                            int_obj.val
+                        } else {
+                            return Err(RuntimeError::type_error("Slice created with non-integer argument"));
+                        }
                     };
                     let parent = self.stack.pop().unwrap();
                     let slice = Slice {

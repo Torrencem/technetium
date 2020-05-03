@@ -599,6 +599,12 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
                 )))
             }
         }
+        (a, b) if a == TypeId::of::<Slice>() && b == TypeId::of::<IntObject>() => {
+            let val_a = a_any.downcast_ref::<Slice>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap().val;
+            let index = val_a.start + val_b * val_a.step;
+            index_get(Arc::clone(&val_a.parent), IntObject::new(index))
+        }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot index type {} with type {}",
             a.technetium_type_name(),
@@ -651,6 +657,12 @@ pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> 
             }
             val_a.replace_range(index..index + 1, &ch.to_string());
             Ok(())
+        }
+        (a, b) if a == TypeId::of::<Slice>() && b == TypeId::of::<IntObject>() => {
+            let val_a = a_any.downcast_ref::<Slice>().unwrap();
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap().val;
+            let index = val_a.start + val_b * val_a.step;
+            index_set(Arc::clone(&val_a.parent), IntObject::new(index), c)
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot index type {} with type {}",

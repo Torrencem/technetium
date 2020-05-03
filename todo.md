@@ -7,6 +7,7 @@ This is a rough todo list of features I need to add to the language:
 * negative indexing a la python (check [::-1])
 * generators
 * dictionaries
+* use bigint
 * pass variables as reference? (for swap)
 * comprehensions
 * lambdas

@@ -20,7 +20,7 @@ Technetium is a sleek interpreted programming language that features inline shel
 
 ### Creating some files
 
-```
+```python
 for letter in ['A', 'B', 'C', 'D'] {
 	name = "file_" + letter
 	print(~"Creating file {name}")

@@ -1,7 +1,6 @@
 
 This is a rough todo list of features I need to add to the language:
 
-* split standard into more files
 * replace weak\_debug with a vec of debug spans
 * negative indexing a la python (check [::-1])
 * generators

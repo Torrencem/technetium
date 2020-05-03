@@ -4,11 +4,7 @@ use crate::bytecode::{ContextId, FrameId};
 use crate::core::*;
 use crate::error::*;
 use std::collections::HashMap;
-use std::env;
-use std::path::Path;
 use std::sync::{Arc, Mutex};
-use sys_info::linux_os_release;
-use sys_info::os_type;
 
 use crate::{func_object, func_object_void};
 
@@ -34,26 +30,6 @@ func_object!(Exit, (1..=1), args -> {
     } else {
         exit(if args[0].truthy() { 1 } else { 0 })
     }
-});
-
-func_object!(Cd, (1..=1), args -> {
-    let arg_any = args[0].as_any();
-    if let Some(str_obj) = arg_any.downcast_ref::<StringObject>() {
-        let val = str_obj.val.lock()?;
-        let path = Path::new(&*val);
-        env::set_current_dir(path)?;
-        Ok(VoidObject::new())
-    } else {
-        Err(RuntimeError::type_error("Expected string as argument to cd"))
-    }
-});
-
-func_object!(Os, (0..=0), args -> {
-    Ok(StringObject::new(os_type()?))
-});
-
-func_object!(LinuxDistro, (0..=0), args -> {
-    Ok(StringObject::new(linux_os_release()?.name.unwrap_or("Unknown".to_string())))
 });
 
 func_object!(Type, (1..=1), args -> {

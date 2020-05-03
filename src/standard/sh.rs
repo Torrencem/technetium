@@ -8,8 +8,13 @@ use std::sync::{Arc, Mutex};
 
 use std::io::{self, Write};
 use std::process::{Child, Command, Output, Stdio};
+use std::path::Path;
+use std::env;
 
 use crate::func_object;
+
+use sys_info::linux_os_release;
+use sys_info::os_type;
 
 #[derive(Debug)]
 pub struct ShObject {
@@ -149,3 +154,24 @@ func_object!(Sh, (1..=1), args -> {
         Err(RuntimeError::type_error("Incorrect type as argument to sh; expected string"))
     }
 });
+
+func_object!(Cd, (1..=1), args -> {
+    let arg_any = args[0].as_any();
+    if let Some(str_obj) = arg_any.downcast_ref::<StringObject>() {
+        let val = str_obj.val.lock()?;
+        let path = Path::new(&*val);
+        env::set_current_dir(path)?;
+        Ok(VoidObject::new())
+    } else {
+        Err(RuntimeError::type_error("Expected string as argument to cd"))
+    }
+});
+
+func_object!(Os, (0..=0), args -> {
+    Ok(StringObject::new(os_type()?))
+});
+
+func_object!(LinuxDistro, (0..=0), args -> {
+    Ok(StringObject::new(linux_os_release()?.name.unwrap_or("Unknown".to_string())))
+});
+

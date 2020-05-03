@@ -46,9 +46,9 @@ lazy_static! {
         res.insert((STANDARD_CONTEXT_ID, 1), Arc::new(special_funcs::Exit));
         res.insert((STANDARD_CONTEXT_ID, 2), Arc::new(special_funcs::RangeFunc));
         res.insert((STANDARD_CONTEXT_ID, 3), Arc::new(sh::Sh));
-        res.insert((STANDARD_CONTEXT_ID, 4), Arc::new(special_funcs::Cd));
-        res.insert((STANDARD_CONTEXT_ID, 5), Arc::new(special_funcs::Os));
-        res.insert((STANDARD_CONTEXT_ID, 6), Arc::new(special_funcs::LinuxDistro));
+        res.insert((STANDARD_CONTEXT_ID, 4), Arc::new(sh::Cd));
+        res.insert((STANDARD_CONTEXT_ID, 5), Arc::new(sh::Os));
+        res.insert((STANDARD_CONTEXT_ID, 6), Arc::new(sh::LinuxDistro));
         res.insert((STANDARD_CONTEXT_ID, 7), Arc::new(math::Sin));
         res.insert((STANDARD_CONTEXT_ID, 8), Arc::new(math::Cos));
         res.insert((STANDARD_CONTEXT_ID, 9), Arc::new(math::Tan));

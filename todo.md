@@ -3,17 +3,18 @@ This is a rough todo list of features I need to add to the language:
 
 * more examples in readme
 * negative indexing a la python (check [::-1])
-* generators
 * dictionaries
 * use bigint
-* .lines() clones; it could not, if Object methods took Rc<Self> instead of &self. (use nightly?)
-* pass variables as reference? (for swap)
 * comprehensions
 * lambdas
 * tertiery expressions (if blah then blah else blah)
 * add diagnostic message with some kind of full trace
 * work on documentation for all standard library
+* list methods
+* .lines() clones; it could not, if Object methods took Rc<Self> instead of &self. (use nightly?)
 * run clippy
+* generators
+* pass variables as reference? (for swap)
 * multi-file programs (import from another file)
 * make windows use cmd.exe instead of sh
 * standard library: get command line args

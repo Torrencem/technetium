@@ -225,6 +225,11 @@ Term: Expr = {
 };
 
 BaseExpr: Expr = {
+	<p: PostPreOp> => Expr::PostPreOp(p),
+	<a: AttrableExpr> => a,
+};
+
+AttrableExpr: Expr = {
 	"(" <e:Expr> ")" => e,
 	<s: Identifier> => Expr::Variable(s),
 	<l: Literal> => Expr::Literal(l),
@@ -237,11 +242,18 @@ BaseExpr: Expr = {
 	<s: SlicedExpr> => Expr::SlicedExpr(s),
 };
 
-IndexedExpr: IndexedExpr = <l:@L> <b: BaseExpr> "[" <i: Expr> "]" <r:@R> => IndexedExpr::new(b, i, l, r);
+PostPreOp: PostPreOp = {
+	<l:@L> <a: AssignmentLHS> "++" <r:@R> => PostPreOp::new_post_inc(a, l, r),
+	<l:@L> "++" <a: AssignmentLHS> <r:@R> => PostPreOp::new_pre_inc(a, l, r),
+	<l:@L> <a: AssignmentLHS> "--" <r:@R> => PostPreOp::new_post_dec(a, l, r),
+	<l:@L> "--" <a: AssignmentLHS> <r:@R> => PostPreOp::new_pre_dec(a, l, r),
+};
+
+IndexedExpr: IndexedExpr = <l:@L> <b: AttrableExpr> "[" <i: Expr> "]" <r:@R> => IndexedExpr::new(b, i, l, r);
 
 SlicedExpr: SlicedExpr = {
-	<l:@L> <b: BaseExpr> "[" <s: Expr?> ":" <e: Expr?> "]" <r:@R> => SlicedExpr::new(b, s, e, None, l, r),
-	<l:@L> <b: BaseExpr> "[" <s: Expr?> ":" <e: Expr?> ":" <st: Expr> "]" <r:@R> => SlicedExpr::new(b, s, e, Some(st), l, r),
+	<l:@L> <b: AttrableExpr> "[" <s: Expr?> ":" <e: Expr?> "]" <r:@R> => SlicedExpr::new(b, s, e, None, l, r),
+	<l:@L> <b: AttrableExpr> "[" <s: Expr?> ":" <e: Expr?> ":" <st: Expr> "]" <r:@R> => SlicedExpr::new(b, s, e, Some(st), l, r),
 };
 
 Literal: Literal = {
@@ -260,11 +272,11 @@ TupleLiteral: TupleLiteral = <l:@L> "(" <v: CommaNonEmpty<Expr>> ")" <r:@R> => T
 Identifier: Identifier = <l:@L> <s:ident> <r:@R> => Identifier::new(s.to_owned(), l, r);
 
 
-MethodCall: MethodCall = <l:@L> <e: BaseExpr> "." <i: Identifier> "(" <args: Comma<Expr>> ")" <r:@R> => MethodCall::new(e, i, args, l, r);
+MethodCall: MethodCall = <l:@L> <e: AttrableExpr> "." <i: Identifier> "(" <args: Comma<Expr>> ")" <r:@R> => MethodCall::new(e, i, args, l, r);
 
 FuncCall: FuncCall = <l:@L> <i: Identifier> "(" <args: Comma<Expr>> ")" <r:@R> => FuncCall::new(i, args, l, r);
 
-AttrLookup: AttrLookup = <l:@L> <e: BaseExpr>  "." <i: Identifier> <r:@R> => AttrLookup::new(e, i, l, r);
+AttrLookup: AttrLookup = <l:@L> <e: AttrableExpr>  "." <i: Identifier> <r:@R> => AttrLookup::new(e, i, l, r);
 
 Comma<T>: Vec<T> = {
 	<v:(<T> ",")*> <e:T?> => match e {
@@ -339,6 +351,8 @@ extern {
 		"*=" => Tok::MulAssign,
 		"/=" => Tok::DivAssign,
 		"%=" => Tok::ModAssign,
+		"++" => Tok::DoublePlus,
+		"--" => Tok::DoubleMinus,
 		ident => Tok::Identifier(<String>),
 		int_lit => Tok::Int(<i64>),
 		float_lit => Tok::Float(<f64>),

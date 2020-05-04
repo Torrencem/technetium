@@ -42,6 +42,8 @@ pub enum Tok {
     MulAssign,
     DivAssign,
     ModAssign,
+    DoublePlus,
+    DoubleMinus,
     Identifier(String),
     Int(i64),
     Float(f64),
@@ -401,6 +403,10 @@ impl<'input> Iterator for Lexer<'input> {
                         self.chars.next();
                         return Some(Ok((i, Tok::AddAssign, i + 2)));
                     }
+                    Some((_, '+')) => {
+                        self.chars.next();
+                        return Some(Ok((i, Tok::DoublePlus, i + 2)));
+                    }
                     _ => {
                         return Some(Ok((i, Tok::Plus, i + 1)));
                     }
@@ -409,6 +415,10 @@ impl<'input> Iterator for Lexer<'input> {
                     Some((_, '=')) => {
                         self.chars.next();
                         return Some(Ok((i, Tok::SubAssign, i + 2)));
+                    }
+                    Some((_, '-')) => {
+                        self.chars.next();
+                        return Some(Ok((i, Tok::DoubleMinus, i + 2)));
                     }
                     _ => {
                         return Some(Ok((i, Tok::Minus, i + 1)));

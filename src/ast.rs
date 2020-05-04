@@ -278,6 +278,7 @@ pub enum Expr {
     AttrLookup(AttrLookup),
     IndexedExpr(IndexedExpr),
     SlicedExpr(SlicedExpr),
+    PostPreOp(PostPreOp),
 }
 
 impl Expr {
@@ -292,6 +293,7 @@ impl Expr {
             Expr::AttrLookup(a) => a.span,
             Expr::IndexedExpr(e) => e.span,
             Expr::SlicedExpr(e) => e.span,
+            Expr::PostPreOp(e) => e.span,
         }
     }
 
@@ -306,7 +308,66 @@ impl Expr {
             Expr::AttrLookup(a) => a.offset_spans(offset),
             Expr::IndexedExpr(e) => e.offset_spans(offset),
             Expr::SlicedExpr(e) => e.offset_spans(offset),
+            Expr::PostPreOp(e) => e.offset_spans(offset),
         }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub enum PPOVariant {
+    PostIncrement,
+    PreIncrement,
+    PostDecrement,
+    PreDecrement,
+}
+
+#[derive(Clone, Debug)]
+pub struct PostPreOp {
+    pub span: Span,
+    pub variant: PPOVariant,
+    pub val: AssignmentLHS,
+}
+
+impl PostPreOp {
+    pub fn new_post_inc(val: AssignmentLHS, l: usize, r: usize) -> Self {
+        PostPreOp {
+            span: Span::new(l as u32, r as u32),
+            variant: PPOVariant::PostIncrement,
+            val
+        }
+    }
+
+    pub fn new_pre_inc(val: AssignmentLHS, l: usize, r: usize) -> Self {
+        PostPreOp {
+            span: Span::new(l as u32, r as u32),
+            variant: PPOVariant::PreIncrement,
+            val
+        }
+    }
+    
+    pub fn new_post_dec(val: AssignmentLHS, l: usize, r: usize) -> Self {
+        PostPreOp {
+            span: Span::new(l as u32, r as u32),
+            variant: PPOVariant::PostDecrement,
+            val
+        }
+    }
+    
+    pub fn new_pre_dec(val: AssignmentLHS, l: usize, r: usize) -> Self {
+        PostPreOp {
+            span: Span::new(l as u32, r as u32),
+            variant: PPOVariant::PreDecrement,
+            val
+        }
+    }
+
+    pub fn offset_spans(&mut self, offset: usize) {
+        let l = self.span.start();
+        let r = self.span.end();
+        self.span = Span::new(
+            u32::from(l) + (offset as u32),
+            u32::from(r) + (offset as u32),
+        );
     }
 }
 

@@ -20,8 +20,8 @@ pub struct RuntimeError {
     pub err: RuntimeErrorType,
     /// A short description helping diagnose what caused the error
     pub help: String,
-    /// The segment of user code where the error occured, if applicable
-    pub span: Option<Span>,
+    /// The segment trace of user code where the error occured
+    pub span: Vec<Span>,
 }
 
 impl fmt::Display for RuntimeError {
@@ -50,7 +50,7 @@ impl From<sys_info::Error> for RuntimeError {
         RuntimeError {
             err: RuntimeErrorType::SysInfoError,
             help: error.to_string(),
-            span: None,
+            span: vec![],
         }
     }
 }
@@ -60,7 +60,7 @@ impl From<std::io::Error> for RuntimeError {
         RuntimeError {
             err: RuntimeErrorType::IOError,
             help: error.to_string(),
-            span: None,
+            span: vec![],
         }
     }
 }
@@ -70,7 +70,7 @@ impl<T> From<sync::PoisonError<T>> for RuntimeError {
         RuntimeError {
             err: RuntimeErrorType::PoisonError,
             help: error.to_string(),
-            span: None,
+            span: vec![],
         }
     }
 }
@@ -80,7 +80,7 @@ impl RuntimeError {
         RuntimeError {
             err: RuntimeErrorType::TypeError,
             help: message.to_string(),
-            span: None,
+            span: vec![],
         }
     }
 
@@ -88,7 +88,7 @@ impl RuntimeError {
         RuntimeError {
             err: RuntimeErrorType::AttributeError,
             help: message.to_string(),
-            span: None,
+            span: vec![],
         }
     }
 
@@ -96,7 +96,7 @@ impl RuntimeError {
         RuntimeError {
             err: RuntimeErrorType::InternalError,
             help: message.to_string(),
-            span: None,
+            span: vec![],
         }
     }
 
@@ -104,7 +104,7 @@ impl RuntimeError {
         RuntimeError {
             err: RuntimeErrorType::IndexOutOfBounds,
             help: message.to_string(),
-            span: None,
+            span: vec![],
         }
     }
 
@@ -112,39 +112,25 @@ impl RuntimeError {
         RuntimeError {
             err: RuntimeErrorType::ChildProcessError,
             help: message.to_string(),
-            span: None,
+            span: vec![],
         }
     }
 
     /// Attach a code location to an error, for reporting diagnostics to the user
-    pub fn attach_span(self, span: Span) -> Self {
+    pub fn attach_span(mut self, span: Span) -> Self {
+        self.span.push(span);
         RuntimeError {
             err: self.err,
             help: self.help,
-            span: Some(span),
-        }
-    }
-
-    /// Attach a code location to an error if it does not already have one
-    pub fn weak_attach_span(self, span: Span) -> Self {
-        match self.span {
-            Some(val) => RuntimeError {
-                err: self.err,
-                help: self.help,
-                span: Some(val),
-            },
-            None => RuntimeError {
-                err: self.err,
-                help: self.help,
-                span: Some(span),
-            },
+            span: self.span,
         }
     }
 
     /// Create a diagnostic message from an error, for reporting to the user
     pub fn as_diagnostic<FileId>(&self, fileid: FileId) -> Diagnostic<FileId> {
-        match self.span {
-            Some(span) => Diagnostic::error()
+        // TODO: use other spans in the stack
+        match self.span.get(0) {
+            Some(&span) => Diagnostic::error()
                 .with_message(format!("Runtime Error: {:?}", self.err))
                 .with_labels(vec![Label::primary(fileid, span).with_message(&self.help)]),
             None => Diagnostic::error().with_message(&self.help),

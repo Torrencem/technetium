@@ -2,7 +2,6 @@
 This is a rough todo list of features I need to add to the language:
 
 * more examples in readme
-* replace weak\_debug with a vec of debug spans
 * negative indexing a la python (check [::-1])
 * generators
 * dictionaries
@@ -13,6 +12,7 @@ This is a rough todo list of features I need to add to the language:
 * lambdas
 * python syntax highlighting on github doesn't like $'s (so close!)
 * tertiery expressions (if blah then blah else blah)
+* add diagnostic message with some kind of full trace
 * work on documentation for all standard library
 * run clippy
 * multi-file programs (import from another file)

@@ -170,9 +170,6 @@ pub enum Op {
 
     /// Attach a debug reference to the next instruction in case it errors
     debug(DebugSpanDescriptor),
-
-    /// Attach a weak debug reference to the next instruction in case it errors without a message
-    weak_debug(DebugSpanDescriptor),
 }
 
 #[derive(Debug)]
@@ -202,17 +199,6 @@ macro_rules! try_debug {
                     let span = $this.global_context.debug_descriptors.get(&debug_symb);
                     if let Some(span) = span {
                         RuntimeError::from(e).attach_span(*span)
-                    } else {
-                        RuntimeError::from(e)
-                    }
-                }
-            })
-            .map_err(|e| match $weak_debug_symb {
-                None => RuntimeError::from(e),
-                Some(weak_debug_symb) => {
-                    let span = $this.global_context.debug_descriptors.get(&weak_debug_symb);
-                    if let Some(span) = span {
-                        RuntimeError::from(e).weak_attach_span(*span)
                     } else {
                         RuntimeError::from(e)
                     }
@@ -247,18 +233,13 @@ impl<'code> Frame<'code> {
         let default_namespace = get_default_namespace();
 
         let mut stale_debug_symb = false;
-        let mut stale_weak_debug_symb = false;
         let mut ds: Option<DebugSpanDescriptor> = None;
-        let mut dsw: Option<DebugSpanDescriptor> = None;
 
         self.least_ancestors.insert(self.context_id, self.id);
 
         loop {
             if !stale_debug_symb {
                 stale_debug_symb = true;
-            }
-            if !stale_weak_debug_symb {
-                stale_weak_debug_symb = true;
             }
             let instr = self.code.get(self.curr_instruction);
             trace!("instruction: {:?}", instr);
@@ -873,17 +854,10 @@ impl<'code> Frame<'code> {
                     ds = Some(*symb);
                     stale_debug_symb = false;
                 }
-                Op::weak_debug(symb) => {
-                    dsw = Some(*symb);
-                    stale_weak_debug_symb = false;
-                }
             }
 
             if stale_debug_symb {
                 ds = None;
-            }
-            if stale_weak_debug_symb {
-                dsw = None;
             }
             self.curr_instruction += 1;
         }

@@ -243,7 +243,7 @@ impl CompileManager {
         self.context()
             .debug_span_descriptors
             .insert(debug_descr, ast.span);
-        res.push(Op::weak_debug(debug_descr));
+        res.push(Op::debug(debug_descr));
 
         res.push(Op::call_function(ast.arguments.len() as u8));
         Ok(res)
@@ -286,7 +286,7 @@ impl CompileManager {
         self.context()
             .debug_span_descriptors
             .insert(debug_descr, ast.span);
-        res.push(Op::weak_debug(debug_descr));
+        res.push(Op::debug(debug_descr));
 
         res.push(Op::call_method(ast.arguments.len() as u8));
         Ok(res)

@@ -7,7 +7,7 @@ This is a rough todo list of features I need to add to the language:
 * generators
 * dictionaries
 * use bigint
-* .lines() clones; it could not, if Object methods took Arc instead of &self. Maybe some solution in terms of rental? or owning_ref? This is somewhat of a problem because MutexGuard<> is not Sync
+* .lines() clones; it could not, if Object methods took Rc instead of &self. Maybe some solution in terms of rental? or owning_ref?
 * pass variables as reference? (for swap)
 * comprehensions
 * lambdas

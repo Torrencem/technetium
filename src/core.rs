@@ -296,6 +296,15 @@ impl Object for StringObject {
                     }))
                 }
             },
+            "chars" => {
+                if args.len() > 0 {
+                    Err(RuntimeError::type_error("chars expects 0 args"))
+                } else {
+                    Ok(Rc::new(standard::string::Chars {
+                        parent: Rc::new(StringObject { val: RwLock::new(self.val.read()?.clone()) }),
+                    }))
+                }
+            }
             _ => Err(RuntimeError::type_error(format!(
                 "string has no method {}",
                 method

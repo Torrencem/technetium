@@ -12,7 +12,7 @@ Technetium is a sleek interpreted programming language that features inline shel
 
 * A set of ever-convenient and always-expanding utility functions (for example, `os()` will return the current operating system as a string) and dead-easy conversion functions
 
-* UTF-8 by default, which sensible character types that play nicely with strings
+* UTF-8 by default, with sensible character types that play nicely with strings
 
 ## Examples
 

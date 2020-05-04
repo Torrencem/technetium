@@ -20,7 +20,7 @@ Technetium is a sleek interpreted programming language that features inline shel
 
 ### Creating some files
 
-```pycon
+```starlark
 for letter in ['A', 'B', 'C', 'D'] {
 	name = "file_" + letter
 	print(~"Creating file {name}")
@@ -30,8 +30,7 @@ for letter in ['A', 'B', 'C', 'D'] {
 
 ### Creating an index of files in the current directory
 
-```pycon
-
+```starlark
 files = sh("ls")
 
 files.join()  # Run "files"

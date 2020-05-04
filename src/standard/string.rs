@@ -1,6 +1,9 @@
 use crate::core::*;
 use crate::error::*;
 use std::sync::{Arc, Mutex};
+use std::str;
+
+use rental::rental;
 
 #[derive(Debug, Clone)]
 pub struct Lines {
@@ -17,15 +20,32 @@ impl Object for Lines {
     }
 
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
-        Ok(Arc::new(LinesIterator { parent: Arc::clone(&self.parent), current_index: Mutex::new(0), done: Mutex::new(false) }))
+        Ok(Arc::new(
+                LinesIterator {
+                    inner: Mutex::new(rentals::LinesIterator::new(
+                            self.parent.val.lock()?.clone(),
+                            |arc| arc.lines()))
+                }
+        ))
     }
 }
 
-#[derive(Debug)]
+// Rentals must be used because str::Lines takes a reference
+// to a String, and we own the string it takes a reference to
 pub struct LinesIterator {
-    pub parent: Arc<StringObject>,
-    pub current_index: Mutex<usize>,
-    pub done: Mutex<bool>
+    pub inner: Mutex<rentals::LinesIterator>,
+}
+
+rental! {
+    mod rentals {
+        use super::*;
+
+        #[rental]
+        pub struct LinesIterator {
+            parent: String,
+            lines: str::Lines<'parent>,
+        }
+    }
 }
 
 impl Object for LinesIterator {
@@ -34,35 +54,8 @@ impl Object for LinesIterator {
     }
 
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
-        if *self.done.lock()? {
-            return Ok(None);
-        }
-        let mut res = String::new();
-        let s = self.parent.val.lock()?;
-        let mut curr = self.current_index.lock()?;
-
-        loop {
-            match s.chars().nth(*curr) {
-                None => {
-                    *self.done.lock()? = true;
-                    return Ok(Some(StringObject::new(res)));
-                }
-                Some('\n') => {
-                    if s.chars().nth(*curr + 1) == Some('\r') {
-                        *curr += 2;
-                    } else {
-                        *curr += 1;
-                    }
-                    if s.chars().nth(*curr) == None {
-                        *self.done.lock()? = true;
-                    } 
-                    return Ok(Some(StringObject::new(res)));
-                }
-                Some(c) => {
-                    res.push(c);
-                    *curr += 1;
-                }
-            }
-        }
+        let mut inner = self.inner.lock()?;
+        let next = rentals::LinesIterator::rent_mut(&mut inner, |lines| lines.next().map(|val| val.to_string()));
+        Ok(next.map(|s| StringObject::new(s.to_string())))
     }
 }

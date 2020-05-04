@@ -6,6 +6,8 @@ extern crate lalrpop_util;
 extern crate lazy_static;
 #[macro_use]
 extern crate log;
+#[macro_use]
+extern crate rental;
 
 lalrpop_mod!(pub script);
 

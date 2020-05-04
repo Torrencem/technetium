@@ -16,6 +16,7 @@ lazy_static = "1.4.0"
 log = { features = ["std"], version = "0.4" }
 sys-info = "0.6.1"
 dtoa = "0.4"
+rental = "0.5.4"
 
 [dev-dependencies]
 assert_cmd = "1.0.1"

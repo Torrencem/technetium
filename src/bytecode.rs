@@ -183,7 +183,7 @@ pub struct GlobalContext {
 
 #[derive(Debug)]
 pub struct Frame<'code> {
-    id: FrameId,
+    pub id: FrameId,
     context_id: ContextId,
     global_context: Rc<GlobalContext>,
     code: &'code [Op],

@@ -344,7 +344,11 @@ impl Object for Function {
         for arg in args.iter().rev() {
             frame.stack.push(Rc::clone(arg));
         }
-        frame.run()
+        let res = frame.run();
+        let fid = frame.id;
+        drop(frame);
+        locals.clear_frame(fid);
+        res
     }
 }
 

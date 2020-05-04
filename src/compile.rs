@@ -477,8 +477,11 @@ impl CompileManager {
             self.local_index
                 .insert((sub_context.context_id, arg.name.clone()), name);
         }
+        
+        debug!("Context id {} corresponds to function name {}", sub_context.context_id, ast.name.name);
         let sub_context_id = sub_context.context_id;
         self.context_stack.push(sub_context);
+
 
         let mut func_code = vec![];
         for arg in ast.args.iter() {
@@ -568,6 +571,7 @@ impl CompileManager {
                     _ => {
                         let local_name = self.local_name_gen();
                         let cid = self.context().context_id;
+                        debug!("In context {}, local index {} corresponds to variable {}", cid, local_name, id.name);
                         self.local_index
                             .insert(RustClone::clone(&(cid, id.name.clone())), local_name);
                         res.push(Op::store(local_name));

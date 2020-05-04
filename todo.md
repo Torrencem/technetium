@@ -8,7 +8,6 @@ This is a rough todo list of features I need to add to the language:
 * dictionaries
 * use bigint
 * .lines() clones; it could not, if Object methods took Rc instead of &self. Maybe some solution in terms of rental? or owning_ref?
-* memory management: instead of having a hashmap where the keys are tuples, have a MemoryManager, which knows which variables can be dropped when the scope ends for a given ContextId
 * pass variables as reference? (for swap)
 * comprehensions
 * lambdas

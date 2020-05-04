@@ -20,10 +20,25 @@ Technetium is a sleek interpreted programming language that features inline shel
 
 ### Creating some files
 
-```python
+```pycon
 for letter in ['A', 'B', 'C', 'D'] {
 	name = "file_" + letter
 	print(~"Creating file {name}")
 	$ echo "{name}" > {name}.txt
 }
+```
+
+### Creating an index of files in the current directory
+
+```pycon
+
+files = sh("ls")
+
+files.join()  # Run "files"
+
+for line in files.stdout().lines() {  # For each line in the output
+	# Append the line to index.txt
+	$ echo {line} >> index.txt
+}
+
 ```

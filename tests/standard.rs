@@ -255,3 +255,21 @@ print(list)
 
     Ok(())
 }
+
+#[test]
+fn test_lines() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+        r#"
+s = "abc\n123\nj\n"
+for line in s.lines() {
+    print(line)
+    print("-")
+}
+"#,
+    );
+
+    cmd.assert().success().stdout(predicate::eq("abc\n-\n123\n-\nj\n-\n"));
+    
+    Ok(())
+}

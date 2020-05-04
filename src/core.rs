@@ -1,3 +1,4 @@
+
 use crate::bytecode;
 use crate::bytecode::Op;
 use crate::bytecode::{ContextId, FrameId, NonLocalName};
@@ -9,6 +10,7 @@ use std::clone::Clone as RustClone;
 use std::collections::HashMap;
 use std::rc::Rc;
 use std::sync::RwLock;
+use std::ops::{Deref, DerefMut};
 
 use dtoa;
 
@@ -227,6 +229,20 @@ impl Object for CharObject {
 #[derive(Debug)]
 pub struct StringObject {
     pub val: RwLock<String>,
+}
+
+impl Deref for StringObject {
+    type Target = RwLock<String>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.val
+    }
+}
+
+impl DerefMut for StringObject {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.val
+    }
 }
 
 impl StringObject {

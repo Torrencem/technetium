@@ -21,11 +21,16 @@ impl Object for Lines {
     }
 
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
+        let lines_iter_rental_head = rentals::LinesIteratorHead::new(
+            Rc::clone(&self.parent),
+            |rc| rc.val.read().unwrap()
+        );
+
         Ok(Rc::new(
                 LinesIterator {
                     inner: RwLock::new(rentals::LinesIterator::new(
-                            self.parent.val.read()?.clone(),
-                            |arc| arc.lines()))
+                            Box::new(lines_iter_rental_head),
+                            |head| head.parent.lines()))
                 }
         ))
     }
@@ -40,11 +45,19 @@ pub struct LinesIterator {
 rental! {
     mod rentals {
         use super::*;
+        use std::sync;
+        
+        #[rental]
+        pub struct LinesIteratorHead {
+            head: Rc<StringObject>,
+            parent: sync::RwLockReadGuard<'head, String>,
+        }
 
         #[rental]
         pub struct LinesIterator {
-            parent: String,
-            lines: str::Lines<'parent>,
+            #[subrental = 2]
+            head: Box<LinesIteratorHead>,
+            lines: str::Lines<'head_1>,
         }
     }
 }

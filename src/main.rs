@@ -20,6 +20,7 @@ pub mod error;
 pub mod lexer;
 pub mod logging;
 pub mod standard;
+pub mod memory;
 use compile::*;
 use error::*;
 use lexer::Lexer;
@@ -139,11 +140,9 @@ fn main() {
         debug_descriptors: compile_context.debug_span_descriptors,
     };
 
-    let mut locals = HashMap::new();
-
     let mut frame = bytecode::Frame::new(
         &code,
-        &mut locals,
+        &mut manager.memory_manager,
         Rc::new(global_context),
         HashMap::new(),
         STANDARD_CONTEXT_ID + 1,

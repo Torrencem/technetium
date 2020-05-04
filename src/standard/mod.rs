@@ -80,7 +80,7 @@ macro_rules! func_object_void {
                 "builtin func".to_string()
             }
 
-            fn call(&self, $args: &[ObjectRef], _locals: &mut HashMap<NonLocalName, ObjectRef>) -> RuntimeResult<ObjectRef> {
+            fn call(&self, $args: &[ObjectRef], _locals: &mut crate::memory::MemoryManager) -> RuntimeResult<ObjectRef> {
                 if !$args_range.contains(&$args.len()) {
                     return Err(RuntimeError::type_error(format!("Incorrect number of arguments: expected {:?}, got {}", $args_range, $args.len())));
                 }
@@ -104,7 +104,7 @@ macro_rules! func_object {
             fn call(
                 &self,
                 $args: &[ObjectRef],
-                _locals: &mut HashMap<NonLocalName, ObjectRef>,
+                _locals: &mut crate::memory::MemoryManager,
             ) -> RuntimeResult<ObjectRef> {
                 if !$args_range.contains(&$args.len()) {
                     return Err(RuntimeError::type_error(format!(

@@ -3,6 +3,7 @@ use crate::bytecode::Op;
 use crate::bytecode::{ContextId, FrameId, NonLocalName};
 use crate::builtins::index_get;
 use crate::standard;
+use crate::memory::*;
 use std::any::Any;
 use std::clone::Clone as RustClone;
 use std::collections::HashMap;
@@ -73,7 +74,7 @@ pub trait Object: Any + ToAny {
     fn call(
         &self,
         args: &[ObjectRef],
-        locals: &mut HashMap<NonLocalName, ObjectRef>,
+        locals: &mut MemoryManager,
     ) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::type_error(format!(
             "Object of type {} is not callable",
@@ -319,7 +320,7 @@ impl Object for Function {
     fn call(
         &self,
         args: &[ObjectRef],
-        locals: &mut HashMap<NonLocalName, ObjectRef>,
+        locals: &mut MemoryManager,
     ) -> RuntimeResult<ObjectRef> {
         if args.len() != self.nargs {
             return Err(RuntimeError::type_error(format!(

@@ -2,6 +2,7 @@ use crate::ast::*;
 use crate::bytecode::*;
 use crate::core::*;
 use crate::error::*;
+use crate::memory::*;
 use crate::standard::STANDARD_CONTEXT_ID;
 use crate::standard::get_default_namespace_descriptors;
 use codespan::{FileId, Span};
@@ -77,6 +78,7 @@ pub struct CompileManager {
     pub local_index: HashMap<(ContextId, String), LocalName>,
     context_id_last: ContextId,
     default_namespace_descriptors: HashMap<String, GlobalConstantDescriptor>,
+    pub memory_manager: MemoryManager,
 }
 
 pub enum NameLookupResult {
@@ -88,12 +90,16 @@ pub enum NameLookupResult {
 
 impl CompileManager {
     pub fn new() -> Self {
+        let mut mem_manager = MemoryManager::new();
+        let context_id = STANDARD_CONTEXT_ID + 1;
+        mem_manager.register_context(context_id);
         CompileManager {
             context_stack: vec![CompileContext::new(STANDARD_CONTEXT_ID + 1)],
             local_index_last: 0,
             local_index: HashMap::new(),
             context_id_last: STANDARD_CONTEXT_ID + 2,
             default_namespace_descriptors: get_default_namespace_descriptors(),
+            memory_manager: mem_manager,
         }
     }
 
@@ -113,13 +119,14 @@ impl CompileManager {
         old
     }
 
-    pub fn name_lookup(&self, name: &String) -> NameLookupResult {
+    pub fn name_lookup(&mut self, name: &String) -> NameLookupResult {
         let mut first = true;
         for context in self.context_stack.iter().rev() {
             if let Some(local_index) = self.local_index.get(&(context.context_id, name.clone())) {
                 if first {
                     return NameLookupResult::MyLocal(*local_index);
                 } else {
+                    self.memory_manager.do_not_drop(context.context_id, *local_index);
                     return NameLookupResult::ExternLocal((context.context_id, *local_index));
                 }
             }
@@ -461,8 +468,10 @@ impl CompileManager {
         let cid = self.context().context_id;
         self.local_index
             .insert((cid, ast.name.name.clone()), my_local);
-
-        let mut sub_context = CompileContext::new(self.context_id_gen());
+        
+        let new_cid = self.context_id_gen();
+        self.memory_manager.register_context(new_cid);
+        let mut sub_context = CompileContext::new(new_cid);
         for arg in ast.args.iter() {
             let name = self.local_name_gen();
             self.local_index

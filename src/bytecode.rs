@@ -13,6 +13,7 @@ use std::process::{Command, Stdio};
 use crate::builtins;
 use crate::standard::get_default_namespace;
 use crate::standard::conversion;
+use crate::memory::*;
 
 use std::fmt;
 
@@ -189,7 +190,7 @@ pub struct Frame<'code> {
     curr_instruction: usize,
     least_ancestors: HashMap<ContextId, FrameId>,
     pub stack: Vec<ObjectRef>,
-    pub locals: &'code mut HashMap<NonLocalName, ObjectRef>,
+    pub locals: &'code mut MemoryManager,
 }
 
 macro_rules! try_debug {
@@ -223,13 +224,15 @@ macro_rules! try_debug {
 impl<'code> Frame<'code> {
     pub fn new(
         code: &'code [Op],
-        locals: &'code mut HashMap<NonLocalName, ObjectRef>,
+        locals: &'code mut MemoryManager,
         globals: Rc<GlobalContext>,
         least_ancestors: HashMap<ContextId, FrameId>,
         context_id: ContextId,
     ) -> Self {
+        let id = gen_frame_id();
+        locals.register_frame(id, context_id);
         Frame {
-            id: gen_frame_id(),
+            id,
             context_id,
             global_context: globals,
             code,
@@ -268,7 +271,7 @@ impl<'code> Frame<'code> {
                 Op::store(local_name) => {
                     let res = self.stack.pop();
                     if let Some(val) = res {
-                        self.locals.insert((self.id, *local_name), val);
+                        self.locals.set((self.id, *local_name), val);
                     } else {
                         return Err(RuntimeError::internal_error("Stored an empty stack!"));
                     }
@@ -276,7 +279,7 @@ impl<'code> Frame<'code> {
                 Op::store_non_local(nl_name) => {
                     let res = self.stack.pop();
                     if let Some(val) = res {
-                        self.locals.insert(
+                        self.locals.set(
                             (*self.least_ancestors.get(&nl_name.0).unwrap(), nl_name.1),
                             val,
                         );
@@ -285,26 +288,14 @@ impl<'code> Frame<'code> {
                     }
                 }
                 Op::load(local_name) => {
-                    let local = self.locals.get(&(self.id, *local_name));
-                    if let Some(val) = local {
-                        self.stack.push(Rc::clone(val));
-                    } else {
-                        return Err(RuntimeError::internal_error(
-                            "Loaded a local that doesn't exist!",
-                        ));
-                    }
+                    let local = self.locals.get((self.id, *local_name))?;
+                    self.stack.push(local);
                 }
                 Op::load_non_local(nl_name) => {
                     let nl = self
                         .locals
-                        .get(&(*self.least_ancestors.get(&nl_name.0).unwrap(), nl_name.1));
-                    if let Some(val) = nl {
-                        self.stack.push(Rc::clone(val));
-                    } else {
-                        return Err(RuntimeError::internal_error(
-                            "Loaded a local that doesn't exist!",
-                        ));
-                    }
+                        .get((*self.least_ancestors.get(&nl_name.0).unwrap(), nl_name.1))?;
+                    self.stack.push(nl);
                 }
                 Op::attach_ancestors => {
                     let top = self.stack.pop();

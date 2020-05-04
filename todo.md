@@ -10,7 +10,6 @@ This is a rough todo list of features I need to add to the language:
 * pass variables as reference? (for swap)
 * comprehensions
 * lambdas
-* python syntax highlighting on github doesn't like $'s (so close!)
 * tertiery expressions (if blah then blah else blah)
 * add diagnostic message with some kind of full trace
 * work on documentation for all standard library

@@ -26,7 +26,7 @@ use lexer::Lexer;
 use standard::STANDARD_CONTEXT_ID;
 use std::collections::HashMap;
 use std::process::exit;
-use std::sync::Arc;
+use std::rc::Rc;
 
 extern crate clap;
 use clap::{App, Arg, SubCommand};
@@ -144,7 +144,7 @@ fn main() {
     let mut frame = bytecode::Frame::new(
         &code,
         &mut locals,
-        Arc::new(global_context),
+        Rc::new(global_context),
         HashMap::new(),
         STANDARD_CONTEXT_ID + 1,
     );

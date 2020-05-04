@@ -8,7 +8,7 @@ use crate::bytecode::{ContextId, FrameId, GlobalConstantDescriptor, GlobalContex
 use crate::core::*;
 use crate::error::*;
 use std::collections::HashMap;
-use std::sync::Arc;
+use std::rc::Rc;
 
 pub static STANDARD_CONTEXT_ID: ContextId = 0;
 
@@ -43,30 +43,30 @@ pub fn get_default_namespace_descriptors() -> HashMap<String, GlobalConstantDesc
 
 pub fn get_default_namespace() -> HashMap<GlobalConstantDescriptor, ObjectRef> {
         let mut res: HashMap<GlobalConstantDescriptor, ObjectRef> = HashMap::new();
-        res.insert((STANDARD_CONTEXT_ID, 0), Arc::new(special_funcs::Print));
-        res.insert((STANDARD_CONTEXT_ID, 1), Arc::new(special_funcs::Exit));
-        res.insert((STANDARD_CONTEXT_ID, 2), Arc::new(special_funcs::RangeFunc));
-        res.insert((STANDARD_CONTEXT_ID, 3), Arc::new(sh::Sh));
-        res.insert((STANDARD_CONTEXT_ID, 4), Arc::new(sh::Cd));
-        res.insert((STANDARD_CONTEXT_ID, 5), Arc::new(sh::Os));
-        res.insert((STANDARD_CONTEXT_ID, 6), Arc::new(sh::LinuxDistro));
-        res.insert((STANDARD_CONTEXT_ID, 7), Arc::new(math::Sin));
-        res.insert((STANDARD_CONTEXT_ID, 8), Arc::new(math::Cos));
-        res.insert((STANDARD_CONTEXT_ID, 9), Arc::new(math::Tan));
-        res.insert((STANDARD_CONTEXT_ID, 10), Arc::new(math::Abs));
-        res.insert((STANDARD_CONTEXT_ID, 11), Arc::new(math::Sqrt));
-        res.insert((STANDARD_CONTEXT_ID, 12), Arc::new(math::Exp));
-        res.insert((STANDARD_CONTEXT_ID, 13), Arc::new(math::Ln));
-        res.insert((STANDARD_CONTEXT_ID, 14), Arc::new(math::Arcsin));
-        res.insert((STANDARD_CONTEXT_ID, 15), Arc::new(math::Arccos));
-        res.insert((STANDARD_CONTEXT_ID, 16), Arc::new(math::Arctan));
-        res.insert((STANDARD_CONTEXT_ID, 17), Arc::new(special_funcs::Type));
-        res.insert((STANDARD_CONTEXT_ID, 18), Arc::new(conversion::String_));
-        res.insert((STANDARD_CONTEXT_ID, 19), Arc::new(special_funcs::Clone_));
-        res.insert((STANDARD_CONTEXT_ID, 20), Arc::new(conversion::Bool));
-        res.insert((STANDARD_CONTEXT_ID, 21), Arc::new(conversion::Int));
-        res.insert((STANDARD_CONTEXT_ID, 22), Arc::new(conversion::Float));
-        res.insert((STANDARD_CONTEXT_ID, 23), Arc::new(conversion::Char));
+        res.insert((STANDARD_CONTEXT_ID, 0), Rc::new(special_funcs::Print));
+        res.insert((STANDARD_CONTEXT_ID, 1), Rc::new(special_funcs::Exit));
+        res.insert((STANDARD_CONTEXT_ID, 2), Rc::new(special_funcs::RangeFunc));
+        res.insert((STANDARD_CONTEXT_ID, 3), Rc::new(sh::Sh));
+        res.insert((STANDARD_CONTEXT_ID, 4), Rc::new(sh::Cd));
+        res.insert((STANDARD_CONTEXT_ID, 5), Rc::new(sh::Os));
+        res.insert((STANDARD_CONTEXT_ID, 6), Rc::new(sh::LinuxDistro));
+        res.insert((STANDARD_CONTEXT_ID, 7), Rc::new(math::Sin));
+        res.insert((STANDARD_CONTEXT_ID, 8), Rc::new(math::Cos));
+        res.insert((STANDARD_CONTEXT_ID, 9), Rc::new(math::Tan));
+        res.insert((STANDARD_CONTEXT_ID, 10), Rc::new(math::Abs));
+        res.insert((STANDARD_CONTEXT_ID, 11), Rc::new(math::Sqrt));
+        res.insert((STANDARD_CONTEXT_ID, 12), Rc::new(math::Exp));
+        res.insert((STANDARD_CONTEXT_ID, 13), Rc::new(math::Ln));
+        res.insert((STANDARD_CONTEXT_ID, 14), Rc::new(math::Rcsin));
+        res.insert((STANDARD_CONTEXT_ID, 15), Rc::new(math::Rccos));
+        res.insert((STANDARD_CONTEXT_ID, 16), Rc::new(math::Rctan));
+        res.insert((STANDARD_CONTEXT_ID, 17), Rc::new(special_funcs::Type));
+        res.insert((STANDARD_CONTEXT_ID, 18), Rc::new(conversion::String_));
+        res.insert((STANDARD_CONTEXT_ID, 19), Rc::new(special_funcs::Clone_));
+        res.insert((STANDARD_CONTEXT_ID, 20), Rc::new(conversion::Bool));
+        res.insert((STANDARD_CONTEXT_ID, 21), Rc::new(conversion::Int));
+        res.insert((STANDARD_CONTEXT_ID, 22), Rc::new(conversion::Float));
+        res.insert((STANDARD_CONTEXT_ID, 23), Rc::new(conversion::Char));
         res
 }
 

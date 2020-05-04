@@ -10,7 +10,8 @@ use std::clone::Clone as RustClone;
 use std::collections::HashMap;
 use std::i32;
 use std::result::Result as RustResult;
-use std::sync::{Arc, RwLock};
+use std::sync::RwLock;
+use std::rc::Rc;
 
 /// Determine if a f64 is exactly representable as a f32
 fn is_exact_float(val: f64) -> bool {
@@ -489,7 +490,7 @@ impl CompileManager {
         let function_obj = Function {
             nargs: ast.args.len(),
             name: ast.name.name.clone(),
-            context: Arc::new(sub_context),
+            context: Rc::new(sub_context),
             context_id: finished_context.context_id,
             least_ancestors: RwLock::new(None),
             code: func_code,
@@ -497,7 +498,7 @@ impl CompileManager {
         let my_descr = self.context().gcd_gen();
         self.context()
             .constant_descriptors
-            .insert(my_descr, Arc::new(function_obj));
+            .insert(my_descr, Rc::new(function_obj));
         let mut res = vec![];
         res.push(Op::push_const_clone(my_descr));
         res.push(Op::attach_ancestors);

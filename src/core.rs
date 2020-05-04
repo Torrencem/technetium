@@ -6,7 +6,7 @@ use crate::standard;
 use std::any::Any;
 use std::clone::Clone as RustClone;
 use std::collections::HashMap;
-use std::sync::Arc;
+use std::rc::Rc;
 use std::sync::RwLock;
 
 use dtoa;
@@ -15,7 +15,7 @@ use std::fmt;
 
 use crate::error::*;
 
-pub type ObjectRef = Arc<dyn Object>;
+pub type ObjectRef = Rc<dyn Object>;
 
 pub trait ToAny {
     fn as_any(&self) -> &dyn Any;
@@ -112,7 +112,7 @@ pub struct BoolObject {
 
 impl BoolObject {
     pub fn new(val: bool) -> ObjectRef {
-        Arc::new(BoolObject { val })
+        Rc::new(BoolObject { val })
     }
 }
 
@@ -140,7 +140,7 @@ pub struct IntObject {
 
 impl IntObject {
     pub fn new(val: i64) -> ObjectRef {
-        let res = Arc::new(IntObject { val });
+        let res = Rc::new(IntObject { val });
         res
     }
 }
@@ -169,7 +169,7 @@ pub struct FloatObject {
 
 impl FloatObject {
     pub fn new(val: f64) -> ObjectRef {
-        let res = Arc::new(FloatObject { val });
+        let res = Rc::new(FloatObject { val });
         res
     }
 }
@@ -201,13 +201,13 @@ pub struct CharObject {
 
 impl CharObject {
     pub fn new(c: char) -> ObjectRef {
-        Arc::new(CharObject { val: c })
+        Rc::new(CharObject { val: c })
     }
 }
 
 impl Object for CharObject {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        Ok(Arc::new(self.clone()))
+        Ok(Rc::new(self.clone()))
     }
 
     fn technetium_type_name(&self) -> String {
@@ -230,7 +230,7 @@ pub struct StringObject {
 
 impl StringObject {
     pub fn new(s: String) -> ObjectRef {
-        Arc::new(StringObject { val: RwLock::new(s) })
+        Rc::new(StringObject { val: RwLock::new(s) })
     }
 }
 
@@ -274,8 +274,8 @@ impl Object for StringObject {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("lines expects 0 args"))
                 } else {
-                    Ok(Arc::new(standard::string::Lines {
-                        parent: Arc::new(StringObject { val: RwLock::new(self.val.read()?.clone()) }),
+                    Ok(Rc::new(standard::string::Lines {
+                        parent: Rc::new(StringObject { val: RwLock::new(self.val.read()?.clone()) }),
                     }))
                 }
             },
@@ -290,7 +290,7 @@ impl Object for StringObject {
 pub struct Function {
     pub nargs: usize,
     pub name: String,
-    pub context: Arc<bytecode::GlobalContext>,
+    pub context: Rc<bytecode::GlobalContext>,
     pub code: Vec<Op>,
     pub context_id: ContextId,
     pub least_ancestors: RwLock<Option<HashMap<ContextId, FrameId>>>,
@@ -298,10 +298,10 @@ pub struct Function {
 
 impl Object for Function {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        Ok(Arc::new(Function {
+        Ok(Rc::new(Function {
             nargs: self.nargs,
             name: self.name.clone(),
-            context: Arc::clone(&self.context),
+            context: Rc::clone(&self.context),
             code: self.code.clone(),
             context_id: self.context_id,
             least_ancestors: RwLock::new(None),
@@ -332,7 +332,7 @@ impl Object for Function {
         let mut frame = bytecode::Frame::new(
             &self.code,
             locals,
-            Arc::clone(&self.context),
+            Rc::clone(&self.context),
             self.least_ancestors
                 .read()?
                 .as_ref()
@@ -341,7 +341,7 @@ impl Object for Function {
             self.context_id,
         );
         for arg in args.iter().rev() {
-            frame.stack.push(Arc::clone(arg));
+            frame.stack.push(Rc::clone(arg));
         }
         frame.run()
     }
@@ -358,7 +358,7 @@ impl Object for List {
         for val in contents_.iter() {
             res_contents.push(val.technetium_clone()?);
         }
-        Ok(Arc::new(List {
+        Ok(Rc::new(List {
             contents: RwLock::new(res_contents),
         }))
     }
@@ -410,12 +410,12 @@ impl Object for List {
                 .contents
                 .read()?
                 .iter()
-                .map(|val| Arc::clone(val))
+                .map(|val| Rc::clone(val))
                 .collect(),
             index: RwLock::new(0),
         };
 
-        Ok(Arc::new(iter))
+        Ok(Rc::new(iter))
     }
 }
 
@@ -436,7 +436,7 @@ impl Object for ListIterator {
         } else {
             let old = *index;
             *index += 1;
-            Ok(Some(Arc::clone(&self.contents[old])))
+            Ok(Some(Rc::clone(&self.contents[old])))
         }
     }
 }
@@ -451,8 +451,8 @@ pub struct Slice {
 
 impl Object for Slice {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        Ok(Arc::new(Slice {
-            parent: Arc::clone(&self.parent),
+        Ok(Rc::new(Slice {
+            parent: Rc::clone(&self.parent),
             start: self.start,
             stop: self.stop,
             step: self.step,
@@ -464,8 +464,8 @@ impl Object for Slice {
     }
 
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
-        Ok(Arc::new(SliceIterator {
-            parent: Arc::clone(&self.parent),
+        Ok(Rc::new(SliceIterator {
+            parent: Rc::clone(&self.parent),
             curr: RwLock::new(self.start),
             stop: self.stop,
             step: self.step,
@@ -484,7 +484,7 @@ impl Object for Slice {
                     break;
                 }
             }
-            let val = index_get(Arc::clone(&self.parent), IntObject::new(curr_index));
+            let val = index_get(Rc::clone(&self.parent), IntObject::new(curr_index));
             if let Ok(val_) = val {
                 if first {
                     first = false;
@@ -523,7 +523,7 @@ impl Object for SliceIterator {
                 return Ok(None);
             }
         }
-        let old = index_get(Arc::clone(&self.parent), IntObject::new(*curr_));
+        let old = index_get(Rc::clone(&self.parent), IntObject::new(*curr_));
         *curr_ += self.step;
         Ok(old.ok())
     }
@@ -539,7 +539,7 @@ impl Object for Tuple {
         for val in self.contents.iter() {
             res_contents.push(val.technetium_clone()?);
         }
-        Ok(Arc::new(Tuple {
+        Ok(Rc::new(Tuple {
             contents: res_contents,
         }))
     }
@@ -573,7 +573,7 @@ pub struct VoidObject;
 
 impl VoidObject {
     pub fn new() -> ObjectRef {
-        Arc::new(VoidObject)
+        Rc::new(VoidObject)
     }
 }
 

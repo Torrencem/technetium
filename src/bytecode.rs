@@ -3,9 +3,9 @@ use std::collections::HashMap;
 use crate::core::*;
 use crate::error::*;
 
-use std::sync::{Arc, RwLock};
+use std::sync::RwLock;
 use std::sync;
-
+use std::rc::Rc;
 use std::clone::Clone as RustClone;
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
@@ -184,7 +184,7 @@ pub struct GlobalContext {
 pub struct Frame<'code> {
     id: FrameId,
     context_id: ContextId,
-    global_context: Arc<GlobalContext>,
+    global_context: Rc<GlobalContext>,
     code: &'code [Op],
     curr_instruction: usize,
     least_ancestors: HashMap<ContextId, FrameId>,
@@ -224,7 +224,7 @@ impl<'code> Frame<'code> {
     pub fn new(
         code: &'code [Op],
         locals: &'code mut HashMap<NonLocalName, ObjectRef>,
-        globals: Arc<GlobalContext>,
+        globals: Rc<GlobalContext>,
         least_ancestors: HashMap<ContextId, FrameId>,
         context_id: ContextId,
     ) -> Self {
@@ -287,7 +287,7 @@ impl<'code> Frame<'code> {
                 Op::load(local_name) => {
                     let local = self.locals.get(&(self.id, *local_name));
                     if let Some(val) = local {
-                        self.stack.push(Arc::clone(val));
+                        self.stack.push(Rc::clone(val));
                     } else {
                         return Err(RuntimeError::internal_error(
                             "Loaded a local that doesn't exist!",
@@ -299,7 +299,7 @@ impl<'code> Frame<'code> {
                         .locals
                         .get(&(*self.least_ancestors.get(&nl_name.0).unwrap(), nl_name.1));
                     if let Some(val) = nl {
-                        self.stack.push(Arc::clone(val));
+                        self.stack.push(Rc::clone(val));
                     } else {
                         return Err(RuntimeError::internal_error(
                             "Loaded a local that doesn't exist!",
@@ -342,7 +342,7 @@ impl<'code> Frame<'code> {
                     }
                 }
                 Op::dup => {
-                    let dup = self.stack.last().map(|val| Arc::clone(val));
+                    let dup = self.stack.last().map(|val| Rc::clone(val));
                     if let Some(val) = dup {
                         self.stack.push(val);
                     } else {
@@ -700,7 +700,7 @@ impl<'code> Frame<'code> {
                             stop,
                             step,
                     };
-                    self.stack.push(Arc::new(slice));
+                    self.stack.push(Rc::new(slice));
                 }
                 Op::make_iter => {
                     let val = self.stack.pop();
@@ -739,7 +739,7 @@ impl<'code> Frame<'code> {
                     let len = *len as usize;
                     let objs: Vec<ObjectRef> =
                         self.stack.drain((self.stack.len() - len)..).collect();
-                    self.stack.push(Arc::new(List {
+                    self.stack.push(Rc::new(List {
                         contents: RwLock::new(objs),
                     }));
                 }
@@ -747,7 +747,7 @@ impl<'code> Frame<'code> {
                     let len = *len as usize;
                     let objs: Vec<ObjectRef> =
                         self.stack.drain((self.stack.len() - len)..).collect();
-                    self.stack.push(Arc::new(Tuple { contents: objs }));
+                    self.stack.push(Rc::new(Tuple { contents: objs }));
                 }
                 Op::push_int(int_val) => {
                     let obj = IntObject::new(*int_val as i64);
@@ -764,7 +764,7 @@ impl<'code> Frame<'code> {
                 Op::push_const(const_descr) => {
                     let obj = self.global_context.constant_descriptors.get(const_descr);
                     if let Some(obj) = obj {
-                        self.stack.push(Arc::clone(obj));
+                        self.stack.push(Rc::clone(obj));
                     } else {
                         return Err(RuntimeError::internal_error(
                             "Reference to constant that doesn't exist!",
@@ -784,7 +784,7 @@ impl<'code> Frame<'code> {
                 Op::push_global_default(const_descr) => {
                     let obj = default_namespace.get(const_descr);
                     if let Some(obj) = obj {
-                        self.stack.push(Arc::clone(obj));
+                        self.stack.push(Rc::clone(obj));
                     } else {
                         return Err(RuntimeError::internal_error(
                             "Reference to a global default that doesn't exist!",

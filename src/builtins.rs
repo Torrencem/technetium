@@ -1,7 +1,8 @@
 use crate::core::*;
 use crate::error::*;
 use std::any::TypeId;
-use std::sync::{RwLock, Arc};
+use std::sync::RwLock;
+use std::rc::Rc;
 
 pub fn add(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
@@ -44,14 +45,14 @@ pub fn add(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a_, b_) if a_ == TypeId::of::<List>() && b_ == TypeId::of::<List>() => {
             let val_a = a_any.downcast_ref::<List>().unwrap();
             let val_b = b_any.downcast_ref::<List>().unwrap();
-            if Arc::ptr_eq(&a, &b) {
+            if Rc::ptr_eq(&a, &b) {
                 let mut res = val_a.contents.read()?.clone();
                 res.append(&mut val_a.contents.read()?.clone());
-                Ok(Arc::new(List { contents: RwLock::new(res) }))
+                Ok(Rc::new(List { contents: RwLock::new(res) }))
             } else {
                 let mut res = val_a.contents.read()?.clone();
                 res.append(&mut val_b.contents.read()?.clone());
-                Ok(Arc::new(List { contents: RwLock::new(res) }))
+                Ok(Rc::new(List { contents: RwLock::new(res) }))
             }
         }
         _ => Err(RuntimeError::type_error(format!(
@@ -132,10 +133,10 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let mut res: Vec<ObjectRef> = vec![];
             for _ in (0..val_b.val) {
                 for obj_ref in val_a.iter() {
-                    res.push(Arc::clone(obj_ref));
+                    res.push(Rc::clone(obj_ref));
                 }
             }
-            Ok(Arc::new(List { contents: RwLock::new(res) }))
+            Ok(Rc::new(List { contents: RwLock::new(res) }))
         }
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<List>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
@@ -143,10 +144,10 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let mut res: Vec<ObjectRef> = vec![];
             for _ in (0..val_a.val) {
                 for obj_ref in val_b.iter() {
-                    res.push(Arc::clone(obj_ref));
+                    res.push(Rc::clone(obj_ref));
                 }
             }
-            Ok(Arc::new(List { contents: RwLock::new(res) }))
+            Ok(Rc::new(List { contents: RwLock::new(res) }))
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot multiply type {} by type {}",
@@ -394,7 +395,7 @@ pub fn cmp_eq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let val_a = a_any.downcast_ref::<StringObject>().unwrap();
             let val_b = b_any.downcast_ref::<StringObject>().unwrap();
             // Check for alias to avoid deadlock
-            if Arc::ptr_eq(&a, &b) {
+            if Rc::ptr_eq(&a, &b) {
                 Ok(BoolObject::new(true))
             } else {
                 let res = BoolObject::new(*val_a.val.read()? == *val_b.val.read()?);
@@ -447,7 +448,7 @@ pub fn cmp_neq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let val_a = a_any.downcast_ref::<StringObject>().unwrap();
             let val_b = b_any.downcast_ref::<StringObject>().unwrap();
             // Check for alias to avoid deadlock
-            if Arc::ptr_eq(&a, &b) {
+            if Rc::ptr_eq(&a, &b) {
                 Ok(BoolObject::new(false))
             } else {
                 let res = BoolObject::new(*val_a.val.read()? != *val_b.val.read()?);
@@ -563,7 +564,7 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             if (val_b.val as u64 as usize) >= val_a.len() {
                 return Err(RuntimeError::index_oob_error("Index out of bounds"));
             }
-            let res = Arc::clone(&val_a[val_b.val as u64 as usize]);
+            let res = Rc::clone(&val_a[val_b.val as u64 as usize]);
             Ok(res)
         }
         (a, b) if a == TypeId::of::<Tuple>() && b == TypeId::of::<IntObject>() => {
@@ -575,7 +576,7 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             if (val_b.val as u64 as usize) >= val_a.contents.len() {
                 return Err(RuntimeError::index_oob_error("Index out of bounds"));
             }
-            let res = Arc::clone(&val_a.contents[val_b.val as u64 as usize]);
+            let res = Rc::clone(&val_a.contents[val_b.val as u64 as usize]);
             Ok(res)
         }
         (a, b) if a == TypeId::of::<StringObject>() && b == TypeId::of::<IntObject>() => {
@@ -601,7 +602,7 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let val_a = a_any.downcast_ref::<Slice>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap().val;
             let index = val_a.start + val_b * val_a.step;
-            index_get(Arc::clone(&val_a.parent), IntObject::new(index))
+            index_get(Rc::clone(&val_a.parent), IntObject::new(index))
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot index type {} with type {}",
@@ -658,7 +659,7 @@ pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> 
             let val_a = a_any.downcast_ref::<Slice>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap().val;
             let index = val_a.start + val_b * val_a.step;
-            index_set(Arc::clone(&val_a.parent), IntObject::new(index), c)
+            index_set(Rc::clone(&val_a.parent), IntObject::new(index), c)
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot index type {} with type {}",

@@ -4,7 +4,8 @@ use crate::bytecode::{ContextId, FrameId};
 use crate::core::*;
 use crate::error::*;
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
+use std::rc::Rc;
 
 use crate::{func_object, func_object_void};
 
@@ -49,7 +50,7 @@ pub struct Range {
 
 impl Object for Range {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        Ok(Arc::new(self.clone()))
+        Ok(Rc::new(self.clone()))
     }
 
     fn technetium_type_name(&self) -> String {
@@ -68,7 +69,7 @@ pub struct RangeIterator {
 
 impl RangeIterator {
     pub fn new(inner: Range) -> ObjectRef {
-        Arc::new(RangeIterator {
+        Rc::new(RangeIterator {
             curr: Mutex::new(inner.start),
             inner,
         })
@@ -96,7 +97,7 @@ impl Object for RangeIterator {
 func_object!(RangeFunc, (1..=3), args -> {
     if args.len() == 1 {
         if let Some(int_obj) = args[0].as_any().downcast_ref::<IntObject>() {
-            Ok(Arc::new(Range { 
+            Ok(Rc::new(Range { 
                 start: 0,
                 end: int_obj.val,
                 step: 1,
@@ -107,7 +108,7 @@ func_object!(RangeFunc, (1..=3), args -> {
     } else if args.len() == 2 {
         if let Some(int_obj_a) = args[0].as_any().downcast_ref::<IntObject>() {
             if let Some(int_obj_b) = args[1].as_any().downcast_ref::<IntObject>() {
-                Ok(Arc::new(Range {
+                Ok(Rc::new(Range {
                     start: int_obj_a.val,
                     end: int_obj_b.val,
                     step: 1,
@@ -122,7 +123,7 @@ func_object!(RangeFunc, (1..=3), args -> {
         if let Some(int_obj_a) = args[0].as_any().downcast_ref::<IntObject>() {
             if let Some(int_obj_b) = args[1].as_any().downcast_ref::<IntObject>() {
                 if let Some(int_obj_c) = args[2].as_any().downcast_ref::<IntObject>() {
-                    Ok(Arc::new(Range {
+                    Ok(Rc::new(Range {
                         start: int_obj_a.val,
                         end: int_obj_b.val,
                         step: int_obj_c.val,

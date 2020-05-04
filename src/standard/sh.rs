@@ -4,7 +4,8 @@ use crate::bytecode::{ContextId, FrameId};
 use crate::core::*;
 use crate::error::*;
 use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
+use std::sync::RwLock;
+use std::rc::Rc;
 
 use std::io::{self, Write};
 use std::process::{Child, Command, Output, Stdio};
@@ -33,7 +34,7 @@ pub enum ShObjectState {
 
 impl ShObject {
     pub fn new(command: String) -> ObjectRef {
-        Arc::new(ShObject {
+        Rc::new(ShObject {
             argument: command,
             state: RwLock::new(ShObjectState::Prepared),
             child: RwLock::new(None),

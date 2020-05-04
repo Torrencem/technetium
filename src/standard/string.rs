@@ -1,18 +1,19 @@
 use crate::core::*;
 use crate::error::*;
-use std::sync::{Arc, RwLock};
+use std::sync::RwLock;
+use std::rc::Rc;
 use std::str;
 
 use rental::rental;
 
 #[derive(Debug, Clone)]
 pub struct Lines {
-    pub parent: Arc<StringObject>,
+    pub parent: Rc<StringObject>,
 }
 
 impl Object for Lines {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        Ok(Arc::new(Lines { parent: Arc::clone(&self.parent) }))
+        Ok(Rc::new(Lines { parent: Rc::clone(&self.parent) }))
     }
     
     fn technetium_type_name(&self) -> String {
@@ -20,7 +21,7 @@ impl Object for Lines {
     }
 
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
-        Ok(Arc::new(
+        Ok(Rc::new(
                 LinesIterator {
                     inner: RwLock::new(rentals::LinesIterator::new(
                             self.parent.val.read()?.clone(),

@@ -5,7 +5,8 @@ use crate::bytecode::{ContextId, FrameId};
 use crate::core::*;
 use crate::error::*;
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
+use std::rc::Rc;
 use std::any::TypeId;
 use std::char;
 use std::u32;
@@ -52,7 +53,7 @@ pub fn to_int(val: ObjectRef) -> RuntimeResult<i64> {
 }
 
 func_object!(Int, (1..=1), args -> {
-    Ok(IntObject::new(to_int(Arc::clone(&args[0]))?))
+    Ok(IntObject::new(to_int(Rc::clone(&args[0]))?))
 });
 
 pub fn to_float(val: ObjectRef) -> RuntimeResult<f64> {
@@ -81,7 +82,7 @@ pub fn to_float(val: ObjectRef) -> RuntimeResult<f64> {
 }
 
 func_object!(Float, (1..=1), args -> {
-    Ok(FloatObject::new(to_float(Arc::clone(&args[0]))?))
+    Ok(FloatObject::new(to_float(Rc::clone(&args[0]))?))
 });
 
 pub fn to_char(val: ObjectRef) -> RuntimeResult<char> {
@@ -119,5 +120,5 @@ pub fn to_char(val: ObjectRef) -> RuntimeResult<char> {
 }
 
 func_object!(Char, (1..=1), args -> {
-    Ok(CharObject::new(to_char(Arc::clone(&args[0]))?))
+    Ok(CharObject::new(to_char(Rc::clone(&args[0]))?))
 });

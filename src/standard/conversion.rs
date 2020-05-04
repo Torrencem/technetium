@@ -36,7 +36,7 @@ pub fn to_int(val: ObjectRef) -> RuntimeResult<i64> {
             let as_str = val_any.downcast_ref::<StringObject>()
                 .unwrap()
                 .val
-                .lock()?;
+                .read()?;
 
             Ok(as_str.parse::<i64>().map_err(|e| {
                 RuntimeError::type_error(format!("Error converting string to int: {}", e.to_string()))
@@ -68,7 +68,7 @@ pub fn to_float(val: ObjectRef) -> RuntimeResult<f64> {
             let as_str = val_any.downcast_ref::<StringObject>()
                 .unwrap()
                 .val
-                .lock()?;
+                .read()?;
 
             Ok(as_str.parse::<f64>().map_err(|e| {
                 RuntimeError::type_error(format!("Error converting string to int: {}", e.to_string()))
@@ -104,7 +104,7 @@ pub fn to_char(val: ObjectRef) -> RuntimeResult<char> {
             let as_str = val_any.downcast_ref::<StringObject>()
                 .unwrap()
                 .val
-                .lock()?;
+                .read()?;
             
             if as_str.len() != 1 {
                 Err(RuntimeError::type_error(format!("Unable to convert string of length {} to character", as_str.len())))

@@ -1,6 +1,6 @@
 use crate::core::*;
 use crate::error::*;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
 use std::str;
 
 use rental::rental;
@@ -22,8 +22,8 @@ impl Object for Lines {
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
         Ok(Arc::new(
                 LinesIterator {
-                    inner: Mutex::new(rentals::LinesIterator::new(
-                            self.parent.val.lock()?.clone(),
+                    inner: RwLock::new(rentals::LinesIterator::new(
+                            self.parent.val.read()?.clone(),
                             |arc| arc.lines()))
                 }
         ))
@@ -33,7 +33,7 @@ impl Object for Lines {
 // Rentals must be used because str::Lines takes a reference
 // to a String, and we own the string it takes a reference to
 pub struct LinesIterator {
-    pub inner: Mutex<rentals::LinesIterator>,
+    pub inner: RwLock<rentals::LinesIterator>,
 }
 
 rental! {
@@ -54,7 +54,7 @@ impl Object for LinesIterator {
     }
 
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
-        let mut inner = self.inner.lock()?;
+        let mut inner = self.inner.write()?;
         let next = rentals::LinesIterator::rent_mut(&mut inner, |lines| lines.next().map(|val| val.to_string()));
         Ok(next.map(|s| StringObject::new(s.to_string())))
     }

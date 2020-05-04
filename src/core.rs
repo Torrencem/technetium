@@ -7,7 +7,7 @@ use std::any::Any;
 use std::clone::Clone as RustClone;
 use std::collections::HashMap;
 use std::sync::Arc;
-use std::sync::Mutex;
+use std::sync::RwLock;
 
 use dtoa;
 
@@ -32,7 +32,7 @@ impl<T: Object> ToAny for T {
     }
 }
 
-pub trait Object: Any + ToAny + Send + Sync {
+pub trait Object: Any + ToAny {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::type_error(format!(
             "{} can not be cloned",
@@ -225,18 +225,18 @@ impl Object for CharObject {
 
 #[derive(Debug)]
 pub struct StringObject {
-    pub val: Mutex<String>,
+    pub val: RwLock<String>,
 }
 
 impl StringObject {
     pub fn new(s: String) -> ObjectRef {
-        Arc::new(StringObject { val: Mutex::new(s) })
+        Arc::new(StringObject { val: RwLock::new(s) })
     }
 }
 
 impl Object for StringObject {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        let val = self.val.lock()?;
+        let val = self.val.read()?;
         Ok(StringObject::new(val.clone()))
     }
 
@@ -245,12 +245,12 @@ impl Object for StringObject {
     }
 
     fn to_string(&self) -> RuntimeResult<String> {
-        let val = self.val.lock()?;
+        let val = self.val.read()?;
         Ok(val.clone())
     }
 
     fn truthy(&self) -> bool {
-        let val = self.val.lock().unwrap();
+        let val = self.val.read().unwrap();
         *val != ""
     }
 
@@ -260,14 +260,14 @@ impl Object for StringObject {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
-                    Ok(IntObject::new(self.val.lock()?.len() as i64))
+                    Ok(IntObject::new(self.val.read()?.len() as i64))
                 }
             },
             "escape" => {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
-                    Ok(StringObject::new(self.val.lock()?.escape_default().collect()))
+                    Ok(StringObject::new(self.val.read()?.escape_default().collect()))
                 }
             },
             "lines" => {
@@ -275,7 +275,7 @@ impl Object for StringObject {
                     Err(RuntimeError::type_error("lines expects 0 args"))
                 } else {
                     Ok(Arc::new(standard::string::Lines {
-                        parent: Arc::new(StringObject { val: Mutex::new(self.val.lock()?.clone()) }),
+                        parent: Arc::new(StringObject { val: RwLock::new(self.val.read()?.clone()) }),
                     }))
                 }
             },
@@ -293,7 +293,7 @@ pub struct Function {
     pub context: Arc<bytecode::GlobalContext>,
     pub code: Vec<Op>,
     pub context_id: ContextId,
-    pub least_ancestors: Mutex<Option<HashMap<ContextId, FrameId>>>,
+    pub least_ancestors: RwLock<Option<HashMap<ContextId, FrameId>>>,
 }
 
 impl Object for Function {
@@ -304,7 +304,7 @@ impl Object for Function {
             context: Arc::clone(&self.context),
             code: self.code.clone(),
             context_id: self.context_id,
-            least_ancestors: Mutex::new(None),
+            least_ancestors: RwLock::new(None),
         }))
     }
 
@@ -334,7 +334,7 @@ impl Object for Function {
             locals,
             Arc::clone(&self.context),
             self.least_ancestors
-                .lock()?
+                .read()?
                 .as_ref()
                 .unwrap()
                 .clone(),
@@ -348,18 +348,18 @@ impl Object for Function {
 }
 
 pub struct List {
-    pub contents: Mutex<Vec<ObjectRef>>,
+    pub contents: RwLock<Vec<ObjectRef>>,
 }
 
 impl Object for List {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
         let mut res_contents = vec![];
-        let contents_ = self.contents.lock()?;
+        let contents_ = self.contents.read()?;
         for val in contents_.iter() {
             res_contents.push(val.technetium_clone()?);
         }
         Ok(Arc::new(List {
-            contents: Mutex::new(res_contents),
+            contents: RwLock::new(res_contents),
         }))
     }
 
@@ -371,7 +371,7 @@ impl Object for List {
         let mut res = String::new();
         res.push('[');
         let mut first = true;
-        let vals = self.contents.lock()?;
+        let vals = self.contents.read()?;
         for val in vals.iter() {
             if first {
                 first = false;
@@ -385,7 +385,7 @@ impl Object for List {
     }
 
     fn truthy(&self) -> bool {
-        self.contents.lock().unwrap().len() != 0
+        self.contents.read().unwrap().len() != 0
     }
 
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
@@ -394,7 +394,7 @@ impl Object for List {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
-                    Ok(IntObject::new(self.contents.lock()?.len() as i64))
+                    Ok(IntObject::new(self.contents.read()?.len() as i64))
                 }
             }
             _ => Err(RuntimeError::type_error(format!(
@@ -408,11 +408,11 @@ impl Object for List {
         let iter = ListIterator {
             contents: self
                 .contents
-                .lock()?
+                .read()?
                 .iter()
                 .map(|val| Arc::clone(val))
                 .collect(),
-            index: Mutex::new(0),
+            index: RwLock::new(0),
         };
 
         Ok(Arc::new(iter))
@@ -421,7 +421,7 @@ impl Object for List {
 
 pub struct ListIterator {
     pub contents: Vec<ObjectRef>,
-    pub index: Mutex<usize>,
+    pub index: RwLock<usize>,
 }
 
 impl Object for ListIterator {
@@ -430,7 +430,7 @@ impl Object for ListIterator {
     }
 
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
-        let mut index = self.index.lock()?;
+        let mut index = self.index.write()?;
         if *index >= self.contents.len() {
             Ok(None)
         } else {
@@ -466,7 +466,7 @@ impl Object for Slice {
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
         Ok(Arc::new(SliceIterator {
             parent: Arc::clone(&self.parent),
-            curr: Mutex::new(self.start),
+            curr: RwLock::new(self.start),
             stop: self.stop,
             step: self.step,
         }))
@@ -505,7 +505,7 @@ impl Object for Slice {
 #[derive(Debug)]
 pub struct SliceIterator {
     pub parent: ObjectRef,
-    pub curr: Mutex<i64>,
+    pub curr: RwLock<i64>,
     pub stop: Option<i64>,
     pub step: i64,
 }
@@ -516,7 +516,7 @@ impl Object for SliceIterator {
     }
 
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
-        let mut curr_ = self.curr.lock()?;
+        let mut curr_ = self.curr.write()?;
         if let Some(stop) = self.stop {
             if self.step < 0 && *curr_ <= stop
             || self.step > 0 && *curr_ >= stop {

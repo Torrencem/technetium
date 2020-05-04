@@ -12,8 +12,7 @@ use std::sync::Arc;
 
 pub static STANDARD_CONTEXT_ID: ContextId = 0;
 
-lazy_static! {
-    pub static ref Default_Namespace_Descriptors: HashMap<String, GlobalConstantDescriptor> = {
+pub fn get_default_namespace_descriptors() -> HashMap<String, GlobalConstantDescriptor> {
         let mut res: HashMap<String, GlobalConstantDescriptor> = HashMap::new();
         res.insert("print".to_string(), (STANDARD_CONTEXT_ID, 0));
         res.insert("exit".to_string(), (STANDARD_CONTEXT_ID, 1));
@@ -40,8 +39,9 @@ lazy_static! {
         res.insert("float".to_string(), (STANDARD_CONTEXT_ID, 22));
         res.insert("char".to_string(), (STANDARD_CONTEXT_ID, 23));
         res
-    };
-    pub static ref Default_Namespace: HashMap<GlobalConstantDescriptor, ObjectRef> = {
+}
+
+pub fn get_default_namespace() -> HashMap<GlobalConstantDescriptor, ObjectRef> {
         let mut res: HashMap<GlobalConstantDescriptor, ObjectRef> = HashMap::new();
         res.insert((STANDARD_CONTEXT_ID, 0), Arc::new(special_funcs::Print));
         res.insert((STANDARD_CONTEXT_ID, 1), Arc::new(special_funcs::Exit));
@@ -68,7 +68,6 @@ lazy_static! {
         res.insert((STANDARD_CONTEXT_ID, 22), Arc::new(conversion::Float));
         res.insert((STANDARD_CONTEXT_ID, 23), Arc::new(conversion::Char));
         res
-    };
 }
 
 #[macro_export]

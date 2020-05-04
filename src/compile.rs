@@ -2,15 +2,15 @@ use crate::ast::*;
 use crate::bytecode::*;
 use crate::core::*;
 use crate::error::*;
-use crate::standard::Default_Namespace_Descriptors;
 use crate::standard::STANDARD_CONTEXT_ID;
+use crate::standard::get_default_namespace_descriptors;
 use codespan::{FileId, Span};
 use codespan_reporting::diagnostic::{Diagnostic, Label};
 use std::clone::Clone as RustClone;
 use std::collections::HashMap;
 use std::i32;
 use std::result::Result as RustResult;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
 
 /// Determine if a f64 is exactly representable as a f32
 fn is_exact_float(val: f64) -> bool {
@@ -75,6 +75,7 @@ pub struct CompileManager {
     local_index_last: LocalName,
     pub local_index: HashMap<(ContextId, String), LocalName>,
     context_id_last: ContextId,
+    default_namespace_descriptors: HashMap<String, GlobalConstantDescriptor>,
 }
 
 pub enum NameLookupResult {
@@ -91,6 +92,7 @@ impl CompileManager {
             local_index_last: 0,
             local_index: HashMap::new(),
             context_id_last: STANDARD_CONTEXT_ID + 2,
+            default_namespace_descriptors: get_default_namespace_descriptors(),
         }
     }
 
@@ -124,7 +126,7 @@ impl CompileManager {
                 first = false;
             }
         }
-        if let Some(global_index) = Default_Namespace_Descriptors.get(name) {
+        if let Some(global_index) = self.default_namespace_descriptors.get(name) {
             NameLookupResult::Global(*global_index)
         } else {
             NameLookupResult::NotFound
@@ -489,7 +491,7 @@ impl CompileManager {
             name: ast.name.name.clone(),
             context: Arc::new(sub_context),
             context_id: finished_context.context_id,
-            least_ancestors: Mutex::new(None),
+            least_ancestors: RwLock::new(None),
             code: func_code,
         };
         let my_descr = self.context().gcd_gen();

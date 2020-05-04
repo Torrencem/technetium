@@ -3,14 +3,15 @@ use std::collections::HashMap;
 use crate::core::*;
 use crate::error::*;
 
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
+use std::sync;
 
 use std::clone::Clone as RustClone;
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
 
 use crate::builtins;
-use crate::standard::Default_Namespace;
+use crate::standard::get_default_namespace;
 use crate::standard::conversion;
 
 use std::fmt;
@@ -30,7 +31,7 @@ pub struct FrameIdGen {
 }
 
 lazy_static! {
-    pub static ref FRAME_ID_GEN: Mutex<FrameIdGen> = { Mutex::new(FrameIdGen { last: 100 }) };
+    pub static ref FRAME_ID_GEN: sync::Mutex<FrameIdGen> = { sync::Mutex::new(FrameIdGen { last: 100 }) };
 }
 
 /// Generate a new unique FrameID. This uses a static counter behind
@@ -240,6 +241,8 @@ impl<'code> Frame<'code> {
     }
 
     pub fn run(&mut self) -> RuntimeResult<ObjectRef> {
+        let default_namespace = get_default_namespace();
+
         let mut stale_debug_symb = false;
         let mut stale_weak_debug_symb = false;
         let mut ds: Option<DebugSpanDescriptor> = None;
@@ -308,7 +311,7 @@ impl<'code> Frame<'code> {
                     if let Some(top) = top {
                         let top_any = top.as_any();
                         if let Some(f) = top_any.downcast_ref::<Function>() {
-                            let mut la = f.least_ancestors.lock().unwrap();
+                            let mut la = f.least_ancestors.write()?;
                             assert!(la.is_none());
                             *la = Some(self.least_ancestors.clone());
                         } else {
@@ -359,7 +362,7 @@ impl<'code> Frame<'code> {
                     let obj = self.stack.pop().unwrap();
                     let name = name.as_any();
                     if let Some(method_name) = name.downcast_ref::<StringObject>() {
-                        let val = method_name.val.lock().unwrap();
+                        let val = method_name.val.read()?;
                         let res = try_debug!(self, ds, dsw, obj.call_method(val.as_ref(), &args));
                         self.stack.push(res);
                     } else {
@@ -389,7 +392,7 @@ impl<'code> Frame<'code> {
                     let obj = self.stack.pop().unwrap();
                     let attr = attr.as_any();
                     if let Some(attr_name) = attr.downcast_ref::<StringObject>() {
-                        let val = attr_name.val.lock().unwrap();
+                        let val = attr_name.val.read()?;
                         let res = try_debug!(self, ds, dsw, obj.get_attr(val.clone()));
                         self.stack.push(res);
                     } else {
@@ -407,7 +410,7 @@ impl<'code> Frame<'code> {
                     let obj = self.stack.pop().unwrap();
                     let attr = attr.as_any();
                     if let Some(attr_name) = attr.downcast_ref::<StringObject>() {
-                        let val = attr_name.val.lock().unwrap();
+                        let val = attr_name.val.read()?;
                         try_debug!(self, ds, dsw, obj.set_attr(val.clone(), toset));
                     } else {
                         return Err(RuntimeError::internal_error("Attribute name not a string!"));
@@ -441,7 +444,7 @@ impl<'code> Frame<'code> {
                     if let Some(subs) = subs {
                         if let Some(string) = subs.as_any().downcast_ref::<StringObject>() {
                             let mut result_string = String::new();
-                            let val = string.val.lock().unwrap();
+                            let val = string.val.read()?;
                             let mut chars = val.chars().peekable();
                             loop {
                                 match chars.next() {
@@ -737,7 +740,7 @@ impl<'code> Frame<'code> {
                     let objs: Vec<ObjectRef> =
                         self.stack.drain((self.stack.len() - len)..).collect();
                     self.stack.push(Arc::new(List {
-                        contents: Mutex::new(objs),
+                        contents: RwLock::new(objs),
                     }));
                 }
                 Op::mktuple(len) => {
@@ -779,7 +782,7 @@ impl<'code> Frame<'code> {
                     }
                 }
                 Op::push_global_default(const_descr) => {
-                    let obj = Default_Namespace.get(const_descr);
+                    let obj = default_namespace.get(const_descr);
                     if let Some(obj) = obj {
                         self.stack.push(Arc::clone(obj));
                     } else {
@@ -831,7 +834,7 @@ impl<'code> Frame<'code> {
                     if let Some(top) = top {
                         let top = top.as_any();
                         if let Some(top) = top.downcast_ref::<StringObject>() {
-                            let arg = top.val.lock().unwrap().clone();
+                            let arg = top.val.read()?.clone();
                             let mut command = Command::new("sh");
                             let process = command.stdin(Stdio::piped()).spawn();
                             if let Ok(mut child) = process {

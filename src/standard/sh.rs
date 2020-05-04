@@ -4,7 +4,7 @@ use crate::bytecode::{ContextId, FrameId};
 use crate::core::*;
 use crate::error::*;
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
 
 use std::io::{self, Write};
 use std::process::{Child, Command, Output, Stdio};
@@ -19,9 +19,9 @@ use sys_info::os_type;
 #[derive(Debug)]
 pub struct ShObject {
     pub argument: String,
-    pub state: Mutex<ShObjectState>,
-    pub child: Mutex<Option<Child>>,
-    pub output: Mutex<Option<Output>>,
+    pub state: RwLock<ShObjectState>,
+    pub child: RwLock<Option<Child>>,
+    pub output: RwLock<Option<Output>>,
 }
 
 #[derive(Debug)]
@@ -35,16 +35,16 @@ impl ShObject {
     pub fn new(command: String) -> ObjectRef {
         Arc::new(ShObject {
             argument: command,
-            state: Mutex::new(ShObjectState::Prepared),
-            child: Mutex::new(None),
-            output: Mutex::new(None),
+            state: RwLock::new(ShObjectState::Prepared),
+            child: RwLock::new(None),
+            output: RwLock::new(None),
         })
     }
 
     pub fn spawn(&self) -> RuntimeResult<()> {
         trace!("Spawning subprocess from sh()");
-        let mut state_ = self.state.lock()?;
-        let mut child_ = self.child.lock()?;
+        let mut state_ = self.state.write()?;
+        let mut child_ = self.child.write()?;
         let mut cmd = Command::new("sh")
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
@@ -62,18 +62,18 @@ impl ShObject {
 
     pub fn join(&self) -> RuntimeResult<()> {
         trace!("Joining subprocess from sh(..).join()");
-        let state_ = self.state.lock()?;
+        let state_ = self.state.read()?;
         if let ShObjectState::Prepared = *state_ {
             drop(state_);
             self.spawn()?;
         }
-        let mut state_ = self.state.lock()?;
-        let mut child_ = self.child.lock()?;
+        let mut state_ = self.state.write()?;
+        let mut child_ = self.child.write()?;
 
         if let ShObjectState::Running = *state_ {
             *state_ = ShObjectState::Finished;
             let child_ = child_.take().unwrap();
-            let mut output_ = self.output.lock()?;
+            let mut output_ = self.output.write()?;
             *output_ = Some(child_.wait_with_output()?);
         }
 
@@ -81,7 +81,7 @@ impl ShObject {
     }
 
     pub fn stdout(&self) -> RuntimeResult<ObjectRef> {
-        let output = self.output.lock()?;
+        let output = self.output.read()?;
         if let Some(ref output) = *output {
             let bytes = &output.stdout;
             Ok(StringObject::new(
@@ -93,7 +93,7 @@ impl ShObject {
     }
 
     pub fn stderr(&self) -> RuntimeResult<ObjectRef> {
-        let output = self.output.lock()?;
+        let output = self.output.read()?;
         if let Some(ref output) = *output {
             let bytes = &output.stderr;
             Ok(StringObject::new(
@@ -105,7 +105,7 @@ impl ShObject {
     }
 
     pub fn exit_code(&self) -> RuntimeResult<ObjectRef> {
-        let output = self.output.lock()?;
+        let output = self.output.read()?;
         if let Some(ref output) = *output {
             let status = &output.status;
             if let Some(val) = status.code() {
@@ -148,7 +148,7 @@ impl Object for ShObject {
 func_object!(Sh, (1..=1), args -> {
     let arg_any = args[0].as_any();
     if let Some(str_obj) = arg_any.downcast_ref::<StringObject>() {
-        let val = str_obj.val.lock()?;
+        let val = str_obj.val.read()?;
         Ok(ShObject::new(val.clone()))
     } else {
         Err(RuntimeError::type_error("Incorrect type as argument to sh; expected string"))
@@ -158,7 +158,7 @@ func_object!(Sh, (1..=1), args -> {
 func_object!(Cd, (1..=1), args -> {
     let arg_any = args[0].as_any();
     if let Some(str_obj) = arg_any.downcast_ref::<StringObject>() {
-        let val = str_obj.val.lock()?;
+        let val = str_obj.val.read()?;
         let path = Path::new(&*val);
         env::set_current_dir(path)?;
         Ok(VoidObject::new())

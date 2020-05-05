@@ -311,6 +311,7 @@ impl CompileManager {
             Expr::AttrLookup(a) => self.compile_attr_lookup(a),
             Expr::IndexedExpr(i) => self.compile_indexed_expr(i),
             Expr::SlicedExpr(s) => self.compile_sliced_expr(s),
+            Expr::PostPreOp(o) => self.compile_post_pre_op(o),
         }
     }
 
@@ -326,6 +327,44 @@ impl CompileManager {
         res.push(Op::debug(debug_descr));
 
         res.push(Op::index_get);
+        Ok(res)
+    }
+    
+    pub fn compile_post_pre_op(&mut self, ast: &PostPreOp) -> CompileResult {
+        let mut res = vec![];
+
+        let debug_descr = self.context().dsd_gen();
+        self.context()
+            .debug_span_descriptors
+            .insert(debug_descr, ast.span);
+
+        res.append(&mut self.compile_expr(&ast.val.as_expr())?);
+
+        match ast.variant {
+            PPOVariant::PostIncrement => {
+                res.push(Op::dup);
+                res.push(Op::push_int(1));
+                res.push(Op::add);
+            },
+            PPOVariant::PreIncrement => {
+                res.push(Op::push_int(1));
+                res.push(Op::add);
+                res.push(Op::dup);
+            },
+            PPOVariant::PostDecrement => {
+                res.push(Op::dup);
+                res.push(Op::push_int(1));
+                res.push(Op::sub);
+            },
+            PPOVariant::PreDecrement => {
+                res.push(Op::push_int(1));
+                res.push(Op::sub);
+                res.push(Op::dup);
+            }
+        }
+
+        res.append(&mut self.compile_assign_to(&ast.val)?);
+
         Ok(res)
     }
 
@@ -556,11 +595,10 @@ impl CompileManager {
         Ok(res)
     }
 
-    pub fn compile_assignment(&mut self, ast: &Assignment) -> CompileResult {
+    pub fn compile_assign_to(&mut self, ast: &AssignmentLHS) -> CompileResult {
         let mut res = vec![];
-        match &ast.lhs {
+        match &ast {
             AssignmentLHS::Identifier(id) => {
-                res.append(&mut self.compile_expr(&ast.val)?);
                 match self.name_lookup(&id.name) {
                     NameLookupResult::MyLocal(index) => {
                         res.push(Op::store(index));
@@ -586,16 +624,24 @@ impl CompileManager {
                     StringObject::new(a_lookup.attribute.name.clone()),
                 );
                 res.push(Op::push_const(name_descr));
-                res.append(&mut self.compile_expr(&ast.val)?);
+                res.push(Op::swap);
                 res.push(Op::set_attr);
             }
             AssignmentLHS::Indexed(indexed) => {
                 res.append(&mut self.compile_expr(&indexed.parent)?);
+                res.push(Op::swap);
                 res.append(&mut self.compile_expr(&indexed.index)?);
-                res.append(&mut self.compile_expr(&ast.val)?);
+                res.push(Op::swap);
                 res.push(Op::index_set);
             }
         }
+        Ok(res)
+    }
+
+    pub fn compile_assignment(&mut self, ast: &Assignment) -> CompileResult {
+        let mut res = vec![];
+        res.append(&mut self.compile_expr(&ast.val)?);
+        res.append(&mut self.compile_assign_to(&ast.lhs)?);
         Ok(res)
     }
 

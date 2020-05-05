@@ -559,6 +559,15 @@ impl AssignmentLHS {
             AssignmentLHS::Indexed(id) => Expr::IndexedExpr(id.clone()),
         }
     }
+
+    pub fn from_expr(val: Expr) -> Option<Self> {
+        match val {
+            Expr::Variable(id) => Some(AssignmentLHS::Identifier(id)),
+            Expr::AttrLookup(al) => Some(AssignmentLHS::AttrLookup(al)),
+            Expr::IndexedExpr(ie) => Some(AssignmentLHS::Indexed(ie)),
+            _ => None
+        }
+    }
 }
 
 #[derive(Clone, Debug)]

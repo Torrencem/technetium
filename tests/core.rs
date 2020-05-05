@@ -9,10 +9,9 @@ fn capture_variables() -> Result<(), TestError> {
     cmd.write_stdin(
         r#"
 func create_counter() {
-    value = 0
+    value = 1
     func count() {
-        value += 1
-        return value
+        return value++
     }
     return count
 }
@@ -304,5 +303,28 @@ print(~"program output was: {program.stdout()}")
     cmd.assert()
         .success()
         .stdout(predicate::eq("program output was: 123\n\n")); // Second newline comes from output of echo
+    Ok(())
+}
+
+#[test]
+fn test_post_pre_ops() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+        r#"
+l = [0, 0, 0, 0]
+
+print(l[1]++)  # 0
+print(l[1])  # 1
+
+print(++l[0])  # 1
+print(l[0])  # 1
+print(--l[0])  # 0
+print(l[0])  # 0
+"#,
+    );
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("0\n1\n1\n1\n0\n0\n"));
     Ok(())
 }

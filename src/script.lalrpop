@@ -225,8 +225,8 @@ Term: Expr = {
 };
 
 BaseExpr: Expr = {
-	<p: PostPreOp> => Expr::PostPreOp(p),
 	<a: AttrableExpr> => a,
+	<p: PreOp> => Expr::PostPreOp(p),
 };
 
 AttrableExpr: Expr = {
@@ -240,13 +240,25 @@ AttrableExpr: Expr = {
 	<a: AttrLookup> => Expr::AttrLookup(a),
 	<i: IndexedExpr> => Expr::IndexedExpr(i),
 	<s: SlicedExpr> => Expr::SlicedExpr(s),
+	<p: PostOp> => Expr::PostPreOp(p),
 };
 
-PostPreOp: PostPreOp = {
-	<l:@L> <a: AssignmentLHS> "++" <r:@R> => PostPreOp::new_post_inc(a, l, r),
-	<l:@L> "++" <a: AssignmentLHS> <r:@R> => PostPreOp::new_pre_inc(a, l, r),
-	<l:@L> <a: AssignmentLHS> "--" <r:@R> => PostPreOp::new_post_dec(a, l, r),
-	<l:@L> "--" <a: AssignmentLHS> <r:@R> => PostPreOp::new_pre_dec(a, l, r),
+PostOp: PostPreOp = {
+	<l:@L> <a: AttrableExpr> "++" <r:@R> =>? Ok(PostPreOp::new_post_inc(AssignmentLHS::from_expr(a).ok_or(
+		MiscParseError::post_pre_op(l, r)
+	)?, l, r)),
+	<l:@L> <a: AttrableExpr> "--" <r:@R> =>? Ok(PostPreOp::new_post_dec(AssignmentLHS::from_expr(a).ok_or(
+		MiscParseError::post_pre_op(l, r)
+	)?, l, r)),
+};
+
+PreOp: PostPreOp = {
+	<l:@L> "++" <a: AttrableExpr> <r:@R> =>? Ok(PostPreOp::new_pre_inc(AssignmentLHS::from_expr(a).ok_or(
+		MiscParseError::post_pre_op(l, r)
+	)?, l, r)),
+	<l:@L> "--" <a: AttrableExpr> <r:@R> =>? Ok(PostPreOp::new_pre_dec(AssignmentLHS::from_expr(a).ok_or(
+		MiscParseError::post_pre_op(l, r)
+	)?, l, r)),
 };
 
 IndexedExpr: IndexedExpr = <l:@L> <b: AttrableExpr> "[" <i: Expr> "]" <r:@R> => IndexedExpr::new(b, i, l, r);

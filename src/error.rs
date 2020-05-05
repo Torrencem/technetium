@@ -207,11 +207,16 @@ impl LexError {
 
 #[derive(Clone, Debug)]
 pub enum MiscParseError {
+    PostPreOp(Span),
     Lex(LexError),
     Recursive(Box<ParseError>),
 }
 
 impl MiscParseError {
+    pub fn post_pre_op(l: usize, r: usize) -> Self {
+        MiscParseError::PostPreOp(Span::new(l as u32, r as u32))
+    }
+
     pub fn lex(message: &str, loc: Option<usize>) -> Self {
         MiscParseError::Lex(LexError {
             message: message.to_owned(),
@@ -221,6 +226,9 @@ impl MiscParseError {
 
     pub fn as_diagnostic<FileId>(&self, fileid: FileId) -> Diagnostic<FileId> {
         match self {
+            MiscParseError::PostPreOp(s) => {
+                unimplemented!()
+            },
             MiscParseError::Lex(l) => l.as_diagnostic(fileid),
             MiscParseError::Recursive(p) => parse_error_to_diagnostic(&p, fileid),
         }
@@ -228,6 +236,14 @@ impl MiscParseError {
 
     pub fn offset_spans(&mut self, offset: usize) {
         match self {
+            MiscParseError::PostPreOp(s) => {
+                let l = s.start();
+                let r = s.end();
+                *s = Span::new(
+                    u32::from(l) + (offset as u32),
+                    u32::from(r) + (offset as u32),
+                );
+            }
             MiscParseError::Lex(l) => l.offset_spans(offset),
             MiscParseError::Recursive(p) => offset_parse_error_spans(p, offset),
         }

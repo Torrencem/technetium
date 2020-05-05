@@ -89,6 +89,7 @@ impl ShObject {
                 String::from_utf8_lossy(bytes).into_owned(),
             ))
         } else {
+            // TODO: Should this be like this?
             Ok(StringObject::new("".to_string()))
         }
     }
@@ -115,8 +116,7 @@ impl ShObject {
                 Ok(BoolObject::new(status.success()))
             }
         } else {
-            // TODO: Should this be like this?
-            Ok(StringObject::new("".to_string()))
+            Err(RuntimeError::type_error("Called exit_code() before process exited!"))
         }
     }
 }

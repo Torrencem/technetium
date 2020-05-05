@@ -6,6 +6,7 @@ use crate::builtins::index_get;
 use crate::standard;
 use crate::memory::*;
 use std::any::Any;
+use std::any::TypeId;
 use std::clone::Clone as RustClone;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -504,31 +505,51 @@ impl Object for Slice {
 
     fn to_string(&self) -> RuntimeResult<String> {
         let mut res = String::new();
-        res.push('[');
-        let mut first = true;
-        let mut curr_index = self.start;
-        loop {
-            if let Some(stop) = self.stop {
-                if self.step < 0 && curr_index <= stop
-                || self.step > 0 && curr_index >= stop {
+        if self.parent.as_any().type_id() != TypeId::of::<StringObject>() {
+            res.push('[');
+            let mut first = true;
+            let mut curr_index = self.start;
+            loop {
+                if let Some(stop) = self.stop {
+                    if self.step < 0 && curr_index <= stop
+                    || self.step > 0 && curr_index >= stop {
+                        break;
+                    }
+                }
+                let val = index_get(Rc::clone(&self.parent), IntObject::new(curr_index));
+                if let Ok(val_) = val {
+                    if first {
+                        first = false;
+                    } else {
+                        res.push_str(", ");
+                    }
+                    res.push_str(val_.to_string()?.as_ref());
+                } else {
                     break;
                 }
+                curr_index += self.step;
             }
-            let val = index_get(Rc::clone(&self.parent), IntObject::new(curr_index));
-            if let Ok(val_) = val {
-                if first {
-                    first = false;
-                } else {
-                    res.push_str(", ");
+            res.push(']');
+            Ok(res)
+        } else {
+            let mut curr_index = self.start;
+            loop {
+                if let Some(stop) = self.stop {
+                    if self.step < 0 && curr_index <= stop
+                    || self.step > 0 && curr_index >= stop {
+                        break;
+                    }
                 }
-                res.push_str(val_.to_string()?.as_ref());
-            } else {
-                break;
+                let val = index_get(Rc::clone(&self.parent), IntObject::new(curr_index));
+                if let Ok(val_) = val {
+                    res.push_str(val_.to_string()?.as_ref());
+                } else {
+                    break;
+                }
+                curr_index += self.step;
             }
-            curr_index += self.step;
+            Ok(res)
         }
-        res.push(']');
-        Ok(res)
     }
 }
 

@@ -227,7 +227,12 @@ impl MiscParseError {
     pub fn as_diagnostic<FileId>(&self, fileid: FileId) -> Diagnostic<FileId> {
         match self {
             MiscParseError::PostPreOp(s) => {
-                unimplemented!()
+                Diagnostic::error()
+                    .with_message("Parse error: invalid ++ or --")
+                    .with_labels(vec![Label::primary(
+                            fileid,
+                            *s
+                    ).with_message("Thing being incremented must be either a variable ('x++'), an attribute ('x.a++'), or an index ('x[0]++')")])
             },
             MiscParseError::Lex(l) => l.as_diagnostic(fileid),
             MiscParseError::Recursive(p) => parse_error_to_diagnostic(&p, fileid),

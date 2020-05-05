@@ -42,12 +42,11 @@ for line in files.stdout().lines() {  # For each line in the output
 
 ### Complicated Environment Capturing
 
-```python
+```coffeescript
 func create_counter() {
     value = 1
     func count() {
-        value++
-        return value
+        return value++
     }
     return count
 }

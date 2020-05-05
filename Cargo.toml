@@ -4,6 +4,9 @@ version = "0.1.0"
 authors = ["Torrencem <matt@torrencefamily.net>"]
 edition = "2018"
 
+[profile.release]
+debug = true
+
 [build-dependencies]
 lalrpop = "0.18.1"
 
@@ -17,6 +20,7 @@ log = { features = ["std"], version = "0.4" }
 sys-info = "0.6.1"
 dtoa = "0.4"
 rental = "0.5.4"
+parking_lot = "0.10.2"
 
 [dev-dependencies]
 assert_cmd = "1.0.1"

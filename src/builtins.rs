@@ -1,7 +1,7 @@
 use crate::core::*;
 use crate::error::*;
 use std::any::TypeId;
-use std::sync::RwLock;
+use parking_lot::RwLock;
 use std::rc::Rc;
 
 pub fn add(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
@@ -34,24 +34,24 @@ pub fn add(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         }
         (a, _) if a == TypeId::of::<StringObject>() => {
             let a = a_any.downcast_ref::<StringObject>().unwrap();
-            let res = format!("{}{}", a.val.read()?, b.to_string()?);
+            let res = format!("{}{}", a.val.read(), b.to_string()?);
             Ok(StringObject::new(res))
         }
         (_, b) if b == TypeId::of::<StringObject>() => {
             let b = b_any.downcast_ref::<StringObject>().unwrap();
-            let res = format!("{}{}", a.to_string()?, b.val.read()?);
+            let res = format!("{}{}", a.to_string()?, b.val.read());
             Ok(StringObject::new(res))
         }
         (a_, b_) if a_ == TypeId::of::<List>() && b_ == TypeId::of::<List>() => {
             let val_a = a_any.downcast_ref::<List>().unwrap();
             let val_b = b_any.downcast_ref::<List>().unwrap();
             if Rc::ptr_eq(&a, &b) {
-                let mut res = val_a.contents.read()?.clone();
-                res.append(&mut val_a.contents.read()?.clone());
+                let mut res = val_a.contents.read().clone();
+                res.append(&mut val_a.contents.read().clone());
                 Ok(Rc::new(List { contents: RwLock::new(res) }))
             } else {
-                let mut res = val_a.contents.read()?.clone();
-                res.append(&mut val_b.contents.read()?.clone());
+                let mut res = val_a.contents.read().clone();
+                res.append(&mut val_b.contents.read().clone());
                 Ok(Rc::new(List { contents: RwLock::new(res) }))
             }
         }
@@ -128,7 +128,7 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             Ok(res)
         }
         (a, b) if a == TypeId::of::<List>() && b == TypeId::of::<IntObject>() => {
-            let val_a = a_any.downcast_ref::<List>().unwrap().contents.read()?;
+            let val_a = a_any.downcast_ref::<List>().unwrap().contents.read();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
             let mut res: Vec<ObjectRef> = vec![];
             for _ in (0..val_b.val) {
@@ -140,7 +140,7 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         }
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<List>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let val_b = b_any.downcast_ref::<List>().unwrap().contents.read()?;
+            let val_b = b_any.downcast_ref::<List>().unwrap().contents.read();
             let mut res: Vec<ObjectRef> = vec![];
             for _ in (0..val_a.val) {
                 for obj_ref in val_b.iter() {
@@ -398,7 +398,7 @@ pub fn cmp_eq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             if Rc::ptr_eq(&a, &b) {
                 Ok(BoolObject::new(true))
             } else {
-                let res = BoolObject::new(*val_a.val.read()? == *val_b.val.read()?);
+                let res = BoolObject::new(*val_a.val.read() == *val_b.val.read());
                 Ok(res)
             }
         }
@@ -451,7 +451,7 @@ pub fn cmp_neq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             if Rc::ptr_eq(&a, &b) {
                 Ok(BoolObject::new(false))
             } else {
-                let res = BoolObject::new(*val_a.val.read()? != *val_b.val.read()?);
+                let res = BoolObject::new(*val_a.val.read() != *val_b.val.read());
                 Ok(res)
             }
         }
@@ -556,7 +556,7 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
                 .downcast_ref::<List>()
                 .unwrap()
                 .contents
-                .read()?;
+                .read();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
             let mut val = val_b.val;
             if val < 0 {
@@ -588,12 +588,12 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
             let mut val = val_b.val;
             if val < 0 {
-                val = (val_a.val.read()?.len() as u64 as i64) + val;
+                val = (val_a.val.read().len() as u64 as i64) + val;
             }
             let val = val as u64 as usize;
             let c = val_a
                 .val
-                .read()?
+                .read()
                 .chars()
                 .nth(val);
             if let Some(c) = c {
@@ -627,7 +627,7 @@ pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> 
                 .downcast_ref::<List>()
                 .unwrap()
                 .contents
-                .write()?;
+                .write();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
             let mut val = val_b.val;
             if val < 0 {
@@ -649,7 +649,7 @@ pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> 
                 .downcast_ref::<StringObject>()
                 .unwrap()
                 .val
-                .write()?;
+                .write();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
             let mut val = val_b.val;
             if val < 0 {

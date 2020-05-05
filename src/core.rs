@@ -9,7 +9,7 @@ use std::any::Any;
 use std::clone::Clone as RustClone;
 use std::collections::HashMap;
 use std::rc::Rc;
-use std::sync::RwLock;
+use parking_lot::RwLock;
 use std::ops::{Deref, DerefMut};
 
 use dtoa;
@@ -253,7 +253,7 @@ impl StringObject {
 
 impl Object for StringObject {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        let val = self.val.read()?;
+        let val = self.val.read();
         Ok(StringObject::new(val.clone()))
     }
 
@@ -262,12 +262,12 @@ impl Object for StringObject {
     }
 
     fn to_string(&self) -> RuntimeResult<String> {
-        let val = self.val.read()?;
+        let val = self.val.read();
         Ok(val.clone())
     }
 
     fn truthy(&self) -> bool {
-        let val = self.val.read().unwrap();
+        let val = self.val.read();
         *val != ""
     }
 
@@ -277,14 +277,14 @@ impl Object for StringObject {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
-                    Ok(IntObject::new(self.val.read()?.len() as i64))
+                    Ok(IntObject::new(self.val.read().len() as i64))
                 }
             },
             "escape" => {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
-                    Ok(StringObject::new(self.val.read()?.escape_default().collect()))
+                    Ok(StringObject::new(self.val.read().escape_default().collect()))
                 }
             },
             "lines" => {
@@ -292,7 +292,7 @@ impl Object for StringObject {
                     Err(RuntimeError::type_error("lines expects 0 args"))
                 } else {
                     Ok(Rc::new(standard::string::Lines {
-                        parent: Rc::new(StringObject { val: RwLock::new(self.val.read()?.clone()) }),
+                        parent: Rc::new(StringObject { val: RwLock::new(self.val.read().clone()) }),
                     }))
                 }
             },
@@ -301,7 +301,7 @@ impl Object for StringObject {
                     Err(RuntimeError::type_error("chars expects 0 args"))
                 } else {
                     Ok(Rc::new(standard::string::Chars {
-                        parent: Rc::new(StringObject { val: RwLock::new(self.val.read()?.clone()) }),
+                        parent: Rc::new(StringObject { val: RwLock::new(self.val.read().clone()) }),
                     }))
                 }
             }
@@ -360,7 +360,7 @@ impl Object for Function {
             locals,
             Rc::clone(&self.context),
             self.least_ancestors
-                .read()?
+                .read()
                 .as_ref()
                 .unwrap()
                 .clone(),
@@ -384,7 +384,7 @@ pub struct List {
 impl Object for List {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
         let mut res_contents = vec![];
-        let contents_ = self.contents.read()?;
+        let contents_ = self.contents.read();
         for val in contents_.iter() {
             res_contents.push(val.technetium_clone()?);
         }
@@ -401,7 +401,7 @@ impl Object for List {
         let mut res = String::new();
         res.push('[');
         let mut first = true;
-        let vals = self.contents.read()?;
+        let vals = self.contents.read();
         for val in vals.iter() {
             if first {
                 first = false;
@@ -415,7 +415,7 @@ impl Object for List {
     }
 
     fn truthy(&self) -> bool {
-        self.contents.read().unwrap().len() != 0
+        self.contents.read().len() != 0
     }
 
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
@@ -424,7 +424,7 @@ impl Object for List {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
-                    Ok(IntObject::new(self.contents.read()?.len() as i64))
+                    Ok(IntObject::new(self.contents.read().len() as i64))
                 }
             }
             _ => Err(RuntimeError::type_error(format!(
@@ -438,7 +438,7 @@ impl Object for List {
         let iter = ListIterator {
             contents: self
                 .contents
-                .read()?
+                .read()
                 .iter()
                 .map(|val| Rc::clone(val))
                 .collect(),
@@ -460,7 +460,7 @@ impl Object for ListIterator {
     }
 
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
-        let mut index = self.index.write()?;
+        let mut index = self.index.write();
         if *index >= self.contents.len() {
             Ok(None)
         } else {
@@ -546,7 +546,7 @@ impl Object for SliceIterator {
     }
 
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
-        let mut curr_ = self.curr.write()?;
+        let mut curr_ = self.curr.write();
         if let Some(stop) = self.stop {
             if self.step < 0 && *curr_ <= stop
             || self.step > 0 && *curr_ >= stop {

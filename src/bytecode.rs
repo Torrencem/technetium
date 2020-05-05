@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::core::*;
 use crate::error::*;
 
-use std::sync::RwLock;
+use parking_lot::RwLock;
 use std::sync;
 use std::rc::Rc;
 use std::clone::Clone as RustClone;
@@ -32,7 +32,7 @@ pub struct FrameIdGen {
 }
 
 lazy_static! {
-    pub static ref FRAME_ID_GEN: sync::Mutex<FrameIdGen> = { sync::Mutex::new(FrameIdGen { last: 100 }) };
+    pub static ref FRAME_ID_GEN: sync::Mutex<FrameIdGen> = { sync::Mutex::new(FrameIdGen { last: 10 }) };
 }
 
 /// Generate a new unique FrameID. This uses a static counter behind
@@ -242,7 +242,6 @@ impl<'code> Frame<'code> {
                 stale_debug_symb = true;
             }
             let instr = self.code.get(self.curr_instruction);
-            trace!("instruction: {:?}", instr);
             if let None = instr {
                 return Ok(VoidObject::new());
             }
@@ -283,7 +282,7 @@ impl<'code> Frame<'code> {
                     if let Some(top) = top {
                         let top_any = top.as_any();
                         if let Some(f) = top_any.downcast_ref::<Function>() {
-                            let mut la = f.least_ancestors.write()?;
+                            let mut la = f.least_ancestors.write();
                             assert!(la.is_none());
                             *la = Some(self.least_ancestors.clone());
                         } else {
@@ -334,7 +333,7 @@ impl<'code> Frame<'code> {
                     let obj = self.stack.pop().unwrap();
                     let name = name.as_any();
                     if let Some(method_name) = name.downcast_ref::<StringObject>() {
-                        let val = method_name.val.read()?;
+                        let val = method_name.val.read();
                         let res = try_debug!(self, ds, dsw, obj.call_method(val.as_ref(), &args));
                         self.stack.push(res);
                     } else {
@@ -364,7 +363,7 @@ impl<'code> Frame<'code> {
                     let obj = self.stack.pop().unwrap();
                     let attr = attr.as_any();
                     if let Some(attr_name) = attr.downcast_ref::<StringObject>() {
-                        let val = attr_name.val.read()?;
+                        let val = attr_name.val.read();
                         let res = try_debug!(self, ds, dsw, obj.get_attr(val.clone()));
                         self.stack.push(res);
                     } else {
@@ -382,7 +381,7 @@ impl<'code> Frame<'code> {
                     let obj = self.stack.pop().unwrap();
                     let attr = attr.as_any();
                     if let Some(attr_name) = attr.downcast_ref::<StringObject>() {
-                        let val = attr_name.val.read()?;
+                        let val = attr_name.val.read();
                         try_debug!(self, ds, dsw, obj.set_attr(val.clone(), toset));
                     } else {
                         return Err(RuntimeError::internal_error("Attribute name not a string!"));
@@ -416,7 +415,7 @@ impl<'code> Frame<'code> {
                     if let Some(subs) = subs {
                         if let Some(string) = subs.as_any().downcast_ref::<StringObject>() {
                             let mut result_string = String::new();
-                            let val = string.val.read()?;
+                            let val = string.val.read();
                             let mut chars = val.chars().peekable();
                             loop {
                                 match chars.next() {
@@ -810,7 +809,7 @@ impl<'code> Frame<'code> {
                     if let Some(top) = top {
                         let top = top.as_any();
                         if let Some(top) = top.downcast_ref::<StringObject>() {
-                            let arg = top.val.read()?.clone();
+                            let arg = top.val.read().clone();
                             let mut command = Command::new("sh");
                             let process = command.stdin(Stdio::piped()).spawn();
                             if let Ok(mut child) = process {

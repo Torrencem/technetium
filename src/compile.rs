@@ -11,7 +11,7 @@ use std::clone::Clone as RustClone;
 use std::collections::HashMap;
 use std::i32;
 use std::result::Result as RustResult;
-use std::sync::RwLock;
+use parking_lot::RwLock;
 use std::rc::Rc;
 
 /// Determine if a f64 is exactly representable as a f32

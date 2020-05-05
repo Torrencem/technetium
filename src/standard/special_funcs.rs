@@ -4,7 +4,7 @@ use crate::bytecode::{ContextId, FrameId};
 use crate::core::*;
 use crate::error::*;
 use std::collections::HashMap;
-use std::sync::Mutex;
+use parking_lot::RwLock;
 use std::rc::Rc;
 
 use crate::{func_object, func_object_void};
@@ -64,13 +64,13 @@ impl Object for Range {
 
 pub struct RangeIterator {
     inner: Range,
-    curr: Mutex<i64>,
+    curr: RwLock<i64>,
 }
 
 impl RangeIterator {
     pub fn new(inner: Range) -> ObjectRef {
         Rc::new(RangeIterator {
-            curr: Mutex::new(inner.start),
+            curr: RwLock::new(inner.start),
             inner,
         })
     }
@@ -82,7 +82,7 @@ impl Object for RangeIterator {
     }
 
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
-        let mut _curr = self.curr.lock()?;
+        let mut _curr = self.curr.write();
         if (self.inner.step < 0 && *_curr <= self.inner.end)
             || (self.inner.step > 0 && *_curr >= self.inner.end)
         {

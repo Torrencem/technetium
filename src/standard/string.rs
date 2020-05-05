@@ -1,10 +1,11 @@
 use crate::core::*;
 use crate::error::*;
-use std::sync::RwLock;
+use parking_lot::RwLock;
 use std::rc::Rc;
 use std::str;
 
 use rental::rental;
+use parking_lot::RwLockReadGuard;
 
 #[derive(Debug, Clone)]
 pub struct Lines {
@@ -23,7 +24,7 @@ impl Object for Lines {
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
         let lines_iter_rental_head = line_rentals::LinesIteratorHead::new(
             Rc::clone(&self.parent),
-            |rc| rc.val.read().unwrap()
+            |rc| rc.val.read()
         );
 
         Ok(Rc::new(
@@ -45,12 +46,11 @@ pub struct LinesIterator {
 rental! {
     mod line_rentals {
         use super::*;
-        use std::sync;
         
         #[rental]
         pub struct LinesIteratorHead {
             head: Rc<StringObject>,
-            parent: sync::RwLockReadGuard<'head, String>,
+            parent: RwLockReadGuard<'head, String>,
         }
 
         #[rental]
@@ -68,7 +68,7 @@ impl Object for LinesIterator {
     }
 
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
-        let mut inner = self.inner.write()?;
+        let mut inner = self.inner.write();
         let next = line_rentals::LinesIterator::rent_mut(&mut inner, |lines| lines.next().map(|val| val.to_string()));
         Ok(next.map(|s| StringObject::new(s.to_string())))
     }
@@ -91,7 +91,7 @@ impl Object for Chars {
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
         let lines_iter_rental_head = char_rentals::CharsIteratorHead::new(
             Rc::clone(&self.parent),
-            |rc| rc.val.read().unwrap()
+            |rc| rc.val.read()
         );
 
         Ok(Rc::new(
@@ -111,12 +111,11 @@ pub struct CharsIterator {
 rental! {
     mod char_rentals {
         use super::*;
-        use std::sync;
         
         #[rental]
         pub struct CharsIteratorHead {
             head: Rc<StringObject>,
-            parent: sync::RwLockReadGuard<'head, String>,
+            parent: RwLockReadGuard<'head, String>,
         }
 
         #[rental]
@@ -134,7 +133,7 @@ impl Object for CharsIterator {
     }
 
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
-        let mut inner = self.inner.write()?;
+        let mut inner = self.inner.write();
         let next = char_rentals::CharsIterator::rent_mut(&mut inner, |lines| lines.next());
         Ok(next.map(|s| CharObject::new(s)))
     }

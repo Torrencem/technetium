@@ -50,11 +50,11 @@ Shell Object Methods
 
 .. function:: [sh].stdout()  [string]
 
-    Returns the output of the subprocess's standard output as a string
+    Returns the output of the subprocess's standard output as a string.
 
 .. function:: [sh].stderr()  [string]
 
-    Returns the output of the subprocess's standard error as a string
+    Returns the output of the subprocess's standard error as a string.
 
 .. function:: [sh].exit_code()  [int]
 

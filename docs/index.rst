@@ -11,13 +11,5 @@ rush: A Sleek Modern Bash-alike
    :caption: Contents:
 
    intro
+   types/core
    types/shell
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

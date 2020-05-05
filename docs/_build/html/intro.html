@@ -14,6 +14,7 @@
     <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="rush: A Sleek Modern Bash-alike" href="index.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -45,8 +46,8 @@
 $ echo {my_name}
 </pre></div>
 </div>
-<p>This code, when run, will invoke the <cite>echo</cite> command, substituting the value of the expression <cite>my_name</cite>, which has the effect of printing out <cite>matt</cite> to the console.</p>
-<p>The shell operator makes it very easy to write long chains of commands in a similar style to a bash script. Similar to bash, each command will run synchronously and in the foreground. The shell operator can also be used to create process objects, which can be assigned to variables, spawned in the background, or even passed to functions:</p>
+<p>This code, when run, will invoke the <code class="docutils literal notranslate"><span class="pre">echo</span></code> command, substituting the value of the expression <code class="docutils literal notranslate"><span class="pre">my_name</span></code>, which has the effect of printing out <code class="docutils literal notranslate"><span class="pre">matt</span></code> to the console.</p>
+<p>The shell operator makes it very easy to write long chains of commands in a similar style to a bash script. Similar to bash, each command will run synchronously and in the foreground. The <code class="docutils literal notranslate"><span class="pre">sh</span></code> function can be used to create process objects, which can be assigned to variables, spawned in the background, or even passed to functions:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">delayed_command</span> <span class="o">=</span> <span class="n">sh</span><span class="p">(</span><span class="s2">&quot;sleep 10 &amp;&amp; echo Ten seconds have passed!&quot;</span><span class="p">)</span>
 <span class="n">delayed_command</span><span class="o">.</span><span class="n">spawn</span><span class="p">()</span>
 <span class="c1"># ... do more work ...</span>
@@ -83,11 +84,19 @@ $ echo {my_name}
 
 
 <h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction to rush</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#the-shell-operator">The Shell Operator</a></li>
+</ul>
+</li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">rush: A Sleek Modern Bash-alike</a></li>
   </ul></li>
 </ul>
 </div>
@@ -117,7 +126,7 @@ $ echo {my_name}
       &copy;2020, Matt Torrence.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

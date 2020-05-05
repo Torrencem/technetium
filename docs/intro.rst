@@ -17,9 +17,9 @@ Technetium is designed around making accessing shell commands as easy as possibl
         my_name = "matt"
         $ echo {my_name}
 
-This code, when run, will invoke the `echo` command, substituting the value of the expression `my_name`, which has the effect of printing out `matt` to the console.
+This code, when run, will invoke the ``echo`` command, substituting the value of the expression ``my_name``, which has the effect of printing out ``matt`` to the console.
 
-The shell operator makes it very easy to write long chains of commands in a similar style to a bash script. Similar to bash, each command will run synchronously and in the foreground. The shell operator can also be used to create process objects, which can be assigned to variables, spawned in the background, or even passed to functions::
+The shell operator makes it very easy to write long chains of commands in a similar style to a bash script. Similar to bash, each command will run synchronously and in the foreground. The ``sh`` function can be used to create process objects, which can be assigned to variables, spawned in the background, or even passed to functions::
 
         delayed_command = sh("sleep 10 && echo Ten seconds have passed!")
         delayed_command.spawn()

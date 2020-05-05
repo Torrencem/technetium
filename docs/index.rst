@@ -10,6 +10,9 @@ rush: A Sleek Modern Bash-alike
    :maxdepth: 2
    :caption: Contents:
 
+   intro
+   types/shell
+
 
 
 Indices and tables

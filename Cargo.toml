@@ -4,9 +4,6 @@ version = "0.1.0"
 authors = ["Torrencem <matt@torrencefamily.net>"]
 edition = "2018"
 
-[profile.release]
-debug = true
-
 [build-dependencies]
 lalrpop = "0.18.1"
 

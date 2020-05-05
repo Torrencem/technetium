@@ -44,9 +44,9 @@ for line in files.stdout().lines() {  # For each line in the output
 
 ```python
 func create_counter() {
-    value = 0
+    value = 1
     func count() {
-        value += 1
+        value++
         return value
     }
     return count

@@ -2,7 +2,6 @@
 This is a rough todo list of features I need to add to the language:
 
 * more examples in readme
-* negative indexing a la python (check [::-1])
 * dictionaries
 * use bigint
 * comprehensions

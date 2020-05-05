@@ -328,3 +328,29 @@ print(l[0])  # 0
         .stdout(predicate::eq("0\n1\n1\n1\n0\n0\n"));
     Ok(())
 }
+
+#[test]
+fn test_negative_indexing() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+        r#"
+l = [0, 1, 2, 3, 4, 5]
+
+print(l[::-1])
+print(l[-2])
+print(l[-6])
+l[-1] = 100
+print(l[5])
+
+s = "Hello!"
+s[-1] = '?'
+print(s)
+"#,
+    );
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("[5, 4, 3, 2, 1, 0]\n4\n0\n100\nHello?\n"));
+    Ok(())
+}
+

@@ -558,38 +558,44 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
                 .contents
                 .read()?;
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            if val_b.val < 0 {
-                return Err(RuntimeError::index_oob_error("Negative index"));
+            let mut val = val_b.val;
+            if val < 0 {
+                val = (val_a.len() as u64 as i64) + val;
             }
-            if (val_b.val as u64 as usize) >= val_a.len() {
+            let val = val as u64 as usize;
+            if val >= val_a.len() {
                 return Err(RuntimeError::index_oob_error("Index out of bounds"));
             }
-            let res = Rc::clone(&val_a[val_b.val as u64 as usize]);
+            let res = Rc::clone(&val_a[val]);
             Ok(res)
         }
         (a, b) if a == TypeId::of::<Tuple>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<Tuple>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            if val_b.val < 0 {
-                return Err(RuntimeError::index_oob_error("Negative index"));
+            let mut val = val_b.val;
+            if val < 0 {
+                val = (val_a.contents.len() as u64 as i64) + val;
             }
-            if (val_b.val as u64 as usize) >= val_a.contents.len() {
+            let val = val as u64 as usize;
+            if (val as u64 as usize) >= val_a.contents.len() {
                 return Err(RuntimeError::index_oob_error("Index out of bounds"));
             }
-            let res = Rc::clone(&val_a.contents[val_b.val as u64 as usize]);
+            let res = Rc::clone(&val_a.contents[val]);
             Ok(res)
         }
         (a, b) if a == TypeId::of::<StringObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<StringObject>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            if val_b.val < 0 {
-                return Err(RuntimeError::index_oob_error("Negative index"));
+            let mut val = val_b.val;
+            if val < 0 {
+                val = (val_a.val.read()?.len() as u64 as i64) + val;
             }
+            let val = val as u64 as usize;
             let c = val_a
                 .val
                 .read()?
                 .chars()
-                .nth(val_b.val as u64 as usize);
+                .nth(val);
             if let Some(c) = c {
                 Ok(CharObject::new(c))
             } else {
@@ -623,13 +629,15 @@ pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> 
                 .contents
                 .write()?;
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            if val_b.val < 0 {
-                return Err(RuntimeError::index_oob_error("Negative index"));
+            let mut val = val_b.val;
+            if val < 0 {
+                val = (val_a.len() as u64 as i64) + val;
             }
-            if (val_b.val as u64 as usize) >= val_a.len() {
+            let val = val as u64 as usize;
+            if val >= val_a.len() {
                 return Err(RuntimeError::index_oob_error("Index out of bounds"));
             }
-            val_a[val_b.val as u64 as usize] = c;
+            val_a[val] = c;
             Ok(())
         }
         (a, b)
@@ -643,13 +651,14 @@ pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> 
                 .val
                 .write()?;
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let index = val_b.val as u64 as usize;
+            let mut val = val_b.val;
+            if val < 0 {
+                val = (val_a.len() as u64 as i64) + val;
+            }
+            let index = val as u64 as usize;
             let val_c = c.as_any().downcast_ref::<CharObject>().unwrap();
             let ch = val_c.val;
-            if val_b.val < 0 {
-                return Err(RuntimeError::index_oob_error("Negative index"));
-            }
-            if (val_b.val as u64 as usize) >= val_a.len() {
+            if index >= val_a.len() {
                 return Err(RuntimeError::index_oob_error("Index out of bounds"));
             }
             val_a.replace_range(index..index + 1, &ch.to_string());

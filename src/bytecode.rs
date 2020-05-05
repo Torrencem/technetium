@@ -657,7 +657,11 @@ impl<'code> Frame<'code> {
                     };
                     let start = self.stack.pop().unwrap();
                     let start = if start.as_any().type_id() == TypeId::of::<VoidObject>() {
-                        0
+                        if step < 0 {
+                            -1
+                        } else {
+                            0
+                        }
                     } else {
                         if let Some(int_obj) = start.as_any().downcast_ref::<IntObject>() {
                             int_obj.val

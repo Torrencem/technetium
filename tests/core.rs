@@ -354,3 +354,22 @@ print(s)
     Ok(())
 }
 
+#[test]
+fn test_negative_slicing() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    cmd.write_stdin(
+        r#"
+l = [0, 1, 2, 3, 4]
+
+print(l[:-1])
+print(l[1:-1])
+print(l[-2:])
+"#,
+    );
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("[0, 1, 2, 3]\n[1, 2, 3]\n[3, 4]\n"));
+    Ok(())
+}
+

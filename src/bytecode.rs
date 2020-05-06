@@ -645,7 +645,7 @@ impl<'code> Frame<'code> {
                         }
                     };
                     let stop = self.stack.pop().unwrap();
-                    let stop = if stop.as_any().type_id() == TypeId::of::<VoidObject>() {
+                    let mut stop = if stop.as_any().type_id() == TypeId::of::<VoidObject>() {
                         None
                     } else {
                         if let Some(int_obj) = stop.as_any().downcast_ref::<IntObject>() {
@@ -655,7 +655,7 @@ impl<'code> Frame<'code> {
                         }
                     };
                     let start = self.stack.pop().unwrap();
-                    let start = if start.as_any().type_id() == TypeId::of::<VoidObject>() {
+                    let mut start = if start.as_any().type_id() == TypeId::of::<VoidObject>() {
                         if step < 0 {
                             -1
                         } else {
@@ -669,6 +669,19 @@ impl<'code> Frame<'code> {
                         }
                     };
                     let parent = self.stack.pop().unwrap();
+                    let length = conversion::to_int(parent.call_method("length", &vec![])?)?;
+                    // Make slices like val[1:-1] work
+                    if let Some(end) = stop {
+                        if end < start && end < 0 && step > 0 {
+                            stop = Some(length + end);
+                        }
+                    }
+                    // Make slices like val[-2:] work
+                    if let None = stop {
+                        if start < 0 && step > 0 {
+                            start += length;
+                        }
+                    }
                     let slice = Slice {
                             parent,
                             start,

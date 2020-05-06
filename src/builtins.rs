@@ -220,25 +220,25 @@ pub fn mod_(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = IntObject::new(val_a.val % val_b.val);
+            let res = IntObject::new(val_a.val.rem_euclid(val_b.val));
             Ok(res)
         }
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<FloatObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
             let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = FloatObject::new((val_a.val as f64) % val_b.val);
+            let res = FloatObject::new((val_a.val as f64).rem_euclid(val_b.val));
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = FloatObject::new(val_a.val % (val_b.val as f64));
+            let res = FloatObject::new(val_a.val.rem_euclid(val_b.val as f64));
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
             let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
             let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = FloatObject::new(val_a.val % val_b.val);
+            let res = FloatObject::new(val_a.val.rem_euclid(val_b.val));
             Ok(res)
         }
         _ => Err(RuntimeError::type_error(format!(

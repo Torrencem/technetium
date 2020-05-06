@@ -91,7 +91,7 @@ func_object!(Ln, (1..=1), args -> {
     }
 });
 
-func_object!(Rcsin, (1..=1), args -> {
+func_object!(Arcsin, (1..=1), args -> {
     let arg_any = args[0].as_any();
     if let Some(float_obj) = arg_any.downcast_ref::<FloatObject>() {
         Ok(FloatObject::new(float_obj.val.asin()))
@@ -102,7 +102,7 @@ func_object!(Rcsin, (1..=1), args -> {
     }
 });
 
-func_object!(Rccos, (1..=1), args -> {
+func_object!(Arccos, (1..=1), args -> {
     let arg_any = args[0].as_any();
     if let Some(float_obj) = arg_any.downcast_ref::<FloatObject>() {
         Ok(FloatObject::new(float_obj.val.acos()))
@@ -113,7 +113,7 @@ func_object!(Rccos, (1..=1), args -> {
     }
 });
 
-func_object!(Rctan, (1..=1), args -> {
+func_object!(Arctan, (1..=1), args -> {
     let arg_any = args[0].as_any();
     if let Some(float_obj) = arg_any.downcast_ref::<FloatObject>() {
         Ok(FloatObject::new(float_obj.val.atan()))

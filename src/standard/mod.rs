@@ -57,9 +57,9 @@ pub fn get_default_namespace() -> HashMap<GlobalConstantDescriptor, ObjectRef> {
         res.insert((STANDARD_CONTEXT_ID, 11), Rc::new(math::Sqrt));
         res.insert((STANDARD_CONTEXT_ID, 12), Rc::new(math::Exp));
         res.insert((STANDARD_CONTEXT_ID, 13), Rc::new(math::Ln));
-        res.insert((STANDARD_CONTEXT_ID, 14), Rc::new(math::Rcsin));
-        res.insert((STANDARD_CONTEXT_ID, 15), Rc::new(math::Rccos));
-        res.insert((STANDARD_CONTEXT_ID, 16), Rc::new(math::Rctan));
+        res.insert((STANDARD_CONTEXT_ID, 14), Rc::new(math::Arcsin));
+        res.insert((STANDARD_CONTEXT_ID, 15), Rc::new(math::Arccos));
+        res.insert((STANDARD_CONTEXT_ID, 16), Rc::new(math::Arctan));
         res.insert((STANDARD_CONTEXT_ID, 17), Rc::new(special_funcs::Type));
         res.insert((STANDARD_CONTEXT_ID, 18), Rc::new(conversion::String_));
         res.insert((STANDARD_CONTEXT_ID, 19), Rc::new(special_funcs::Clone_));

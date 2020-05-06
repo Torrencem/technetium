@@ -13,3 +13,4 @@ rush: A Sleek Modern Bash-alike
    intro
    types/core
    types/shell
+   standard/math

@@ -198,11 +198,6 @@ Sum: Expr = {
 		vec![t1, t2],
 		l, r,
 	)),
-	<l:@L> "-" <t: Term> <r:@R> => Expr::FuncCall(FuncCall::new(
-		Identifier::new("<neg>".to_string(), l, r),
-		vec![t],
-		l, r,
-	)),
 };
 
 Term: Expr = {
@@ -227,6 +222,11 @@ Term: Expr = {
 BaseExpr: Expr = {
 	<a: AttrableExpr> => a,
 	<p: PreOp> => Expr::PostPreOp(p),
+	<l:@L> "-" <t: AttrableExpr> <r:@R> => Expr::FuncCall(FuncCall::new(
+		Identifier::new("<neg>".to_string(), l, r),
+		vec![t],
+		l, r,
+	)),
 };
 
 AttrableExpr: Expr = {

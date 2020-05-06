@@ -54,3 +54,46 @@ html_theme = 'alabaster'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 master_doc = 'index'
+
+from pygments.lexer import RegexLexer
+from pygments.token import *
+# from technetium_lexer import TechnetiumLexer
+class TechnetiumLexer(RegexLexer):
+    name = 'Technetium'
+    aliases = ['technetium', 'tech', 'tc']
+    filenames = ['*.tc']
+
+    tokens = {
+        'root': [
+            (r'false|true|if|else|elif|for|in|while|case|of|func|return', Keyword),
+            (r'\d+\.?\d*', Number),
+            (r'\=\>|\<\=|\>\=|\!\=|\=\=|\|\||\&\&|\+\=|\-\=|\*\=|\/\=|\%\=|\*|\/|\+|\-|\%|\:\|\>|\<|\=|\~|\[|\]|\:', Operator),
+            (r'\{|\}|\(|\)|\.|,', Punctuation),
+            (r'\s+', Text),
+            (r'#.*?$', Comment),
+            ('\'', String.Char, 'char'),
+            (r'"', String, 'string'),
+            (r'\$', Operator, 'shell'),
+            (r'\w[\w0-9]*', Name),
+        ],
+        'string': [
+            (r'[^"\\]+', String),
+            (r'\\"', String.Escape),
+            (r'"', String, '#pop'),
+        ],
+        'char': [
+            (r"[^'\\]+", String.Char),
+            (r"\\'", String.Escape),
+            (r"'", String.Char, '#pop'),
+        ],
+        'shell': [
+            (r'\\{', String.Escape),
+            (r'\{|\}', Punctuation),
+            (r'[^\n\{\}\\]+', String.Affix),
+            (r'\n', Text, '#pop'),
+        ],
+    }
+
+highlight_language = "technetium"
+from sphinx.highlighting import lexers
+lexers['technetium'] = TechnetiumLexer(startinline=True)

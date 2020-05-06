@@ -1,7 +1,8 @@
 
 This is a rough todo list of features I need to add to the language:
 
-* write lexer (https://pygments.org/docs/lexerdevelopment/) for use with docs
+* .kill() method for sh objects
+* builtin method documentation (i.e. os(), linux_distro())
 * s[:-1]
 * dictionaries
 * use bigint

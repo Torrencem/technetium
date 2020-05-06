@@ -12,7 +12,6 @@ Introduction to rush
 The Shell Operator
 ------------------
 
-.. highlight:: bash
 
 Technetium is designed around making accessing shell commands as easy as possible. The core of this design is the shell operator ($). If you begin a line with the shell operator, it will be run on the command line::
 
@@ -21,15 +20,11 @@ Technetium is designed around making accessing shell commands as easy as possibl
 
 This code, when run, will invoke the ``echo`` command, substituting the value of the expression ``my_name``, which has the effect of printing out ``matt`` to the console.
 
-.. highlight:: python
-
 The shell operator makes it very easy to write long chains of commands in a similar style to a bash script. Similar to bash, each command will run synchronously and in the foreground. The ``sh`` function can be used to create process objects, which can be assigned to variables, spawned in the background, or even passed to functions::
 
         delayed_command = sh("sleep 10 && echo Ten seconds have passed!")
         delayed_command.spawn()
         # ... do more work ...
-
-.. highlight:: typescript
 
 Technetium makes it very easy to surround shell code by easy to understand syntax::
 

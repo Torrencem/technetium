@@ -1,7 +1,6 @@
 
 This is a rough todo list of features I need to add to the language:
 
-* .kill() method for sh objects
 * builtin method documentation (i.e. os(), linux_distro())
 * dictionaries
 * use bigint

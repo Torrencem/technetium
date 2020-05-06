@@ -59,3 +59,7 @@ Shell Object Methods
 .. function:: [sh].exit_code()  [int]
 
     Returns the exit code of a finished process. Throws an error if the process has not finished; use ``.join()`` to make sure the process is finished first.
+
+.. function:: [sh].kill()  [void]
+
+    Sends a kill signal to a running proccess.

@@ -119,6 +119,16 @@ impl ShObject {
             Err(RuntimeError::type_error("Called exit_code() before process exited!"))
         }
     }
+
+    pub fn kill(&self) -> RuntimeResult<()> {
+        let mut child = self.child.write();
+        if let Some(ref mut child) = *child {
+            child.kill()?;
+            Ok(())
+        } else {
+            Err(RuntimeError::type_error("Called kill() on process that wasn't running!"))
+        }
+    }
 }
 
 impl Object for ShObject {
@@ -139,6 +149,7 @@ impl Object for ShObject {
             "stdout" => return Ok(self.stdout()?),
             "stderr" => return Ok(self.stderr()?),
             "exit_code" => return Ok(self.exit_code()?),
+            "kill" => self.kill()?,
             _ => return Err(RuntimeError::type_error("Unknown method")),
         }
 

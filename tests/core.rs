@@ -373,3 +373,24 @@ print(l[-2:])
     Ok(())
 }
 
+
+#[test]
+fn test_push_pop() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tc")?;
+    cmd.write_stdin(
+        r#"
+l = [0, 1, 2]
+
+l.push(100)
+print(l)
+l.pop()
+print(l)
+"#,
+    );
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("[0, 1, 2, 100]\n[0, 1, 2]\n"));
+    Ok(())
+}
+

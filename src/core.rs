@@ -428,6 +428,34 @@ impl Object for List {
                     Ok(IntObject::new(self.contents.read().len() as i64))
                 }
             }
+            "pop" => {
+                if args.len() > 0 {
+                    Err(RuntimeError::type_error("length expects 0 args"))
+                } else {
+                    Ok(Rc::clone(&self.contents.write().pop().ok_or(RuntimeError::index_oob_error("Popped an empty list"))?))
+                }
+            }
+            "push" => {
+                if args.len() != 1 {
+                    Err(RuntimeError::type_error("push expects 1 arg"))
+                } else {
+                    self.contents.write().push(Rc::clone(&args[0]));
+                    Ok(VoidObject::new())
+                }
+            }
+            "append" => {
+                if args.len() != 1 {
+                    Err(RuntimeError::type_error("append expects 1 arg"))
+                } else {
+                    let mut contents = self.contents.write();
+                    let mut iter = args[0].make_iter()?;
+
+                    while let Some(val) = iter.take_iter()? {
+                        contents.push(val);
+                    }
+                    Ok(VoidObject::new())
+                }
+            }
             _ => Err(RuntimeError::type_error(format!(
                 "list has no method {}",
                 method

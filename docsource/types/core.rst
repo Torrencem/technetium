@@ -62,6 +62,18 @@ List Methods
 
     Returns the length of the list
 
+.. function:: [list].push([object])  [void]
+
+    Push an object on the end of the list
+
+.. function:: [list].pop()  [object]
+
+    Remove and return the object at the end of the list
+
+.. function:: [list].append([iter])  [void]
+
+    Append all of the elements from an iterable to the list
+
 Tuple
 -----
 

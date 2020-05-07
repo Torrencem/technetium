@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'rush'
+project = 'technetium'
 copyright = '2020, Matt Torrence'
 author = 'Matt Torrence'
 

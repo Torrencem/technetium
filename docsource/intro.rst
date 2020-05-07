@@ -1,9 +1,9 @@
 
 .. _intro:
 
-====================
-Introduction to rush
-====================
+==========================
+Introduction to Technetium
+==========================
 
 .. contents:: Contents
     :local:

@@ -27,7 +27,7 @@ func_object_void!(Print, (0..), args -> {
 func_object!(Exit, (1..=1), args -> {
     let arg_any = args[0].as_any();
     if let Some(int_obj) = arg_any.downcast_ref::<IntObject>() {
-        exit(int_obj.val as i32)
+        exit(int_obj.to_i64()? as i32)
     } else {
         exit(if args[0].truthy() { 1 } else { 0 })
     }
@@ -99,7 +99,7 @@ func_object!(RangeFunc, (1..=3), args -> {
         if let Some(int_obj) = args[0].as_any().downcast_ref::<IntObject>() {
             Ok(Rc::new(Range { 
                 start: 0,
-                end: int_obj.val,
+                end: int_obj.to_i64()?,
                 step: 1,
             }))
         } else {
@@ -109,8 +109,8 @@ func_object!(RangeFunc, (1..=3), args -> {
         if let Some(int_obj_a) = args[0].as_any().downcast_ref::<IntObject>() {
             if let Some(int_obj_b) = args[1].as_any().downcast_ref::<IntObject>() {
                 Ok(Rc::new(Range {
-                    start: int_obj_a.val,
-                    end: int_obj_b.val,
+                    start: int_obj_a.to_i64()?,
+                    end: int_obj_b.to_i64()?,
                     step: 1,
                 }))
             } else {
@@ -124,9 +124,9 @@ func_object!(RangeFunc, (1..=3), args -> {
             if let Some(int_obj_b) = args[1].as_any().downcast_ref::<IntObject>() {
                 if let Some(int_obj_c) = args[2].as_any().downcast_ref::<IntObject>() {
                     Ok(Rc::new(Range {
-                        start: int_obj_a.val,
-                        end: int_obj_b.val,
-                        step: int_obj_c.val,
+                        start: int_obj_a.to_i64()?,
+                        end: int_obj_b.to_i64()?,
+                        step: int_obj_c.to_i64()?,
                     }))
                 } else {
                     Err(RuntimeError::type_error("Expected integer arguments to range"))

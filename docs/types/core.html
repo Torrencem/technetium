@@ -1,25 +1,24 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Core Types &#8212; technetium 0.1.0 documentation</title>
+    <meta charset="utf-8" />
+    <title>Core Types &#8212; rush 0.1.0 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Shell Objects" href="shell.html" />
     <link rel="prev" title="Introduction to Technetium" href="../intro.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
@@ -29,6 +28,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="core-types">
@@ -36,23 +37,26 @@
 <div class="contents local topic" id="contents">
 <p class="topic-title">Contents</p>
 <ul class="simple">
-<li><a class="reference internal" href="#string" id="id1">String</a><ul>
-<li><a class="reference internal" href="#format-literals" id="id2">Format Literals</a></li>
-<li><a class="reference internal" href="#string-methods" id="id3">String Methods</a></li>
+<li><p><a class="reference internal" href="#string" id="id1">String</a></p>
+<ul>
+<li><p><a class="reference internal" href="#format-literals" id="id2">Format Literals</a></p></li>
+<li><p><a class="reference internal" href="#string-methods" id="id3">String Methods</a></p></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#list" id="id4">List</a><ul>
-<li><a class="reference internal" href="#list-methods" id="id5">List Methods</a></li>
+<li><p><a class="reference internal" href="#list" id="id4">List</a></p>
+<ul>
+<li><p><a class="reference internal" href="#list-methods" id="id5">List Methods</a></p></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#tuple" id="id6">Tuple</a><ul>
-<li><a class="reference internal" href="#tuple-methods" id="id7">Tuple Methods</a></li>
+<li><p><a class="reference internal" href="#tuple" id="id6">Tuple</a></p>
+<ul>
+<li><p><a class="reference internal" href="#tuple-methods" id="id7">Tuple Methods</a></p></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#numeric-types-float-and-int" id="id8">Numeric Types (float and int)</a></li>
-<li><a class="reference internal" href="#boolean" id="id9">Boolean</a></li>
-<li><a class="reference internal" href="#char" id="id10">Char</a></li>
-<li><a class="reference internal" href="#slice" id="id11">Slice</a></li>
+<li><p><a class="reference internal" href="#numeric-types-float-and-int" id="id8">Numeric Types (float and int)</a></p></li>
+<li><p><a class="reference internal" href="#boolean" id="id9">Boolean</a></p></li>
+<li><p><a class="reference internal" href="#char" id="id10">Char</a></p></li>
+<li><p><a class="reference internal" href="#slice" id="id11">Slice</a></p></li>
 </ul>
 </div>
 <div class="section" id="string">
@@ -69,27 +73,27 @@
 </div>
 <div class="section" id="string-methods">
 <h3><a class="toc-backref" href="#id3">String Methods</a><a class="headerlink" href="#string-methods" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[string].length()  [int]</code></dt>
+<code class="sig-name descname">[string].length()  [int]</code></dt>
 <dd><p>Returns the length of the string.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[string].chars()  [chars]</code></dt>
+<code class="sig-name descname">[string].chars()  [chars]</code></dt>
 <dd><p>Returns an iterator over the characters in the string.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[string].lines()  [lines]</code></dt>
+<code class="sig-name descname">[string].lines()  [lines]</code></dt>
 <dd><p>Returns an iterator over the lines in the string. The lines can be seperated by either ‘\n’ or ‘\n\r’, and the strings returned will not contain any newlines.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[string].escape()  [string]</code></dt>
+<code class="sig-name descname">[string].escape()  [string]</code></dt>
 <dd><p>Returns an “escaped” version of this string. The escaped version will replace non-printable characters such as newlines and tabs with escape codes such as ‘\n’ and ‘\t’ respectively.</p>
 </dd></dl>
 
@@ -107,27 +111,27 @@
 </div>
 <div class="section" id="list-methods">
 <h3><a class="toc-backref" href="#id5">List Methods</a><a class="headerlink" href="#list-methods" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[list].length()  [int]</code></dt>
+<code class="sig-name descname">[list].length()  [int]</code></dt>
 <dd><p>Returns the length of the list</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[list].push([object])  [void]</code></dt>
+<code class="sig-name descname">[list].push([object])  [void]</code></dt>
 <dd><p>Push an object on the end of the list</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[list].pop()  [object]</code></dt>
+<code class="sig-name descname">[list].pop()  [object]</code></dt>
 <dd><p>Remove and return the object at the end of the list</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[list].append([iter])  [void]</code></dt>
+<code class="sig-name descname">[list].append([iter])  [void]</code></dt>
 <dd><p>Append all of the elements from an iterable to the list</p>
 </dd></dl>
 
@@ -138,9 +142,9 @@
 <p>Tuples are similar to lists, except that they are immutable. A tuple is typically expected to be a fixed length container, where the type of each part is known in advanced, but this is not enforced. Tuples are constructed through parenthetic <code class="docutils literal notranslate"><span class="pre">()</span></code> literals, similar to lists, and can similarly be indexed, but cannot be changed once constructed.</p>
 <div class="section" id="tuple-methods">
 <h3><a class="toc-backref" href="#id7">Tuple Methods</a><a class="headerlink" href="#tuple-methods" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[tuple].length()  [int]</code></dt>
+<code class="sig-name descname">[tuple].length()  [int]</code></dt>
 <dd><p>Returns the number of elements in the tuple</p>
 </dd></dl>
 
@@ -148,7 +152,7 @@
 </div>
 <div class="section" id="numeric-types-float-and-int">
 <h2><a class="toc-backref" href="#id8">Numeric Types (float and int)</a><a class="headerlink" href="#numeric-types-float-and-int" title="Permalink to this headline">¶</a></h2>
-<p>Numerical types can be constructed through literals, or through their respective <code class="docutils literal notranslate"><span class="pre">float</span></code> and <code class="docutils literal notranslate"><span class="pre">int</span></code> conversion functions. Integers and floats can be operated together, and the result will be a float. Floats are internally 64-bit double precision floating point numbers.</p>
+<p>Numerical types can be constructed through literals, or through their respective <code class="docutils literal notranslate"><span class="pre">float</span></code> and <code class="docutils literal notranslate"><span class="pre">int</span></code> conversion functions. Integers and floats can be operated together, and the result will be a float. Floats are internally 64-bit double precision floating point numbers, and integers are arbitrary sized. Using an integer that is outside the set of values representable by a 64-bit integer as an index or in a slice will throw an error.</p>
 </div>
 <div class="section" id="boolean">
 <h2><a class="toc-backref" href="#id9">Boolean</a><a class="headerlink" href="#boolean" title="Permalink to this headline">¶</a></h2>
@@ -178,6 +182,7 @@
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -221,17 +226,23 @@
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -240,8 +251,8 @@
       &copy;2020, Matt Torrence.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="../_sources/types/core.rst.txt"

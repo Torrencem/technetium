@@ -86,3 +86,20 @@ print(l)
     Ok(())
 }
 
+#[test]
+fn test_list_tuple_eq() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tc")?;
+    cmd.write_stdin(
+        r#"
+print((1, 2) == (1, 2))
+print((1, 2) == (1, 3))
+print([1, 2, 3] == [1])
+print([1, 2, [3, [4]]] == [1, 2, [3, [4]]])
+"#,
+    );
+
+    cmd.assert().success().stdout(predicate::eq("true\nfalse\nfalse\ntrue\n"));
+
+    Ok(())
+}
+

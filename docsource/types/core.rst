@@ -90,7 +90,7 @@ Tuple Methods
 Numeric Types (float and int)
 -----------------------------
 
-Numerical types can be constructed through literals, or through their respective ``float`` and ``int`` conversion functions. Integers and floats can be operated together, and the result will be a float. Floats are internally 64-bit double precision floating point numbers.
+Numerical types can be constructed through literals, or through their respective ``float`` and ``int`` conversion functions. Integers and floats can be operated together, and the result will be a float. Floats are internally 64-bit double precision floating point numbers, and integers are arbitrary sized. Using an integer that is outside the set of values representable by a 64-bit integer as an index or in a slice will throw an error.
 
 
 Boolean

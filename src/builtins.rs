@@ -3,6 +3,10 @@ use crate::error::*;
 use std::any::TypeId;
 use parking_lot::RwLock;
 use std::rc::Rc;
+use num::bigint::BigInt;
+use num::traits::identities::One;
+use num::traits::identities::Zero;
+use num::traits::ToPrimitive;
 
 pub fn add(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
@@ -11,19 +15,19 @@ pub fn add(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = IntObject::new(val_a.val + val_b.val);
+            let res = IntObject::new_big(val_a.val.clone() + val_b.val.clone());
             Ok(res)
         }
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<FloatObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
             let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = FloatObject::new((val_a.val as f64) + val_b.val);
+            let res = FloatObject::new((val_a.to_i64()? as f64) + val_b.val);
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = FloatObject::new(val_a.val + (val_b.val as f64));
+            let res = FloatObject::new(val_a.val + (val_b.to_i64()? as f64));
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
@@ -70,19 +74,19 @@ pub fn sub(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = IntObject::new(val_a.val - val_b.val);
+            let res = IntObject::new_big(val_a.val.clone() - val_b.val.clone());
             Ok(res)
         }
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<FloatObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
             let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = FloatObject::new((val_a.val as f64) - val_b.val);
+            let res = FloatObject::new((val_a.to_i64()? as f64) - val_b.val);
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = FloatObject::new(val_a.val - (val_b.val as f64));
+            let res = FloatObject::new(val_a.val - (val_b.to_i64()? as f64));
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
@@ -106,19 +110,19 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = IntObject::new(val_a.val * val_b.val);
+            let res = IntObject::new_big(val_a.val.clone() * val_b.val.clone());
             Ok(res)
         }
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<FloatObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
             let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = FloatObject::new((val_a.val as f64) * val_b.val);
+            let res = FloatObject::new((val_a.to_i64()? as f64) * val_b.val);
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = FloatObject::new(val_a.val * (val_b.val as f64));
+            let res = FloatObject::new(val_a.val * (val_b.to_i64()? as f64));
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
@@ -131,7 +135,7 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let val_a = a_any.downcast_ref::<List>().unwrap().contents.read();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
             let mut res: Vec<ObjectRef> = vec![];
-            for _ in (0..val_b.val) {
+            for _ in (0..val_b.to_i64()?) {
                 for obj_ref in val_a.iter() {
                     res.push(Rc::clone(obj_ref));
                 }
@@ -142,7 +146,7 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
             let val_b = b_any.downcast_ref::<List>().unwrap().contents.read();
             let mut res: Vec<ObjectRef> = vec![];
-            for _ in (0..val_a.val) {
+            for _ in (0..val_a.to_i64()?) {
                 for obj_ref in val_b.iter() {
                     res.push(Rc::clone(obj_ref));
                 }
@@ -162,7 +166,7 @@ pub fn negate(a: ObjectRef) -> RuntimeResult<ObjectRef> {
     match a_any.type_id() {
         a if a == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
-            let res = IntObject::new(-val_a.val);
+            let res = IntObject::new_big(-val_a.val.clone());
             Ok(res)
         }
         a if a == TypeId::of::<FloatObject>() => {
@@ -184,19 +188,19 @@ pub fn div(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = IntObject::new(val_a.val / val_b.val);
+            let res = IntObject::new_big(val_a.val.clone() / val_b.val.clone());
             Ok(res)
         }
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<FloatObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
             let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = FloatObject::new((val_a.val as f64) / val_b.val);
+            let res = FloatObject::new((val_a.to_i64()? as f64) / val_b.val);
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = FloatObject::new(val_a.val / (val_b.val as f64));
+            let res = FloatObject::new(val_a.val / (val_b.to_i64()? as f64));
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
@@ -220,19 +224,19 @@ pub fn mod_(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = IntObject::new(val_a.val.rem_euclid(val_b.val));
+            let res = IntObject::new_big(val_a.val.modpow(&BigInt::one(), &val_b.val));
             Ok(res)
         }
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<FloatObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
             let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = FloatObject::new((val_a.val as f64).rem_euclid(val_b.val));
+            let res = FloatObject::new((val_a.to_i64()? as f64).rem_euclid(val_b.val));
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = FloatObject::new(val_a.val.rem_euclid(val_b.val as f64));
+            let res = FloatObject::new(val_a.val.rem_euclid(val_b.to_i64()? as f64));
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
@@ -286,13 +290,13 @@ pub fn cmp_lt(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<FloatObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
             let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = BoolObject::new((val_a.val as f64) < val_b.val);
+            let res = BoolObject::new((val_a.to_i64()? as f64) < val_b.val);
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = BoolObject::new(val_a.val < (val_b.val as f64));
+            let res = BoolObject::new(val_a.val < (val_b.to_i64()? as f64));
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
@@ -328,13 +332,13 @@ pub fn cmp_gt(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<FloatObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
             let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = BoolObject::new((val_a.val as f64) > val_b.val);
+            let res = BoolObject::new((val_a.to_i64()? as f64) > val_b.val);
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = BoolObject::new(val_a.val > (val_b.val as f64));
+            let res = BoolObject::new(val_a.val > (val_b.to_i64()? as f64));
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
@@ -370,13 +374,13 @@ pub fn cmp_eq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<FloatObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
             let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = BoolObject::new((val_a.val as f64) == val_b.val);
+            let res = BoolObject::new((val_a.to_i64()? as f64) == val_b.val);
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = BoolObject::new(val_a.val == (val_b.val as f64));
+            let res = BoolObject::new(val_a.val == (val_b.to_i64()? as f64));
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
@@ -394,12 +398,52 @@ pub fn cmp_eq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a_, b_) if a_ == TypeId::of::<StringObject>() && b_ == TypeId::of::<StringObject>() => {
             let val_a = a_any.downcast_ref::<StringObject>().unwrap();
             let val_b = b_any.downcast_ref::<StringObject>().unwrap();
-            // Check for alias to avoid deadlock
+            // Check for alias for speed (.read() .read() shouldn't deadlock)
             if Rc::ptr_eq(&a, &b) {
                 Ok(BoolObject::new(true))
             } else {
                 let res = BoolObject::new(*val_a.val.read() == *val_b.val.read());
                 Ok(res)
+            }
+        }
+        (a_, b_) if a_ == TypeId::of::<List>() && b_ == TypeId::of::<List>() => {
+            let val_a = a_any.downcast_ref::<List>().unwrap();
+            let val_b = b_any.downcast_ref::<List>().unwrap();
+            if Rc::ptr_eq(&a, &b) {
+                Ok(BoolObject::new(true))
+            } else {
+                let list_1 = val_a.contents.read();
+                let list_2 = val_b.contents.read();
+                if list_1.len() != list_2.len() {
+                    return Ok(BoolObject::new(false));
+                }
+                for (index, obj_ref_1) in list_1.iter().enumerate() {
+                    let obj_ref_2 = list_2.get(index).unwrap();
+                    if !cmp_eq(Rc::clone(obj_ref_1), Rc::clone(obj_ref_2))?.truthy() {
+                        return Ok(BoolObject::new(false));
+                    }
+                }
+                Ok(BoolObject::new(true))
+            }
+        }
+        (a_, b_) if a_ == TypeId::of::<Tuple>() && b_ == TypeId::of::<Tuple>() => {
+            let val_a = a_any.downcast_ref::<Tuple>().unwrap();
+            let val_b = b_any.downcast_ref::<Tuple>().unwrap();
+            if Rc::ptr_eq(&a, &b) {
+                Ok(BoolObject::new(true))
+            } else {
+                let list_1 = &val_a.contents;
+                let list_2 = &val_b.contents;
+                if list_1.len() != list_2.len() {
+                    return Ok(BoolObject::new(false));
+                }
+                for (index, obj_ref_1) in list_1.iter().enumerate() {
+                    let obj_ref_2 = list_2.get(index).unwrap();
+                    if !cmp_eq(Rc::clone(obj_ref_1), Rc::clone(obj_ref_2))?.truthy() {
+                        return Ok(BoolObject::new(false));
+                    }
+                }
+                Ok(BoolObject::new(true))
             }
         }
         _ => Err(RuntimeError::type_error(format!(
@@ -423,13 +467,13 @@ pub fn cmp_neq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<FloatObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
             let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = BoolObject::new((val_a.val as f64) != val_b.val);
+            let res = BoolObject::new((val_a.to_i64()? as f64) != val_b.val);
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = BoolObject::new(val_a.val != (val_b.val as f64));
+            let res = BoolObject::new(val_a.val != (val_b.to_i64()? as f64));
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
@@ -455,6 +499,12 @@ pub fn cmp_neq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
                 Ok(res)
             }
         }
+        (a_, b_) if a_ == TypeId::of::<List>() && b_ == TypeId::of::<List>() => {
+            Ok(BoolObject::new(!cmp_eq(a, b)?.truthy()))
+        }
+        (a_, b_) if a_ == TypeId::of::<Tuple>() && b_ == TypeId::of::<Tuple>() => {
+            Ok(BoolObject::new(!cmp_eq(a, b)?.truthy()))
+        }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot equate type {} to type {}",
             a.technetium_type_name(),
@@ -476,13 +526,13 @@ pub fn cmp_leq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<FloatObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
             let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = BoolObject::new((val_a.val as f64) <= val_b.val);
+            let res = BoolObject::new((val_a.to_i64()? as f64) <= val_b.val);
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = BoolObject::new(val_a.val <= (val_b.val as f64));
+            let res = BoolObject::new(val_a.val <= (val_b.to_i64()? as f64));
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
@@ -518,13 +568,13 @@ pub fn cmp_geq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<FloatObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
             let val_b = b_any.downcast_ref::<FloatObject>().unwrap();
-            let res = BoolObject::new((val_a.val as f64) >= val_b.val);
+            let res = BoolObject::new((val_a.to_i64()? as f64) >= val_b.val);
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<FloatObject>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let res = BoolObject::new(val_a.val >= (val_b.val as f64));
+            let res = BoolObject::new(val_a.val >= (val_b.to_i64()? as f64));
             Ok(res)
         }
         (a, b) if a == TypeId::of::<FloatObject>() && b == TypeId::of::<FloatObject>() => {
@@ -558,11 +608,11 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
                 .contents
                 .read();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let mut val = val_b.val;
-            if val < 0 {
+            let mut val = val_b.val.clone();
+            if val < BigInt::zero() {
                 val = (val_a.len() as u64 as i64) + val;
             }
-            let val = val as u64 as usize;
+            let val = val.to_usize().ok_or_else(|| RuntimeError::index_oob_error("Index out of bounds"))?;
             if val >= val_a.len() {
                 return Err(RuntimeError::index_oob_error("Index out of bounds"));
             }
@@ -572,11 +622,11 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a, b) if a == TypeId::of::<Tuple>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<Tuple>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let mut val = val_b.val;
-            if val < 0 {
+            let mut val = val_b.val.clone();
+            if val < BigInt::zero() {
                 val = (val_a.contents.len() as u64 as i64) + val;
             }
-            let val = val as u64 as usize;
+            let val = val.to_usize().ok_or_else(|| RuntimeError::index_oob_error("Index out of bounds"))?;
             if (val as u64 as usize) >= val_a.contents.len() {
                 return Err(RuntimeError::index_oob_error("Index out of bounds"));
             }
@@ -586,11 +636,11 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a, b) if a == TypeId::of::<StringObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<StringObject>().unwrap();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let mut val = val_b.val;
-            if val < 0 {
+            let mut val = val_b.val.clone();
+            if val < BigInt::zero() {
                 val = (val_a.val.read().len() as u64 as i64) + val;
             }
-            let val = val as u64 as usize;
+            let val = val.to_usize().ok_or_else(|| RuntimeError::index_oob_error("Index out of bounds"))?;
             let c = val_a
                 .val
                 .read()
@@ -606,9 +656,9 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         }
         (a, b) if a == TypeId::of::<Slice>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<Slice>().unwrap();
-            let val_b = b_any.downcast_ref::<IntObject>().unwrap().val;
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap().val.clone();
             let index = val_a.start + val_b * val_a.step;
-            index_get(Rc::clone(&val_a.parent), IntObject::new(index))
+            index_get(Rc::clone(&val_a.parent), IntObject::new_big(index))
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot index type {} with type {}",
@@ -629,11 +679,11 @@ pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> 
                 .contents
                 .write();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let mut val = val_b.val;
-            if val < 0 {
+            let mut val = val_b.val.clone();
+            if val < BigInt::zero() {
                 val = (val_a.len() as u64 as i64) + val;
             }
-            let val = val as u64 as usize;
+            let val = val.to_usize().ok_or_else(|| RuntimeError::index_oob_error("Index out of bounds"))?;
             if val >= val_a.len() {
                 return Err(RuntimeError::index_oob_error("Index out of bounds"));
             }
@@ -651,11 +701,11 @@ pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> 
                 .val
                 .write();
             let val_b = b_any.downcast_ref::<IntObject>().unwrap();
-            let mut val = val_b.val;
-            if val < 0 {
+            let mut val = val_b.val.clone();
+            if val < BigInt::zero() {
                 val = (val_a.len() as u64 as i64) + val;
             }
-            let index = val as u64 as usize;
+            let index = val.to_usize().ok_or_else(|| RuntimeError::index_oob_error("Index out of bounds"))?;
             let val_c = c.as_any().downcast_ref::<CharObject>().unwrap();
             let ch = val_c.val;
             if index >= val_a.len() {
@@ -666,9 +716,9 @@ pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> 
         }
         (a, b) if a == TypeId::of::<Slice>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<Slice>().unwrap();
-            let val_b = b_any.downcast_ref::<IntObject>().unwrap().val;
+            let val_b = b_any.downcast_ref::<IntObject>().unwrap().val.clone();
             let index = val_a.start + val_b * val_a.step;
-            index_set(Rc::clone(&val_a.parent), IntObject::new(index), c)
+            index_set(Rc::clone(&val_a.parent), IntObject::new_big(index), c)
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot index type {} with type {}",

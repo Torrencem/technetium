@@ -12,6 +12,8 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use parking_lot::RwLock;
 use std::ops::{Deref, DerefMut};
+use num::bigint::{BigInt, ToBigInt};
+use num::cast::ToPrimitive;
 
 use dtoa;
 
@@ -139,19 +141,28 @@ impl Object for BoolObject {
 }
 
 pub struct IntObject {
-    pub val: i64,
+    pub val: BigInt,
 }
 
 impl IntObject {
     pub fn new(val: i64) -> ObjectRef {
+        let res = Rc::new(IntObject { val: val.to_bigint().unwrap() });
+        res
+    }
+
+    pub fn new_big(val: BigInt) -> ObjectRef {
         let res = Rc::new(IntObject { val });
         res
+    }
+
+    pub fn to_i64(&self) -> RuntimeResult<i64> {
+        self.val.to_i64().ok_or_else(|| RuntimeError::index_too_big_error("Tried to use a bigint of too large size as 64-bit integer"))
     }
 }
 
 impl Object for IntObject {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        Ok(IntObject::new(self.val))
+        Ok(IntObject::new_big(self.val.clone()))
     }
 
     fn technetium_type_name(&self) -> String {
@@ -163,7 +174,7 @@ impl Object for IntObject {
     }
 
     fn truthy(&self) -> bool {
-        self.val != 0
+        self.val != 0.to_bigint().unwrap()
     }
 }
 

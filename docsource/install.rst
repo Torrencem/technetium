@@ -9,7 +9,7 @@ Installation
     :local:
     :depth: 2
 
-Technetium is distributed as a single binary, ``tc``. Pre-built binaries aren't yet available on any platform because of the speed of development
+Technetium is distributed as a single binary, ``tc``. Pre-built binaries aren't yet available.
 
 Building
 --------
@@ -18,4 +18,4 @@ To build, make sure you have cargo and rust installed. If not, follow `these ins
 
 Next, navigate to the root directory of the project. Run ``cargo build --release`` to create a release binary located at ``target/release/tc``.
 
-To build this documentation, first install sphinx-build using `the instructions here <https://www.sphinx-doc.org/en/master/usage/installation.html>`_. Then, use ``make html`` in the ``docsource`` directory, and the output will be in the ``docsource/_build`` directory.
+To build this documentation, first install sphinx-build using `the instructions here <https://www.sphinx-doc.org/en/master/usage/installation.html>`_. Then, run ``build_docs.sh`` from the main directory.

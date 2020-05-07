@@ -4,6 +4,8 @@
 
 Technetium is a sleek interpreted programming language that features inline shell statements, and other tools useful for short build / install scripts.
 
+[Documentation can be found here](http://matthewtorrence.com/technetium/)
+
 ## Features
 
 * Inline shell statements with very practical integration, and super-intuitive child process first-class objects via `sh`

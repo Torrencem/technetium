@@ -6,7 +6,7 @@ type TestError = Box<dyn std::error::Error>;
 
 #[test]
 fn attribute_error() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 x = 10
@@ -26,7 +26,7 @@ print(x.incorrect)
 
 #[test]
 fn method_error() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 x = 10
@@ -47,7 +47,7 @@ print(x.incorrect())
 
 #[test]
 fn index_oob() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 l = [1, 2, 3]
@@ -61,7 +61,7 @@ print(l[3])
         .stderr(predicate::str::contains("print(l[3])")) // Gives the correct line
         .stderr(predicate::str::contains("Index out of bounds")); // Mentions the variable
 
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 l = [1, 2, 3]
@@ -80,7 +80,7 @@ l[3] += 1
 
 #[test]
 fn unknown_variable() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 x = 10
@@ -99,7 +99,7 @@ print(y)
 
 #[test]
 fn unknown_variable2() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 x = 10
@@ -119,7 +119,7 @@ print(fib(x))
 
 #[test]
 fn recursive_format_error() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 
@@ -148,7 +148,7 @@ print(5)
 
 #[test]
 fn recursive_lex_error() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 
@@ -170,7 +170,7 @@ print(~"My name is not {my_name * 1.2.3}")
 
 #[test]
 fn recursive_parse_error() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 # more padding, to make sure offsets work correctly

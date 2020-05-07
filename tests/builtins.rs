@@ -5,7 +5,7 @@ type TestError = Box<dyn std::error::Error>;
 
 #[test]
 fn test_builtins() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 x = 5
@@ -53,7 +53,7 @@ if x < y || y < x {
 
 #[test]
 fn index_list_tuple() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 print([1, 2, 3, "hello"][0])
@@ -72,7 +72,7 @@ print(("we", 123.01, 999)[2])
 
 #[test]
 fn test_list_arith() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 l = [1] * 3 + [2] * 3

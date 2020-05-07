@@ -5,7 +5,7 @@ type TestError = Box<dyn std::error::Error>;
 
 #[test]
 fn index_set() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 l = [1, 2, 3]
@@ -18,7 +18,7 @@ print(l[0])
 
     cmd.assert().success().stdout(predicate::eq("Pie\n"));
 
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 l = [1, "w", 3]
@@ -36,7 +36,7 @@ print(l[2])
 
 #[test]
 fn test_range() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 for i in range(5) {
@@ -82,7 +82,7 @@ for i in range(10, 100, 10) {
 
 #[test]
 fn test_no_string_deadlock() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 a = "hello"
@@ -102,7 +102,7 @@ print(a != b)
 
 #[test]
 fn test_bool_literals() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 print(false && true)
@@ -121,7 +121,7 @@ print(false || true)
 
 #[test]
 fn test_char_indexing() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 my_name = "matt"
@@ -139,7 +139,7 @@ print(my_name[2])
 
 #[test]
 fn test_clone() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 a = "Hello"
@@ -153,7 +153,7 @@ print(a)
 
     cmd.assert().success().stdout(predicate::eq("Hello\n"));
 
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 a = "Hello"
@@ -172,7 +172,7 @@ print(a)
 
 #[test]
 fn test_conversions() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 f = 3.14
@@ -193,7 +193,7 @@ print(bool(f) && bool(i) && bool(s) && bool(si))
 
 #[test]
 fn test_char_conversions() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 c = '💯'
@@ -210,7 +210,7 @@ print(char(int(c)))
 
 #[test]
 fn test_escape() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 s = "random\t\"string\"\n\n"
@@ -226,7 +226,7 @@ print(s.escape())
 
 #[test]
 fn test_slices() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 list = [1, 2, 5, 10]
@@ -240,7 +240,7 @@ print(list[2:-1:-1])
 
     cmd.assert().success().stdout(predicate::eq("[1, 5]\n[2, 10]\n[1, 2, 5]\n[5, 2, 1]\n"));
     
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 list = [1, 2, 5, 10]
@@ -258,7 +258,7 @@ print(list)
 
 #[test]
 fn test_lines() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+    let mut cmd = Command::cargo_bin("tc")?;
     cmd.write_stdin(
         r#"
 s = "abc\n123\nj\n"

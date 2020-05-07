@@ -398,12 +398,52 @@ pub fn cmp_eq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a_, b_) if a_ == TypeId::of::<StringObject>() && b_ == TypeId::of::<StringObject>() => {
             let val_a = a_any.downcast_ref::<StringObject>().unwrap();
             let val_b = b_any.downcast_ref::<StringObject>().unwrap();
-            // Check for alias to avoid deadlock
+            // Check for alias for speed (.read() .read() shouldn't deadlock)
             if Rc::ptr_eq(&a, &b) {
                 Ok(BoolObject::new(true))
             } else {
                 let res = BoolObject::new(*val_a.val.read() == *val_b.val.read());
                 Ok(res)
+            }
+        }
+        (a_, b_) if a_ == TypeId::of::<List>() && b_ == TypeId::of::<List>() => {
+            let val_a = a_any.downcast_ref::<List>().unwrap();
+            let val_b = b_any.downcast_ref::<List>().unwrap();
+            if Rc::ptr_eq(&a, &b) {
+                Ok(BoolObject::new(true))
+            } else {
+                let list_1 = val_a.contents.read();
+                let list_2 = val_b.contents.read();
+                if list_1.len() != list_2.len() {
+                    return Ok(BoolObject::new(false));
+                }
+                for (index, obj_ref_1) in list_1.iter().enumerate() {
+                    let obj_ref_2 = list_2.get(index).unwrap();
+                    if !cmp_eq(Rc::clone(obj_ref_1), Rc::clone(obj_ref_2))?.truthy() {
+                        return Ok(BoolObject::new(false));
+                    }
+                }
+                Ok(BoolObject::new(true))
+            }
+        }
+        (a_, b_) if a_ == TypeId::of::<Tuple>() && b_ == TypeId::of::<Tuple>() => {
+            let val_a = a_any.downcast_ref::<Tuple>().unwrap();
+            let val_b = b_any.downcast_ref::<Tuple>().unwrap();
+            if Rc::ptr_eq(&a, &b) {
+                Ok(BoolObject::new(true))
+            } else {
+                let list_1 = &val_a.contents;
+                let list_2 = &val_b.contents;
+                if list_1.len() != list_2.len() {
+                    return Ok(BoolObject::new(false));
+                }
+                for (index, obj_ref_1) in list_1.iter().enumerate() {
+                    let obj_ref_2 = list_2.get(index).unwrap();
+                    if !cmp_eq(Rc::clone(obj_ref_1), Rc::clone(obj_ref_2))?.truthy() {
+                        return Ok(BoolObject::new(false));
+                    }
+                }
+                Ok(BoolObject::new(true))
             }
         }
         _ => Err(RuntimeError::type_error(format!(
@@ -458,6 +498,12 @@ pub fn cmp_neq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
                 let res = BoolObject::new(*val_a.val.read() != *val_b.val.read());
                 Ok(res)
             }
+        }
+        (a_, b_) if a_ == TypeId::of::<List>() && b_ == TypeId::of::<List>() => {
+            Ok(BoolObject::new(!cmp_eq(a, b)?.truthy()))
+        }
+        (a_, b_) if a_ == TypeId::of::<Tuple>() && b_ == TypeId::of::<Tuple>() => {
+            Ok(BoolObject::new(!cmp_eq(a, b)?.truthy()))
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot equate type {} to type {}",

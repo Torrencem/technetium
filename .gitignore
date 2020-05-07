@@ -1,4 +1,4 @@
 /target
 .session.vim
 /_playground
-/docs/_build
+/docsource/_build

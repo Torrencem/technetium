@@ -4,6 +4,10 @@ version = "0.1.0"
 authors = ["Torrencem <matt@torrencefamily.net>"]
 edition = "2018"
 
+[[bin]]
+path = "src/main.rs"
+name = "tc"
+
 [build-dependencies]
 lalrpop = "0.18.1"
 

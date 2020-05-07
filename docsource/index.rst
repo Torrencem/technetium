@@ -3,14 +3,18 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-rush: A Sleek Modern Bash-alike
-================================
+Technetium: An interpreted shell scripting language
+===================================================
+
+Technetium is a programming language designed around making short configuration / install scripts through ease of use of the shell.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
+   install
    intro
    types/core
    types/shell
    standard/math
+   standard/utilities

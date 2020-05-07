@@ -6,6 +6,8 @@ Technetium is a sleek interpreted programming language that features inline shel
 
 [Documentation can be found here](https://matthewtorrence.com/technetium/)
 
+Since the project is still very young, all suggestions are welcome! A contributing guide with notes on internals and other considerations is to come.
+
 ## Features
 
 * Inline shell statements with very practical integration, and super-intuitive child process first-class objects via `sh`

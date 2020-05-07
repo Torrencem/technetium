@@ -1,21 +1,19 @@
 
 This is a rough todo list of features I need to add to the language:
 
+* == (builtin) for tuples and more types
 * dictionaries
 * comprehensions
 * lambdas
 * tertiery expressions (if blah then blah else blah)
-* add diagnostic message with some kind of full trace
-* list methods
+* add full stack trace to diagnostic message in src/error.rs
 * eval
 * .lines() clones; it could not, if Object methods took Rc<Self> instead of &self. (use nightly?)
-* run clippy
 * generators
-* pass variables as reference? (for swap)
-* multi-file programs (import from another file)
+* multi-file programs (import from another file) using "module" objects
 * make windows use cmd.exe instead of sh
 * standard library: get command line args
-* read string literal \u{blahblah}
+* unicode string literal \u{blahblah}
 * make it easy to round floats when printing (I might want to write my own dtoa that is better)
 * defer block
 * benchmarks

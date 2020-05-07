@@ -33,6 +33,7 @@ impl fmt::Display for RuntimeError {
 #[derive(Copy, Clone, Debug)]
 pub enum RuntimeErrorType {
     TypeError,
+    IntegerTooBigError,
     AttributeError,
     InternalError,
     IndexOutOfBounds,
@@ -103,6 +104,14 @@ impl RuntimeError {
     pub fn index_oob_error<S: ToString>(message: S) -> Self {
         RuntimeError {
             err: RuntimeErrorType::IndexOutOfBounds,
+            help: message.to_string(),
+            span: vec![],
+        }
+    }
+    
+    pub fn index_too_big_error<S: ToString>(message: S) -> Self {
+        RuntimeError {
+            err: RuntimeErrorType::IntegerTooBigError,
             help: message.to_string(),
             span: vec![],
         }

@@ -2,12 +2,12 @@
 This is a rough todo list of features I need to add to the language:
 
 * dictionaries
-* use bigint
 * comprehensions
 * lambdas
 * tertiery expressions (if blah then blah else blah)
 * add diagnostic message with some kind of full trace
 * list methods
+* eval
 * .lines() clones; it could not, if Object methods took Rc<Self> instead of &self. (use nightly?)
 * run clippy
 * generators

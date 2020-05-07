@@ -19,6 +19,8 @@ use std::fmt;
 
 use std::any::TypeId;
 
+use num::traits::ToPrimitive;
+
 use codespan::Span;
 
 pub type Bytecode = Vec<Op>;
@@ -639,7 +641,7 @@ impl<'code> Frame<'code> {
                         1
                     } else {
                         if let Some(int_obj) = step.as_any().downcast_ref::<IntObject>() {
-                            int_obj.val
+                            int_obj.to_i64()?
                         } else {
                             return Err(RuntimeError::type_error("Slice created with non-integer argument"));
                         }
@@ -649,7 +651,7 @@ impl<'code> Frame<'code> {
                         None
                     } else {
                         if let Some(int_obj) = stop.as_any().downcast_ref::<IntObject>() {
-                            Some(int_obj.val)
+                            Some(int_obj.to_i64()?)
                         } else {
                             return Err(RuntimeError::type_error("Slice created with non-integer argument"));
                         }
@@ -663,13 +665,13 @@ impl<'code> Frame<'code> {
                         }
                     } else {
                         if let Some(int_obj) = start.as_any().downcast_ref::<IntObject>() {
-                            int_obj.val
+                            int_obj.to_i64()?
                         } else {
                             return Err(RuntimeError::type_error("Slice created with non-integer argument"));
                         }
                     };
                     let parent = self.stack.pop().unwrap();
-                    let length = conversion::to_int(parent.call_method("length", &vec![])?)?;
+                    let length = conversion::to_int(parent.call_method("length", &vec![])?)?.to_i64().unwrap();
                     // Make slices like val[1:-1] work
                     if let Some(end) = stop {
                         if end < start && end < 0 && step > 0 {

@@ -1,6 +1,7 @@
 
 This is a rough todo list of features I need to add to the language:
 
+* associate with each Op::debug(...) a FileIndex as well as a span, so that RuntimeError can keep track of file info
 * dictionaries
 * comprehensions
 * lambdas

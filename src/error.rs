@@ -1,8 +1,8 @@
 //! Lextime, Parsetime, Compiletime, and Runtime errors for technetium
-//!
 
 use crate::bytecode::Op;
 use crate::lexer::Tok;
+use crate::bytecode::DebugSymbol;
 use codespan::{FileId, Span};
 use codespan_reporting::diagnostic::{Diagnostic, Label};
 use std::fmt;
@@ -21,7 +21,7 @@ pub struct RuntimeError {
     /// A short description helping diagnose what caused the error
     pub help: String,
     /// The segment trace of user code where the error occured
-    pub span: Vec<Span>,
+    pub symbols: Vec<DebugSymbol>,
 }
 
 impl fmt::Display for RuntimeError {
@@ -51,7 +51,7 @@ impl From<sys_info::Error> for RuntimeError {
         RuntimeError {
             err: RuntimeErrorType::SysInfoError,
             help: error.to_string(),
-            span: vec![],
+            symbols: vec![],
         }
     }
 }
@@ -61,7 +61,7 @@ impl From<std::io::Error> for RuntimeError {
         RuntimeError {
             err: RuntimeErrorType::IOError,
             help: error.to_string(),
-            span: vec![],
+            symbols: vec![],
         }
     }
 }
@@ -71,7 +71,7 @@ impl<T> From<sync::PoisonError<T>> for RuntimeError {
         RuntimeError {
             err: RuntimeErrorType::PoisonError,
             help: error.to_string(),
-            span: vec![],
+            symbols: vec![],
         }
     }
 }
@@ -81,7 +81,7 @@ impl RuntimeError {
         RuntimeError {
             err: RuntimeErrorType::TypeError,
             help: message.to_string(),
-            span: vec![],
+            symbols: vec![],
         }
     }
 
@@ -89,7 +89,7 @@ impl RuntimeError {
         RuntimeError {
             err: RuntimeErrorType::AttributeError,
             help: message.to_string(),
-            span: vec![],
+            symbols: vec![],
         }
     }
 
@@ -97,7 +97,7 @@ impl RuntimeError {
         RuntimeError {
             err: RuntimeErrorType::InternalError,
             help: message.to_string(),
-            span: vec![],
+            symbols: vec![],
         }
     }
 
@@ -105,7 +105,7 @@ impl RuntimeError {
         RuntimeError {
             err: RuntimeErrorType::IndexOutOfBounds,
             help: message.to_string(),
-            span: vec![],
+            symbols: vec![],
         }
     }
     
@@ -113,7 +113,7 @@ impl RuntimeError {
         RuntimeError {
             err: RuntimeErrorType::IntegerTooBigError,
             help: message.to_string(),
-            span: vec![],
+            symbols: vec![],
         }
     }
 
@@ -121,27 +121,27 @@ impl RuntimeError {
         RuntimeError {
             err: RuntimeErrorType::ChildProcessError,
             help: message.to_string(),
-            span: vec![],
+            symbols: vec![],
         }
     }
 
     /// Attach a code location to an error, for reporting diagnostics to the user
-    pub fn attach_span(mut self, span: Span) -> Self {
-        self.span.push(span);
+    pub fn attach_span(mut self, debug: DebugSymbol) -> Self {
+        self.symbols.push(debug);
         RuntimeError {
             err: self.err,
             help: self.help,
-            span: self.span,
+            symbols: self.symbols,
         }
     }
 
     /// Create a diagnostic message from an error, for reporting to the user
     pub fn as_diagnostic<FileId>(&self, fileid: FileId) -> Diagnostic<FileId> {
         // TODO: use other spans in the stack
-        match self.span.get(0) {
-            Some(&span) => Diagnostic::error()
+        match self.symbols.get(0) {
+            Some(&symbol) => Diagnostic::error()
                 .with_message(format!("Runtime Error: {:?}", self.err))
-                .with_labels(vec![Label::primary(fileid, span).with_message(&self.help)]),
+                .with_labels(vec![Label::primary(fileid, symbol.location).with_message(&self.help)]),
             None => Diagnostic::error().with_message(&self.help),
         }
     }

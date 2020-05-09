@@ -23,6 +23,8 @@ use num::traits::ToPrimitive;
 
 use codespan::Span;
 
+use codespan::FileId;
+
 pub type Bytecode = Vec<Op>;
 pub type CompileResult = std::result::Result<Bytecode, CompileError>;
 
@@ -56,6 +58,20 @@ pub type NonLocalUnmappedName = (ContextId, u16);
 pub type NonLocalName = (FrameId, u16);
 pub type GlobalConstantDescriptor = (ContextId, u16);
 pub type DebugSpanDescriptor = u16;
+
+#[derive(Debug, Clone, Copy)]
+pub struct DebugSymbol {
+    pub file_id: FileId,
+    pub location: Span,
+}
+
+impl DebugSymbol {
+    pub fn new(file_id: FileId, location: Span) -> Self {
+        DebugSymbol {
+            file_id, location
+        }
+    }
+}
 
 #[allow(non_camel_case_types)]
 #[derive(Copy, Clone, Debug)]
@@ -177,7 +193,7 @@ pub enum Op {
 #[derive(Debug)]
 pub struct GlobalContext {
     pub constant_descriptors: HashMap<GlobalConstantDescriptor, ObjectRef>,
-    pub debug_descriptors: HashMap<DebugSpanDescriptor, Span>,
+    pub debug_descriptors: HashMap<DebugSpanDescriptor, DebugSymbol>,
 }
 
 #[derive(Debug)]
@@ -198,9 +214,9 @@ macro_rules! try_debug {
             .map_err(|e| match $debug_symb {
                 None => RuntimeError::from(e),
                 Some(debug_symb) => {
-                    let span = $this.global_context.debug_descriptors.get(&debug_symb);
-                    if let Some(span) = span {
-                        RuntimeError::from(e).attach_span(*span)
+                    let debug = $this.global_context.debug_descriptors.get(&debug_symb);
+                    if let Some(debug) = debug {
+                        RuntimeError::from(e).attach_span(*debug)
                     } else {
                         RuntimeError::from(e)
                     }

@@ -33,7 +33,7 @@ extern crate clap;
 use clap::{App, Arg, SubCommand};
 use std::io::{self, Read};
 
-use codespan_reporting::files::SimpleFiles;
+use codespan::Files;
 use codespan_reporting::term;
 use codespan_reporting::term::termcolor::{ColorChoice, StandardStream};
 
@@ -69,7 +69,7 @@ fn main() {
 
     logging::init(log_level);
 
-    let mut files = SimpleFiles::new();
+    let mut files = Files::new();
 
     let input: String = match matches.value_of("INPUT") {
         Some(file_name) => std::fs::read_to_string(file_name).expect("Error reading file"),
@@ -112,7 +112,7 @@ fn main() {
 
     trace!("Completed parsing. AST: {:?}", ast);
 
-    let mut manager = CompileManager::new();
+    let mut manager = CompileManager::new(file_id);
 
     trace!("Compiling code into bytecode representation");
 
@@ -137,7 +137,7 @@ fn main() {
 
     let global_context = bytecode::GlobalContext {
         constant_descriptors: compile_context.constant_descriptors,
-        debug_descriptors: compile_context.debug_span_descriptors,
+        debug_descriptors: compile_context.debug_symbol_descriptors,
     };
 
     let mut frame = bytecode::Frame::new(

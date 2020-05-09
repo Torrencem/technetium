@@ -20,21 +20,23 @@ fn is_exact_float(val: f64) -> bool {
 }
 
 pub struct CompileContext {
+    file_id: FileId,
     context_id: ContextId,
     gcd_last: u16,
     pub constant_descriptors: HashMap<GlobalConstantDescriptor, ObjectRef>,
     dcd_last: DebugSpanDescriptor,
-    pub debug_span_descriptors: HashMap<DebugSpanDescriptor, Span>,
+    pub debug_symbol_descriptors: HashMap<DebugSpanDescriptor, DebugSymbol>,
 }
 
 impl CompileContext {
-    pub fn new(context_id: ContextId) -> CompileContext {
+    pub fn new(context_id: ContextId, file_id: FileId) -> CompileContext {
         CompileContext {
+            file_id,
             context_id,
             gcd_last: 0,
             constant_descriptors: HashMap::new(),
             dcd_last: 0,
-            debug_span_descriptors: HashMap::new(),
+            debug_symbol_descriptors: HashMap::new(),
         }
     }
 
@@ -89,12 +91,12 @@ pub enum NameLookupResult {
 }
 
 impl CompileManager {
-    pub fn new() -> Self {
+    pub fn new(file_id: FileId) -> Self {
         let mut mem_manager = MemoryManager::new();
         let context_id = STANDARD_CONTEXT_ID + 1;
         mem_manager.register_context(context_id);
         CompileManager {
-            context_stack: vec![CompileContext::new(STANDARD_CONTEXT_ID + 1)],
+            context_stack: vec![CompileContext::new(STANDARD_CONTEXT_ID + 1, file_id)],
             local_index_last: 0,
             local_index: HashMap::new(),
             context_id_last: STANDARD_CONTEXT_ID + 2,
@@ -240,9 +242,10 @@ impl CompileManager {
         }
 
         let debug_descr = self.context().dsd_gen();
+        let file_id = self.context().file_id;
         self.context()
-            .debug_span_descriptors
-            .insert(debug_descr, ast.span);
+            .debug_symbol_descriptors
+            .insert(debug_descr, DebugSymbol::new(file_id, ast.span));
         res.push(Op::debug(debug_descr));
 
         res.push(Op::call_function(ast.arguments.len() as u8));
@@ -260,9 +263,10 @@ impl CompileManager {
         res.push(Op::push_const(const_descr));
 
         let debug_descr = self.context().dsd_gen();
+        let file_id = self.context().file_id;
         self.context()
-            .debug_span_descriptors
-            .insert(debug_descr, ast.span);
+            .debug_symbol_descriptors
+            .insert(debug_descr, DebugSymbol::new(file_id, ast.span));
         res.push(Op::debug(debug_descr));
 
         res.push(Op::get_attr);
@@ -283,9 +287,10 @@ impl CompileManager {
         }
 
         let debug_descr = self.context().dsd_gen();
+        let file_id = self.context().file_id;
         self.context()
-            .debug_span_descriptors
-            .insert(debug_descr, ast.span);
+            .debug_symbol_descriptors
+            .insert(debug_descr, DebugSymbol::new(file_id, ast.span));
         res.push(Op::debug(debug_descr));
 
         res.push(Op::call_method(ast.arguments.len() as u8));
@@ -321,9 +326,10 @@ impl CompileManager {
         res.append(&mut self.compile_expr(&*ast.index)?);
 
         let debug_descr = self.context().dsd_gen();
+        let file_id = self.context().file_id;
         self.context()
-            .debug_span_descriptors
-            .insert(debug_descr, ast.span);
+            .debug_symbol_descriptors
+            .insert(debug_descr, DebugSymbol::new(file_id, ast.span));
         res.push(Op::debug(debug_descr));
 
         res.push(Op::index_get);
@@ -334,9 +340,10 @@ impl CompileManager {
         let mut res = vec![];
 
         let debug_descr = self.context().dsd_gen();
+        let file_id = self.context().file_id;
         self.context()
-            .debug_span_descriptors
-            .insert(debug_descr, ast.span);
+            .debug_symbol_descriptors
+            .insert(debug_descr, DebugSymbol::new(file_id, ast.span));
 
         res.append(&mut self.compile_expr(&ast.val.as_expr())?);
 
@@ -405,9 +412,10 @@ impl CompileManager {
         res.append(&mut self.compile_expr(&ast.iter)?);
 
         let debug_descr = self.context().dsd_gen();
+        let file_id = self.context().file_id;
         self.context()
-            .debug_span_descriptors
-            .insert(debug_descr, ast.iter.span());
+            .debug_symbol_descriptors
+            .insert(debug_descr, DebugSymbol::new(file_id, ast.iter.span()));
         res.push(Op::debug(debug_descr));
 
         // Turn it into an iterator
@@ -482,9 +490,10 @@ impl CompileManager {
             res.push(Op::load(my_local));
             res.append(&mut self.compile_expr(&expr)?);
             let debug_descr = self.context().dsd_gen();
+            let file_id = self.context().file_id;
             self.context()
-                .debug_span_descriptors
-                .insert(debug_descr, expr.span());
+                .debug_symbol_descriptors
+                .insert(debug_descr, DebugSymbol::new(file_id, expr.span()));
             res.push(Op::debug(debug_descr));
             res.push(Op::cmp_neq);
             res.push(Op::cond_jmp(body.len() as i16 + 2));
@@ -510,7 +519,7 @@ impl CompileManager {
         
         let new_cid = self.context_id_gen();
         self.memory_manager.register_context(new_cid);
-        let mut sub_context = CompileContext::new(new_cid);
+        let mut sub_context = CompileContext::new(new_cid, self.context().file_id);
         for arg in ast.args.iter() {
             let name = self.local_name_gen();
             self.local_index
@@ -536,7 +545,7 @@ impl CompileManager {
         let finished_context = self.context_stack.pop().unwrap();
         let sub_context = GlobalContext {
             constant_descriptors: finished_context.constant_descriptors,
-            debug_descriptors: finished_context.debug_span_descriptors,
+            debug_descriptors: finished_context.debug_symbol_descriptors,
         };
         let function_obj = Function {
             nargs: ast.args.len(),
@@ -571,9 +580,10 @@ impl CompileManager {
             .constant_descriptors
             .insert(name_descr, StringObject::new(ast.val.clone()));
         let debug_descr = self.context().dsd_gen();
+        let file_id = self.context().file_id;
         self.context()
-            .debug_span_descriptors
-            .insert(debug_descr, ast.span);
+            .debug_symbol_descriptors
+            .insert(debug_descr, DebugSymbol::new(file_id, ast.span));
         res.push(Op::push_const(name_descr));
         for subs in ast.substitutions.iter().rev() {
             res.append(&mut self.compile_expr(subs)?);
@@ -587,9 +597,10 @@ impl CompileManager {
         let mut res = vec![];
         res.append(&mut self.compile_format_string(&ast.inner)?);
         let debug_descr = self.context().dsd_gen();
+        let file_id = self.context().file_id;
         self.context()
-            .debug_span_descriptors
-            .insert(debug_descr, ast.span);
+            .debug_symbol_descriptors
+            .insert(debug_descr, DebugSymbol::new(file_id, ast.span));
         res.push(Op::debug(debug_descr));
         res.push(Op::sh);
         Ok(res)

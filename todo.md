@@ -1,6 +1,7 @@
 
 This is a rough todo list of features I need to add to the language:
 
+* pass Files from main around in compile context
 * dictionaries
 * comprehensions
 * lambdas

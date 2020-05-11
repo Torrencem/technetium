@@ -14,7 +14,7 @@ pub struct Lines {
 
 impl Object for Lines {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        Ok(Rc::new(Lines { parent: Rc::clone(&self.parent) }))
+        Ok(ObjectRef::new(Lines { parent: Rc::clone(&self.parent) }))
     }
     
     fn technetium_type_name(&self) -> String {
@@ -27,7 +27,7 @@ impl Object for Lines {
             |rc| rc.val.read()
         );
 
-        Ok(Rc::new(
+        Ok(ObjectRef::new(
                 LinesIterator {
                     inner: RwLock::new(line_rentals::LinesIterator::new(
                             Box::new(lines_iter_rental_head),
@@ -81,7 +81,7 @@ pub struct Chars {
 
 impl Object for Chars {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        Ok(Rc::new(Chars { parent: Rc::clone(&self.parent) }))
+        Ok(ObjectRef::new(Chars { parent: Rc::clone(&self.parent) }))
     }
     
     fn technetium_type_name(&self) -> String {
@@ -94,7 +94,7 @@ impl Object for Chars {
             |rc| rc.val.read()
         );
 
-        Ok(Rc::new(
+        Ok(ObjectRef::new(
                 CharsIterator {
                     inner: RwLock::new(char_rentals::CharsIterator::new(
                             Box::new(lines_iter_rental_head),

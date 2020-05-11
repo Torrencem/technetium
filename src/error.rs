@@ -7,6 +7,7 @@ use codespan::{FileId, Span};
 use codespan_reporting::diagnostic::{Diagnostic, Label};
 use std::fmt;
 use std::sync;
+use std::cell;
 use sys_info;
 
 use lalrpop_util;
@@ -44,6 +45,8 @@ pub enum RuntimeErrorType {
     SysInfoError,
     /// An error raised by trying to lock() a poisoned mutex on an Object
     PoisonError,
+    /// An error raised by trying to modify and read something at the same time
+    BorrowError,
 }
 
 impl From<sys_info::Error> for RuntimeError {
@@ -70,6 +73,16 @@ impl<T> From<sync::PoisonError<T>> for RuntimeError {
     fn from(error: sync::PoisonError<T>) -> Self {
         RuntimeError {
             err: RuntimeErrorType::PoisonError,
+            help: error.to_string(),
+            symbols: vec![],
+        }
+    }
+}
+
+impl From<cell::BorrowError> for RuntimeError {
+    fn from(error: cell::BorrowError) -> Self {
+        RuntimeError {
+            err: RuntimeErrorType::BorrowError,
             help: error.to_string(),
             symbols: vec![],
         }

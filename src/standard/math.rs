@@ -15,7 +15,8 @@ use std::f64;
 use crate::func_object;
 
 func_object!(Sin, (1..=1), args -> {
-    let arg_any = args[0].as_any();
+    let arg0 = args[0].try_borrow()?;
+    let arg_any = arg0.as_any();
     if let Some(float_obj) = arg_any.downcast_ref::<FloatObject>() {
         Ok(FloatObject::new(float_obj.val.sin()))
     } else if let Some(int_obj) = arg_any.downcast_ref::<IntObject>() {
@@ -26,7 +27,8 @@ func_object!(Sin, (1..=1), args -> {
 });
 
 func_object!(Cos, (1..=1), args -> {
-    let arg_any = args[0].as_any();
+    let arg0 = args[0].try_borrow()?;
+    let arg_any = arg0.as_any();
     if let Some(float_obj) = arg_any.downcast_ref::<FloatObject>() {
         Ok(FloatObject::new(float_obj.val.cos()))
     } else if let Some(int_obj) = arg_any.downcast_ref::<IntObject>() {
@@ -37,7 +39,8 @@ func_object!(Cos, (1..=1), args -> {
 });
 
 func_object!(Tan, (1..=1), args -> {
-    let arg_any = args[0].as_any();
+    let arg0 = args[0].try_borrow()?;
+    let arg_any = arg0.as_any();
     if let Some(float_obj) = arg_any.downcast_ref::<FloatObject>() {
         Ok(FloatObject::new(float_obj.val.tan()))
     } else if let Some(int_obj) = arg_any.downcast_ref::<IntObject>() {
@@ -48,7 +51,8 @@ func_object!(Tan, (1..=1), args -> {
 });
 
 func_object!(Abs, (1..=1), args -> {
-    let arg_any = args[0].as_any();
+    let arg0 = args[0].try_borrow()?;
+    let arg_any = arg0.as_any();
     if let Some(float_obj) = arg_any.downcast_ref::<FloatObject>() {
         Ok(FloatObject::new(float_obj.val.abs()))
     } else if let Some(int_obj) = arg_any.downcast_ref::<IntObject>() {
@@ -59,7 +63,8 @@ func_object!(Abs, (1..=1), args -> {
 });
 
 func_object!(Sqrt, (1..=1), args -> {
-    let arg_any = args[0].as_any();
+    let arg0 = args[0].try_borrow()?;
+    let arg_any = arg0.as_any();
     if let Some(float_obj) = arg_any.downcast_ref::<FloatObject>() {
         Ok(FloatObject::new(float_obj.val.sqrt()))
     } else if let Some(int_obj) = arg_any.downcast_ref::<IntObject>() {
@@ -70,7 +75,8 @@ func_object!(Sqrt, (1..=1), args -> {
 });
 
 func_object!(Exp, (1..=1), args -> {
-    let arg_any = args[0].as_any();
+    let arg0 = args[0].try_borrow()?;
+    let arg_any = arg0.as_any();
     if let Some(float_obj) = arg_any.downcast_ref::<FloatObject>() {
         Ok(FloatObject::new(float_obj.val.exp()))
     } else if let Some(int_obj) = arg_any.downcast_ref::<IntObject>() {
@@ -81,7 +87,8 @@ func_object!(Exp, (1..=1), args -> {
 });
 
 func_object!(Ln, (1..=1), args -> {
-    let arg_any = args[0].as_any();
+    let arg0 = args[0].try_borrow()?;
+    let arg_any = arg0.as_any();
     if let Some(float_obj) = arg_any.downcast_ref::<FloatObject>() {
         Ok(FloatObject::new(float_obj.val.ln()))
     } else if let Some(int_obj) = arg_any.downcast_ref::<IntObject>() {
@@ -92,7 +99,8 @@ func_object!(Ln, (1..=1), args -> {
 });
 
 func_object!(Arcsin, (1..=1), args -> {
-    let arg_any = args[0].as_any();
+    let arg0 = args[0].try_borrow()?;
+    let arg_any = arg0.as_any();
     if let Some(float_obj) = arg_any.downcast_ref::<FloatObject>() {
         Ok(FloatObject::new(float_obj.val.asin()))
     } else if let Some(int_obj) = arg_any.downcast_ref::<IntObject>() {
@@ -103,7 +111,8 @@ func_object!(Arcsin, (1..=1), args -> {
 });
 
 func_object!(Arccos, (1..=1), args -> {
-    let arg_any = args[0].as_any();
+    let arg0 = args[0].try_borrow()?;
+    let arg_any = arg0.as_any();
     if let Some(float_obj) = arg_any.downcast_ref::<FloatObject>() {
         Ok(FloatObject::new(float_obj.val.acos()))
     } else if let Some(int_obj) = arg_any.downcast_ref::<IntObject>() {
@@ -114,7 +123,8 @@ func_object!(Arccos, (1..=1), args -> {
 });
 
 func_object!(Arctan, (1..=1), args -> {
-    let arg_any = args[0].as_any();
+    let arg0 = args[0].try_borrow()?;
+    let arg_any = arg0.as_any();
     if let Some(float_obj) = arg_any.downcast_ref::<FloatObject>() {
         Ok(FloatObject::new(float_obj.val.atan()))
     } else if let Some(int_obj) = arg_any.downcast_ref::<IntObject>() {

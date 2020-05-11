@@ -1,6 +1,8 @@
 
 This is a rough todo list of features I need to add to the language:
 
+* Make all object methods take a ObjectRef to self (no nightly, use "this")
+* Instead of no drops, clone reference, make all changes (store instruction) interior mutation
 * dictionaries
 * comprehensions
 * lambdas

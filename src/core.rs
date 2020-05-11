@@ -10,6 +10,7 @@ use std::any::TypeId;
 use std::clone::Clone as RustClone;
 use std::collections::HashMap;
 use std::rc::Rc;
+use std::cell::RefCell;
 use parking_lot::RwLock;
 use std::ops::{Deref, DerefMut};
 use num::bigint::{BigInt, ToBigInt};
@@ -21,7 +22,32 @@ use std::fmt;
 
 use crate::error::*;
 
-pub type ObjectRef = Rc<dyn Object>;
+#[derive(Debug, Clone)]
+pub struct ObjectRef {
+    inner: Rc<RefCell<dyn Object>>
+}
+
+impl ObjectRef {
+    pub fn new<T: Object>(val: T) -> Self {
+        ObjectRef {
+            inner: Rc::new(RefCell::new(val)),
+        }
+    }
+}
+
+impl Deref for ObjectRef {
+    type Target = Rc<RefCell<dyn Object>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
+
+impl DerefMut for ObjectRef {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.inner
+    }
+}
 
 pub trait ToAny {
     fn as_any(&self) -> &dyn Any;
@@ -118,7 +144,7 @@ pub struct BoolObject {
 
 impl BoolObject {
     pub fn new(val: bool) -> ObjectRef {
-        Rc::new(BoolObject { val })
+        ObjectRef::new(BoolObject { val })
     }
 }
 
@@ -146,12 +172,12 @@ pub struct IntObject {
 
 impl IntObject {
     pub fn new(val: i64) -> ObjectRef {
-        let res = Rc::new(IntObject { val: val.to_bigint().unwrap() });
+        let res = ObjectRef::new(IntObject { val: val.to_bigint().unwrap() });
         res
     }
 
     pub fn new_big(val: BigInt) -> ObjectRef {
-        let res = Rc::new(IntObject { val });
+        let res = ObjectRef::new(IntObject { val });
         res
     }
 
@@ -184,7 +210,7 @@ pub struct FloatObject {
 
 impl FloatObject {
     pub fn new(val: f64) -> ObjectRef {
-        let res = Rc::new(FloatObject { val });
+        let res = ObjectRef::new(FloatObject { val });
         res
     }
 }
@@ -216,13 +242,13 @@ pub struct CharObject {
 
 impl CharObject {
     pub fn new(c: char) -> ObjectRef {
-        Rc::new(CharObject { val: c })
+        ObjectRef::new(CharObject { val: c })
     }
 }
 
 impl Object for CharObject {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        Ok(Rc::new(self.clone()))
+        Ok(ObjectRef::new(self.clone()))
     }
 
     fn technetium_type_name(&self) -> String {
@@ -259,7 +285,7 @@ impl DerefMut for StringObject {
 
 impl StringObject {
     pub fn new(s: String) -> ObjectRef {
-        Rc::new(StringObject { val: RwLock::new(s) })
+        ObjectRef::new(StringObject { val: RwLock::new(s) })
     }
 }
 
@@ -303,7 +329,7 @@ impl Object for StringObject {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("lines expects 0 args"))
                 } else {
-                    Ok(Rc::new(standard::string::Lines {
+                    Ok(ObjectRef::new(standard::string::Lines {
                         parent: Rc::new(StringObject { val: RwLock::new(self.val.read().clone()) }),
                     }))
                 }
@@ -312,7 +338,7 @@ impl Object for StringObject {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("chars expects 0 args"))
                 } else {
-                    Ok(Rc::new(standard::string::Chars {
+                    Ok(ObjectRef::new(standard::string::Chars {
                         parent: Rc::new(StringObject { val: RwLock::new(self.val.read().clone()) }),
                     }))
                 }
@@ -336,7 +362,7 @@ pub struct Function {
 
 impl Object for Function {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        Ok(Rc::new(Function {
+        Ok(ObjectRef::new(Function {
             nargs: self.nargs,
             name: self.name.clone(),
             context: Rc::clone(&self.context),
@@ -379,7 +405,7 @@ impl Object for Function {
             self.context_id,
         );
         for arg in args.iter().rev() {
-            frame.stack.push(Rc::clone(arg));
+            frame.stack.push(ObjectRef::clone(arg));
         }
         let res = frame.run();
         let fid = frame.id;
@@ -398,9 +424,9 @@ impl Object for List {
         let mut res_contents = vec![];
         let contents_ = self.contents.read();
         for val in contents_.iter() {
-            res_contents.push(val.technetium_clone()?);
+            res_contents.push(val.try_borrow()?.technetium_clone()?);
         }
-        Ok(Rc::new(List {
+        Ok(ObjectRef::new(List {
             contents: RwLock::new(res_contents),
         }))
     }
@@ -420,7 +446,7 @@ impl Object for List {
             } else {
                 res.push_str(", ");
             }
-            res.push_str(&val.to_string()?);
+            res.push_str(&val.try_borrow()?.to_string()?);
         }
         res.push(']');
         Ok(res)
@@ -443,14 +469,14 @@ impl Object for List {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
-                    Ok(Rc::clone(&self.contents.write().pop().ok_or(RuntimeError::index_oob_error("Popped an empty list"))?))
+                    Ok(ObjectRef::clone(&self.contents.write().pop().ok_or(RuntimeError::index_oob_error("Popped an empty list"))?))
                 }
             }
             "push" => {
                 if args.len() != 1 {
                     Err(RuntimeError::type_error("push expects 1 arg"))
                 } else {
-                    self.contents.write().push(Rc::clone(&args[0]));
+                    self.contents.write().push(ObjectRef::clone(&args[0]));
                     Ok(VoidObject::new())
                 }
             }
@@ -459,9 +485,9 @@ impl Object for List {
                     Err(RuntimeError::type_error("append expects 1 arg"))
                 } else {
                     let mut contents = self.contents.write();
-                    let mut iter = args[0].make_iter()?;
+                    let mut iter = args[0].borrow().make_iter()?;
 
-                    while let Some(val) = iter.take_iter()? {
+                    while let Some(val) = iter.borrow().take_iter()? {
                         contents.push(val);
                     }
                     Ok(VoidObject::new())
@@ -480,12 +506,12 @@ impl Object for List {
                 .contents
                 .read()
                 .iter()
-                .map(|val| Rc::clone(val))
+                .map(|val| ObjectRef::clone(val))
                 .collect(),
             index: RwLock::new(0),
         };
 
-        Ok(Rc::new(iter))
+        Ok(ObjectRef::new(iter))
     }
 }
 
@@ -506,7 +532,7 @@ impl Object for ListIterator {
         } else {
             let old = *index;
             *index += 1;
-            Ok(Some(Rc::clone(&self.contents[old])))
+            Ok(Some(ObjectRef::clone(&self.contents[old])))
         }
     }
 }
@@ -521,8 +547,8 @@ pub struct Slice {
 
 impl Object for Slice {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        Ok(Rc::new(Slice {
-            parent: Rc::clone(&self.parent),
+        Ok(ObjectRef::new(Slice {
+            parent: ObjectRef::clone(&self.parent),
             start: self.start,
             stop: self.stop,
             step: self.step,
@@ -534,8 +560,8 @@ impl Object for Slice {
     }
 
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
-        Ok(Rc::new(SliceIterator {
-            parent: Rc::clone(&self.parent),
+        Ok(ObjectRef::new(SliceIterator {
+            parent: ObjectRef::clone(&self.parent),
             curr: RwLock::new(self.start),
             stop: self.stop,
             step: self.step,
@@ -544,7 +570,7 @@ impl Object for Slice {
 
     fn to_string(&self) -> RuntimeResult<String> {
         let mut res = String::new();
-        if self.parent.as_any().type_id() != TypeId::of::<StringObject>() {
+        if self.parent.try_borrow()?.as_any().type_id() != TypeId::of::<StringObject>() {
             res.push('[');
             let mut first = true;
             let mut curr_index = self.start;
@@ -555,14 +581,14 @@ impl Object for Slice {
                         break;
                     }
                 }
-                let val = index_get(Rc::clone(&self.parent), IntObject::new(curr_index));
+                let val = index_get(ObjectRef::clone(&self.parent), IntObject::new(curr_index));
                 if let Ok(val_) = val {
                     if first {
                         first = false;
                     } else {
                         res.push_str(", ");
                     }
-                    res.push_str(val_.to_string()?.as_ref());
+                    res.push_str(val_.try_borrow()?.to_string()?.as_ref());
                 } else {
                     break;
                 }
@@ -579,9 +605,9 @@ impl Object for Slice {
                         break;
                     }
                 }
-                let val = index_get(Rc::clone(&self.parent), IntObject::new(curr_index));
+                let val = index_get(ObjectRef::clone(&self.parent), IntObject::new(curr_index));
                 if let Ok(val_) = val {
-                    res.push_str(val_.to_string()?.as_ref());
+                    res.push_str(val_.try_borrow()?.to_string()?.as_ref());
                 } else {
                     break;
                 }
@@ -613,7 +639,7 @@ impl Object for SliceIterator {
                 return Ok(None);
             }
         }
-        let old = index_get(Rc::clone(&self.parent), IntObject::new(*curr_));
+        let old = index_get(ObjectRef::clone(&self.parent), IntObject::new(*curr_));
         *curr_ += self.step;
         Ok(old.ok())
     }
@@ -627,9 +653,9 @@ impl Object for Tuple {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
         let mut res_contents = vec![];
         for val in self.contents.iter() {
-            res_contents.push(val.technetium_clone()?);
+            res_contents.push(val.try_borrow()?.technetium_clone()?);
         }
-        Ok(Rc::new(Tuple {
+        Ok(ObjectRef::new(Tuple {
             contents: res_contents,
         }))
     }
@@ -663,7 +689,7 @@ pub struct VoidObject;
 
 impl VoidObject {
     pub fn new() -> ObjectRef {
-        Rc::new(VoidObject)
+        ObjectRef::new(VoidObject)
     }
 }
 

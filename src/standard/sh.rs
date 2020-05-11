@@ -34,7 +34,7 @@ pub enum ShObjectState {
 
 impl ShObject {
     pub fn new(command: String) -> ObjectRef {
-        Rc::new(ShObject {
+        ObjectRef::new(ShObject {
             argument: command,
             state: RwLock::new(ShObjectState::Prepared),
             child: RwLock::new(None),
@@ -158,7 +158,8 @@ impl Object for ShObject {
 }
 
 func_object!(Sh, (1..=1), args -> {
-    let arg_any = args[0].as_any();
+    let arg0 = args[0].try_borrow()?;
+    let arg_any = arg0.as_any();
     if let Some(str_obj) = arg_any.downcast_ref::<StringObject>() {
         let val = str_obj.val.read();
         Ok(ShObject::new(val.clone()))
@@ -168,7 +169,8 @@ func_object!(Sh, (1..=1), args -> {
 });
 
 func_object!(Cd, (1..=1), args -> {
-    let arg_any = args[0].as_any();
+    let arg0 = args[0].try_borrow()?;
+    let arg_any = arg0.as_any();
     if let Some(str_obj) = arg_any.downcast_ref::<StringObject>() {
         let val = str_obj.val.read();
         let path = Path::new(&*val);

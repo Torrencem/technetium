@@ -132,7 +132,7 @@ impl MemoryManager {
 
         let rc = frame.get(index.1).ok_or_else(|| RuntimeError::internal_error("Called get on a value in a frame that doesn't exist"))?;
 
-        Ok(Rc::clone(rc))
+        Ok(ObjectRef::clone(rc))
     }
 
     pub fn set(&mut self, index: NonLocalName, val: ObjectRef) -> RuntimeResult<()> {

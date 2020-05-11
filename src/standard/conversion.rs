@@ -20,14 +20,15 @@ use num::bigint::ToBigInt;
 use crate::func_object;
 
 func_object!(String_, (1..=1), args -> {
-    Ok(StringObject::new(args[0].to_string()?))
+    Ok(StringObject::new(args[0].try_borrow()?.to_string()?))
 });
 
 func_object!(Bool, (1..=1), args -> {
-    Ok(BoolObject::new(args[0].truthy()))
+    Ok(BoolObject::new(args[0].try_borrow()?.truthy()))
 });
 
 pub fn to_int(val: ObjectRef) -> RuntimeResult<BigInt> {
+    let val = val.try_borrow()?;
     let val_any = val.as_any();
     match val_any.type_id() {
         a if a == TypeId::of::<IntObject>() => {
@@ -56,10 +57,11 @@ pub fn to_int(val: ObjectRef) -> RuntimeResult<BigInt> {
 }
 
 func_object!(Int, (1..=1), args -> {
-    Ok(IntObject::new_big(to_int(Rc::clone(&args[0]))?))
+    Ok(IntObject::new_big(to_int(ObjectRef::clone(&args[0]))?))
 });
 
 pub fn to_float(val: ObjectRef) -> RuntimeResult<f64> {
+    let val = val.try_borrow()?;
     let val_any = val.as_any();
     match val_any.type_id() {
         a if a == TypeId::of::<FloatObject>() => {
@@ -85,10 +87,11 @@ pub fn to_float(val: ObjectRef) -> RuntimeResult<f64> {
 }
 
 func_object!(Float, (1..=1), args -> {
-    Ok(FloatObject::new(to_float(Rc::clone(&args[0]))?))
+    Ok(FloatObject::new(to_float(ObjectRef::clone(&args[0]))?))
 });
 
 pub fn to_char(val: ObjectRef) -> RuntimeResult<char> {
+    let val = val.try_borrow()?;
     let val_any = val.as_any();
     match val_any.type_id() {
         a if a == TypeId::of::<IntObject>() => {
@@ -123,5 +126,5 @@ pub fn to_char(val: ObjectRef) -> RuntimeResult<char> {
 }
 
 func_object!(Char, (1..=1), args -> {
-    Ok(CharObject::new(to_char(Rc::clone(&args[0]))?))
+    Ok(CharObject::new(to_char(ObjectRef::clone(&args[0]))?))
 });

@@ -19,26 +19,27 @@ func_object_void!(Print, (0..), args -> {
         } else {
             first = false;
         }
-        print!("{}", arg.to_string()?);
+        print!("{}", arg.try_borrow()?.to_string()?);
     }
     println!();
 });
 
 func_object!(Exit, (1..=1), args -> {
-    let arg_any = args[0].as_any();
+    let arg0 = args[0].try_borrow()?;
+    let arg_any = arg0.as_any();
     if let Some(int_obj) = arg_any.downcast_ref::<IntObject>() {
         exit(int_obj.to_i64()? as i32)
     } else {
-        exit(if args[0].truthy() { 1 } else { 0 })
+        exit(if args[0].try_borrow()?.truthy() { 1 } else { 0 })
     }
 });
 
 func_object!(Type, (1..=1), args -> {
-    Ok(StringObject::new(args[0].technetium_type_name()))
+    Ok(StringObject::new(args[0].try_borrow()?.technetium_type_name()))
 });
 
 func_object!(Clone_, (1..=1), args -> {
-    Ok(args[0].technetium_clone()?)
+    Ok(args[0].try_borrow()?.technetium_clone()?)
 });
 
 #[derive(Debug, Clone)]
@@ -50,7 +51,7 @@ pub struct Range {
 
 impl Object for Range {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        Ok(Rc::new(self.clone()))
+        Ok(ObjectRef::new(self.clone()))
     }
 
     fn technetium_type_name(&self) -> String {
@@ -69,7 +70,7 @@ pub struct RangeIterator {
 
 impl RangeIterator {
     pub fn new(inner: Range) -> ObjectRef {
-        Rc::new(RangeIterator {
+        ObjectRef::new(RangeIterator {
             curr: RwLock::new(inner.start),
             inner,
         })
@@ -96,8 +97,8 @@ impl Object for RangeIterator {
 
 func_object!(RangeFunc, (1..=3), args -> {
     if args.len() == 1 {
-        if let Some(int_obj) = args[0].as_any().downcast_ref::<IntObject>() {
-            Ok(Rc::new(Range { 
+        if let Some(int_obj) = args[0].try_borrow()?.as_any().downcast_ref::<IntObject>() {
+            Ok(ObjectRef::new(Range { 
                 start: 0,
                 end: int_obj.to_i64()?,
                 step: 1,
@@ -106,9 +107,9 @@ func_object!(RangeFunc, (1..=3), args -> {
             Err(RuntimeError::type_error("Expected integer arguments to range"))
         }
     } else if args.len() == 2 {
-        if let Some(int_obj_a) = args[0].as_any().downcast_ref::<IntObject>() {
-            if let Some(int_obj_b) = args[1].as_any().downcast_ref::<IntObject>() {
-                Ok(Rc::new(Range {
+        if let Some(int_obj_a) = args[0].try_borrow()?.as_any().downcast_ref::<IntObject>() {
+            if let Some(int_obj_b) = args[1].try_borrow()?.as_any().downcast_ref::<IntObject>() {
+                Ok(ObjectRef::new(Range {
                     start: int_obj_a.to_i64()?,
                     end: int_obj_b.to_i64()?,
                     step: 1,
@@ -120,10 +121,10 @@ func_object!(RangeFunc, (1..=3), args -> {
             Err(RuntimeError::type_error("Expected integer arguments to range"))
         }
     } else {
-        if let Some(int_obj_a) = args[0].as_any().downcast_ref::<IntObject>() {
-            if let Some(int_obj_b) = args[1].as_any().downcast_ref::<IntObject>() {
-                if let Some(int_obj_c) = args[2].as_any().downcast_ref::<IntObject>() {
-                    Ok(Rc::new(Range {
+        if let Some(int_obj_a) = args[0].try_borrow()?.as_any().downcast_ref::<IntObject>() {
+            if let Some(int_obj_b) = args[1].try_borrow()?.as_any().downcast_ref::<IntObject>() {
+                if let Some(int_obj_c) = args[2].try_borrow()?.as_any().downcast_ref::<IntObject>() {
+                    Ok(ObjectRef::new(Range {
                         start: int_obj_a.to_i64()?,
                         end: int_obj_b.to_i64()?,
                         step: int_obj_c.to_i64()?,

@@ -354,7 +354,7 @@ impl<'code> Frame<'code> {
                     let name = name.as_any();
                     if let Some(method_name) = name.downcast_ref::<ObjectCell<StringObject>>() {
                         let method_name = method_name.try_borrow()?;
-                        let val = method_name.val.read();
+                        let val = &method_name.val;
                         let res = try_debug!(self, ds, dsw, obj.call_method(val.as_ref(), &args));
                         self.stack.push(res);
                     } else {
@@ -386,7 +386,7 @@ impl<'code> Frame<'code> {
                     let attr = attr.as_any();
                     if let Some(attr_name) = attr.downcast_ref::<ObjectCell<StringObject>>() {
                         let attr_name = attr_name.try_borrow()?;
-                        let val = attr_name.val.read();
+                        let val = &attr_name.val;
                         let res = try_debug!(self, ds, dsw, obj.get_attr(val.clone()));
                         self.stack.push(res);
                     } else {
@@ -406,7 +406,7 @@ impl<'code> Frame<'code> {
                     let attr = attr.as_any();
                     if let Some(attr_name) = attr.downcast_ref::<ObjectCell<StringObject>>() {
                         let attr_name = attr_name.try_borrow()?;
-                        let val = attr_name.val.read();
+                        let val = &attr_name.val;
                         try_debug!(self, ds, dsw, obj.set_attr(val.clone(), toset));
                     } else {
                         return Err(RuntimeError::internal_error("Attribute name not a string!"));
@@ -441,7 +441,7 @@ impl<'code> Frame<'code> {
                         if let Some(string) = subs.as_any().downcast_ref::<ObjectCell<StringObject>>() {
                             let mut result_string = String::new();
                             let string = string.try_borrow()?;
-                            let val = string.val.read();
+                            let val = &string.val;
                             let mut chars = val.chars().peekable();
                             loop {
                                 match chars.next() {
@@ -754,7 +754,7 @@ impl<'code> Frame<'code> {
                     let objs: Vec<ObjectRef> =
                         self.stack.drain((self.stack.len() - len)..).collect();
                     self.stack.push(ObjectRef::new(List {
-                        contents: RwLock::new(objs),
+                        contents: objs,
                     }));
                 }
                 Op::mktuple(len) => {
@@ -848,7 +848,7 @@ impl<'code> Frame<'code> {
                     if let Some(top) = top {
                         let top = top.as_any();
                         if let Some(top) = top.downcast_ref::<ObjectCell<StringObject>>() {
-                            let arg = top.try_borrow()?.val.read().clone();
+                            let arg = top.try_borrow()?.val.clone();
                             let mut command = Command::new("sh");
                             let process = command.stdin(Stdio::piped()).spawn();
                             if let Ok(mut child) = process {

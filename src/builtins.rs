@@ -38,20 +38,20 @@ pub fn add(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         }
         (a, _) if a == TypeId::of::<ObjectCell<StringObject>>() => {
             let a = a_any.downcast_ref::<ObjectCell<StringObject>>().unwrap().try_borrow()?;
-            let res = format!("{}{}", a.val.read(), b.to_string()?);
+            let res = format!("{}{}", a.val, b.to_string()?);
             Ok(StringObject::new(res))
         }
         (_, b) if b == TypeId::of::<ObjectCell<StringObject>>() => {
             let b = b_any.downcast_ref::<ObjectCell<StringObject>>().unwrap().try_borrow()?;
-            let res = format!("{}{}", a.to_string()?, b.val.read());
+            let res = format!("{}{}", a.to_string()?, b.val);
             Ok(StringObject::new(res))
         }
         (a_, b_) if a_ == TypeId::of::<ObjectCell<List>>() && b_ == TypeId::of::<ObjectCell<List>>() => {
             let val_a = a_any.downcast_ref::<ObjectCell<List>>().unwrap().try_borrow()?;
             let val_b = b_any.downcast_ref::<ObjectCell<List>>().unwrap().try_borrow()?;
-            let mut res = val_a.contents.read().clone();
-            res.append(&mut val_b.contents.read().clone());
-            Ok(ObjectRef::new(List { contents: RwLock::new(res) }))
+            let mut res = val_a.contents.clone();
+            res.append(&mut val_b.contents.clone());
+            Ok(ObjectRef::new(List { contents: res }))
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot add type {} to type {}",
@@ -127,7 +127,7 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         }
         (a, b) if a == TypeId::of::<ObjectCell<List>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
             let val_a = a_any.downcast_ref::<ObjectCell<List>>().unwrap().try_borrow()?;
-            let val_a = val_a.contents.read();
+            let val_a = &val_a.contents;
             let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
             let mut res: Vec<ObjectRef> = vec![];
             for _ in (0..val_b.to_i64()?) {
@@ -135,19 +135,19 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
                     res.push(ObjectRef::clone(obj_ref));
                 }
             }
-            Ok(ObjectRef::new(List { contents: RwLock::new(res) }))
+            Ok(ObjectRef::new(List { contents: res }))
         }
         (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<List>>() => {
             let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
             let val_b = b_any.downcast_ref::<ObjectCell<List>>().unwrap().try_borrow()?;
-            let val_b = val_b.contents.read();
+            let val_b = &val_b.contents;
             let mut res: Vec<ObjectRef> = vec![];
             for _ in (0..val_a.to_i64()?) {
                 for obj_ref in val_b.iter() {
                     res.push(ObjectRef::clone(obj_ref));
                 }
             }
-            Ok(ObjectRef::new(List { contents: RwLock::new(res) }))
+            Ok(ObjectRef::new(List { contents: res }))
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot multiply type {} by type {}",
@@ -394,14 +394,14 @@ pub fn cmp_eq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a_, b_) if a_ == TypeId::of::<ObjectCell<StringObject>>() && b_ == TypeId::of::<ObjectCell<StringObject>>() => {
             let val_a = a_any.downcast_ref::<ObjectCell<StringObject>>().unwrap().try_borrow()?;
             let val_b = b_any.downcast_ref::<ObjectCell<StringObject>>().unwrap().try_borrow()?;
-            let res = BoolObject::new(*val_a.val.read() == *val_b.val.read());
+            let res = BoolObject::new(*val_a.val == *val_b.val);
             Ok(res)
         }
         (a_, b_) if a_ == TypeId::of::<ObjectCell<List>>() && b_ == TypeId::of::<ObjectCell<List>>() => {
             let val_a = a_any.downcast_ref::<ObjectCell<List>>().unwrap().try_borrow()?;
             let val_b = b_any.downcast_ref::<ObjectCell<List>>().unwrap().try_borrow()?;
-            let list_1 = val_a.contents.read();
-            let list_2 = val_b.contents.read();
+            let list_1 = &val_a.contents;
+            let list_2 = &val_b.contents;
             if list_1.len() != list_2.len() {
                 return Ok(BoolObject::new(false));
             }
@@ -474,7 +474,7 @@ pub fn cmp_neq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a_, b_) if a_ == TypeId::of::<ObjectCell<StringObject>>() && b_ == TypeId::of::<ObjectCell<StringObject>>() => {
             let val_a = a_any.downcast_ref::<ObjectCell<StringObject>>().unwrap().try_borrow()?;
             let val_b = b_any.downcast_ref::<ObjectCell<StringObject>>().unwrap().try_borrow()?;
-            let res = BoolObject::new(*val_a.val.read() != *val_b.val.read());
+            let res = BoolObject::new(*val_a.val != *val_b.val);
             Ok(res)
         }
         (a_, b_) if a_ == TypeId::of::<ObjectCell<List>>() && b_ == TypeId::of::<ObjectCell<List>>() => {
@@ -585,9 +585,7 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
                 .unwrap()
                 .try_borrow()?;
 
-            let val_a = val_a
-                .contents
-                .read();
+            let val_a = &val_a.contents;
             let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
             let mut val = val_b.val.clone();
             if val < BigInt::zero() {
@@ -619,12 +617,11 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
             let mut val = val_b.val.clone();
             if val < BigInt::zero() {
-                val = (val_a.val.read().len() as u64 as i64) + val;
+                val = (val_a.val.len() as u64 as i64) + val;
             }
             let val = val.to_usize().ok_or_else(|| RuntimeError::index_oob_error("Index out of bounds"))?;
             let c = val_a
                 .val
-                .read()
                 .chars()
                 .nth(val);
             if let Some(c) = c {
@@ -654,14 +651,12 @@ pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> 
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<ObjectCell<List>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any
+            let mut val_a = a_any
                 .downcast_ref::<ObjectCell<List>>()
                 .unwrap()
-                .try_borrow()?;
+                .try_borrow_mut()?;
 
-            let mut val_a = val_a
-                .contents
-                .write();
+            let val_a = &mut val_a.contents;
             let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
             let mut val = val_b.val.clone();
             if val < BigInt::zero() {
@@ -679,14 +674,13 @@ pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> 
                 && b == TypeId::of::<ObjectCell<IntObject>>()
                 && c.as_any().is::<ObjectCell<CharObject>>() =>
         {
-            let val_a = a_any
+            let mut val_a = a_any
                 .downcast_ref::<ObjectCell<StringObject>>()
                 .unwrap()
-                .try_borrow()?;
+                .try_borrow_mut()?;
 
-            let mut val_a = val_a
-                .val
-                .write();
+            let val_a = &mut val_a.val;
+
             let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
             let mut val = val_b.val.clone();
             if val < BigInt::zero() {

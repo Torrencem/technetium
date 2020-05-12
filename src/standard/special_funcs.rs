@@ -67,13 +67,13 @@ impl Object for ObjectCell<Range> {
 
 pub struct RangeIterator {
     inner: Range,
-    curr: RwLock<i64>,
+    curr: i64,
 }
 
 impl RangeIterator {
     pub fn new(inner: Range) -> ObjectRef {
         ObjectRef::new(RangeIterator {
-            curr: RwLock::new(inner.start),
+            curr: inner.start,
             inner,
         })
     }
@@ -85,15 +85,17 @@ impl Object for ObjectCell<RangeIterator> {
     }
 
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
-        let this = self.try_borrow()?;
-        let mut _curr = this.curr.write();
-        if (this.inner.step < 0 && *_curr <= this.inner.end)
-            || (this.inner.step > 0 && *_curr >= this.inner.end)
+        let mut this = self.try_borrow_mut()?;
+        let step = this.inner.step;
+        let end = this.inner.end;
+        let _curr = &mut this.curr;
+        if (step < 0 && *_curr <= end)
+            || (step > 0 && *_curr >= end)
         {
             return Ok(None);
         }
         let old = *_curr;
-        *_curr += this.inner.step;
+        *_curr += step;
         Ok(Some(IntObject::new(old)))
     }
 }

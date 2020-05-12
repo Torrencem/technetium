@@ -162,7 +162,7 @@ func_object!(Sh, (1..=1), args -> {
     let arg_any = args[0].as_any();
     if let Some(str_obj) = arg_any.downcast_ref::<ObjectCell<StringObject>>() {
         let str_obj = str_obj.try_borrow()?;
-        let val = str_obj.val.read();
+        let val = &str_obj.val;
         Ok(ShObject::new(val.clone()))
     } else {
         Err(RuntimeError::type_error("Incorrect type as argument to sh; expected string"))
@@ -173,7 +173,7 @@ func_object!(Cd, (1..=1), args -> {
     let arg_any = args[0].as_any();
     if let Some(str_obj) = arg_any.downcast_ref::<ObjectCell<StringObject>>() {
         let str_obj = str_obj.try_borrow()?;
-        let val = str_obj.val.read();
+        let val = &str_obj.val;
         let path = Path::new(&*val);
         env::set_current_dir(path)?;
         Ok(VoidObject::new())

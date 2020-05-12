@@ -41,9 +41,7 @@ pub fn to_int(val: ObjectRef) -> RuntimeResult<BigInt> {
                 .unwrap()
                 .try_borrow()?;
 
-            let as_str = as_str
-                .val
-                .read();
+            let as_str = &as_str.val;
 
             Ok(as_str.parse::<BigInt>().map_err(|e| {
                 RuntimeError::type_error(format!("Error converting string to int: {}", e.to_string()))
@@ -76,9 +74,7 @@ pub fn to_float(val: ObjectRef) -> RuntimeResult<f64> {
                 .unwrap()
                 .try_borrow()?;
 
-            let as_str = as_str
-                .val
-                .read();
+            let as_str = &as_str.val;
 
             Ok(as_str.parse::<f64>().map_err(|e| {
                 RuntimeError::type_error(format!("Error converting string to int: {}", e.to_string()))
@@ -115,9 +111,7 @@ pub fn to_char(val: ObjectRef) -> RuntimeResult<char> {
                 .unwrap()
                 .try_borrow()?;
 
-            let as_str = as_str
-                .val
-                .read();
+            let as_str = &as_str.val;
             
             if as_str.len() != 1 {
                 Err(RuntimeError::type_error(format!("Unable to convert string of length {} to character", as_str.len())))

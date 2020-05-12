@@ -1,7 +1,7 @@
 
 This is a rough todo list of features I need to add to the language:
 
-* Instead of no drops, clone reference, make all changes (store instruction, things that are currently RwLock's) interior mutation
+* Finish: Instead of no drops, clone reference, make all changes (store instruction, things that are currently RwLock's) interior mutation
 * switch from Rc to Gc and from RefCell to GcCell
 * dictionaries
 * comprehensions

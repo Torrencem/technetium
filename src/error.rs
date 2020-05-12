@@ -47,6 +47,7 @@ pub enum RuntimeErrorType {
     PoisonError,
     /// An error raised by trying to modify and read something at the same time
     BorrowError,
+    BorrowMutError,
 }
 
 impl From<sys_info::Error> for RuntimeError {
@@ -83,6 +84,16 @@ impl From<cell::BorrowError> for RuntimeError {
     fn from(error: cell::BorrowError) -> Self {
         RuntimeError {
             err: RuntimeErrorType::BorrowError,
+            help: error.to_string(),
+            symbols: vec![],
+        }
+    }
+}
+
+impl From<cell::BorrowMutError> for RuntimeError {
+    fn from(error: cell::BorrowMutError) -> Self {
+        RuntimeError {
+            err: RuntimeErrorType::BorrowMutError,
             help: error.to_string(),
             symbols: vec![],
         }

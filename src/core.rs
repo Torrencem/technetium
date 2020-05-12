@@ -15,6 +15,7 @@ use parking_lot::RwLock;
 use std::ops::{Deref, DerefMut};
 use num::bigint::{BigInt, ToBigInt};
 use num::cast::ToPrimitive;
+use stable_deref_trait::StableDeref;
 
 use dtoa;
 
@@ -22,6 +23,7 @@ use std::fmt;
 
 use crate::error::*;
 
+#[repr(transparent)]
 #[derive(Debug)]
 pub struct ObjectRef {
     inner: Box<dyn Object>,
@@ -40,6 +42,8 @@ impl DerefMut for ObjectRef {
         &mut self.inner
     }
 }
+
+unsafe impl StableDeref for ObjectRef { }
 
 impl ObjectRef {
     pub fn new_from_cell<T>(obj: ObjectCell<T>) -> Self
@@ -63,10 +67,20 @@ impl Clone for ObjectRef {
     }
 }
 
+#[repr(transparent)]
 #[derive(Debug)]
 pub struct ObjectCell<T>
 where ObjectCell<T>: Object {
     inner: Rc<RefCell<T>>,
+}
+
+impl<T> Clone for ObjectCell<T>
+where ObjectCell<T>: Object {
+    fn clone(&self) -> Self {
+        ObjectCell {
+            inner: Rc::clone(&self.inner),
+        }
+    }
 }
 
 impl<T> ObjectCell<T> 
@@ -93,6 +107,9 @@ where ObjectCell<T>: Object {
         &mut self.inner
     }
 }
+
+unsafe impl<T> StableDeref for ObjectCell<T>
+where ObjectCell<T>: Object { }
 
 pub trait ToAny {
     fn as_any(&self) -> &dyn Any;
@@ -339,33 +356,19 @@ impl Object for ObjectCell<CharObject> {
 
 #[derive(Debug)]
 pub struct StringObject {
-    pub val: RwLock<String>,
-}
-
-impl Deref for StringObject {
-    type Target = RwLock<String>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.val
-    }
-}
-
-impl DerefMut for StringObject {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.val
-    }
+    pub val: String,
 }
 
 impl StringObject {
     pub fn new(s: String) -> ObjectRef {
-        ObjectRef::new(StringObject { val: RwLock::new(s) })
+        ObjectRef::new(StringObject { val: s })
     }
 }
 
 impl Object for ObjectCell<StringObject> {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
-        let val = this.val.read();
+        let val = &this.val;
         Ok(StringObject::new(val.clone()))
     }
 
@@ -375,14 +378,13 @@ impl Object for ObjectCell<StringObject> {
 
     fn to_string(&self) -> RuntimeResult<String> {
         let this = self.try_borrow()?;
-        let val = this.val.read();
+        let val = &this.val;
         Ok(val.clone())
     }
 
     fn truthy(&self) -> bool {
         let this = self.borrow();
-        let val = this.val.read();
-        *val != ""
+        this.val != ""
     }
 
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
@@ -392,14 +394,14 @@ impl Object for ObjectCell<StringObject> {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
-                    Ok(IntObject::new(this.val.read().len() as i64))
+                    Ok(IntObject::new(this.val.len() as i64))
                 }
             },
             "escape" => {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
-                    Ok(StringObject::new(this.val.read().escape_default().collect()))
+                    Ok(StringObject::new(this.val.escape_default().collect()))
                 }
             },
             "lines" => {
@@ -407,7 +409,7 @@ impl Object for ObjectCell<StringObject> {
                     Err(RuntimeError::type_error("lines expects 0 args"))
                 } else {
                     Ok(ObjectRef::new(standard::string::Lines {
-                        parent: Rc::new(StringObject { val: RwLock::new(this.val.read().clone()) }),
+                        parent: ObjectCell::clone(self),
                     }))
                 }
             },
@@ -416,7 +418,7 @@ impl Object for ObjectCell<StringObject> {
                     Err(RuntimeError::type_error("chars expects 0 args"))
                 } else {
                     Ok(ObjectRef::new(standard::string::Chars {
-                        parent: Rc::new(StringObject { val: RwLock::new(this.val.read().clone()) }),
+                        parent: ObjectCell::clone(self),
                     }))
                 }
             }
@@ -495,19 +497,18 @@ impl Object for ObjectCell<Function> {
 }
 
 pub struct List {
-    pub contents: RwLock<Vec<ObjectRef>>,
+    pub contents: Vec<ObjectRef>,
 }
 
 impl Object for ObjectCell<List> {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         let mut res_contents = vec![];
-        let contents_ = this.contents.read();
-        for val in contents_.iter() {
+        for val in this.contents.iter() {
             res_contents.push(val.technetium_clone()?);
         }
         Ok(ObjectRef::new(List {
-            contents: RwLock::new(res_contents),
+            contents: res_contents,
         }))
     }
 
@@ -520,8 +521,7 @@ impl Object for ObjectCell<List> {
         let mut res = String::new();
         res.push('[');
         let mut first = true;
-        let vals = this.contents.read();
-        for val in vals.iter() {
+        for val in this.contents.iter() {
             if first {
                 first = false;
             } else {
@@ -535,40 +535,42 @@ impl Object for ObjectCell<List> {
 
     fn truthy(&self) -> bool {
         let this = self.borrow();
-        let contents = this.contents.read();
-        contents.len() != 0
+        this.contents.len() != 0
     }
 
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
-        let this = self.try_borrow()?;
         match method {
             "length" => {
+                let this = self.try_borrow()?;
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
-                    Ok(IntObject::new(this.contents.read().len() as i64))
+                    Ok(IntObject::new(this.contents.len() as i64))
                 }
             }
             "pop" => {
+                let mut this = self.try_borrow_mut()?;
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
-                    Ok(ObjectRef::clone(&this.contents.write().pop().ok_or(RuntimeError::index_oob_error("Popped an empty list"))?))
+                    Ok(ObjectRef::clone(&this.contents.pop().ok_or(RuntimeError::index_oob_error("Popped an empty list"))?))
                 }
             }
             "push" => {
+                let mut this = self.try_borrow_mut()?;
                 if args.len() != 1 {
                     Err(RuntimeError::type_error("push expects 1 arg"))
                 } else {
-                    this.contents.write().push(ObjectRef::clone(&args[0]));
+                    this.contents.push(ObjectRef::clone(&args[0]));
                     Ok(VoidObject::new())
                 }
             }
             "append" => {
+                let mut this = self.try_borrow_mut()?;
                 if args.len() != 1 {
                     Err(RuntimeError::type_error("append expects 1 arg"))
                 } else {
-                    let mut contents = this.contents.write();
+                    let mut contents = &mut this.contents;
                     let mut iter = args[0].make_iter()?;
 
                     while let Some(val) = iter.take_iter()? {
@@ -587,13 +589,8 @@ impl Object for ObjectCell<List> {
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         let iter = ListIterator {
-            contents: this 
-                .contents
-                .read()
-                .iter()
-                .map(|val| ObjectRef::clone(val))
-                .collect(),
-            index: RwLock::new(0),
+            parent: ObjectCell::clone(self),
+            index: 0,
         };
 
         Ok(ObjectRef::new(iter))
@@ -601,8 +598,8 @@ impl Object for ObjectCell<List> {
 }
 
 pub struct ListIterator {
-    pub contents: Vec<ObjectRef>,
-    pub index: RwLock<usize>,
+    pub parent: ObjectCell<List>,
+    pub index: usize,
 }
 
 impl Object for ObjectCell<ListIterator> {
@@ -611,14 +608,15 @@ impl Object for ObjectCell<ListIterator> {
     }
 
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
-        let this = self.try_borrow()?;
-        let mut index = this.index.write();
-        if *index >= this.contents.len() {
+        let mut this = self.try_borrow_mut()?;
+        let len = this.parent.try_borrow()?.contents.len();
+        let index = &mut this.index;
+        if *index >= len {
             Ok(None)
         } else {
             let old = *index;
             *index += 1;
-            Ok(Some(ObjectRef::clone(&this.contents[old])))
+            Ok(Some(ObjectRef::clone(&this.parent.try_borrow()?.contents[old])))
         }
     }
 }

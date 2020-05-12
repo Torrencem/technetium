@@ -1,9 +1,8 @@
 
 This is a rough todo list of features I need to add to the language:
 
-* Fix a fundamental problem: I want the Object trait methods to have Rc<...>, but then: 1. how do I do dispatch? It seems impossible, and 2. if Self is anywhere in the types, the trait Object will not be Object safe
-* Make all object methods take a ObjectRef to self (no nightly, use "this")
-* Instead of no drops, clone reference, make all changes (store instruction) interior mutation
+* Instead of no drops, clone reference, make all changes (store instruction, things that are currently RwLock's) interior mutation
+* switch from Rc to Gc and from RefCell to GcCell
 * dictionaries
 * comprehensions
 * lambdas

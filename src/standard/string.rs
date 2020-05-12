@@ -12,9 +12,10 @@ pub struct Lines {
     pub parent: Rc<StringObject>,
 }
 
-impl Object for Lines {
+impl Object for ObjectCell<Lines> {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        Ok(ObjectRef::new(Lines { parent: Rc::clone(&self.parent) }))
+        let this = self.try_borrow()?;
+        Ok(ObjectRef::new(Lines { parent: Rc::clone(&this.parent) }))
     }
     
     fn technetium_type_name(&self) -> String {
@@ -22,8 +23,9 @@ impl Object for Lines {
     }
 
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
+        let this = self.try_borrow()?;
         let lines_iter_rental_head = line_rentals::LinesIteratorHead::new(
-            Rc::clone(&self.parent),
+            Rc::clone(&this.parent),
             |rc| rc.val.read()
         );
 
@@ -62,13 +64,14 @@ rental! {
     }
 }
 
-impl Object for LinesIterator {
+impl Object for ObjectCell<LinesIterator> {
     fn technetium_type_name(&self) -> String {
         "iterator(lines)".to_string()
     }
 
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
-        let mut inner = self.inner.write();
+        let this = self.try_borrow()?;
+        let mut inner = this.inner.write();
         let next = line_rentals::LinesIterator::rent_mut(&mut inner, |lines| lines.next().map(|val| val.to_string()));
         Ok(next.map(|s| StringObject::new(s.to_string())))
     }
@@ -79,9 +82,10 @@ pub struct Chars {
     pub parent: Rc<StringObject>,
 }
 
-impl Object for Chars {
+impl Object for ObjectCell<Chars> {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        Ok(ObjectRef::new(Chars { parent: Rc::clone(&self.parent) }))
+        let this = self.try_borrow()?;
+        Ok(ObjectRef::new(Chars { parent: Rc::clone(&this.parent) }))
     }
     
     fn technetium_type_name(&self) -> String {
@@ -89,8 +93,9 @@ impl Object for Chars {
     }
 
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
+        let this = self.try_borrow()?;
         let lines_iter_rental_head = char_rentals::CharsIteratorHead::new(
-            Rc::clone(&self.parent),
+            Rc::clone(&this.parent),
             |rc| rc.val.read()
         );
 
@@ -127,13 +132,14 @@ rental! {
     }
 }
 
-impl Object for CharsIterator {
+impl Object for ObjectCell<CharsIterator> {
     fn technetium_type_name(&self) -> String {
         "iterator(chars)".to_string()
     }
 
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
-        let mut inner = self.inner.write();
+        let this = self.try_borrow()?;
+        let mut inner = this.inner.write();
         let next = char_rentals::CharsIterator::rent_mut(&mut inner, |lines| lines.next());
         Ok(next.map(|s| CharObject::new(s)))
     }

@@ -131,12 +131,13 @@ impl ShObject {
     }
 }
 
-impl Object for ShObject {
+impl Object for ObjectCell<ShObject> {
     fn technetium_type_name(&self) -> String {
         "sh".to_string()
     }
 
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
+        let this = self.try_borrow()?;
         if args.len() != 0 {
             return Err(RuntimeError::type_error(
                 "Unexpected arguments to method call",
@@ -144,12 +145,12 @@ impl Object for ShObject {
         }
 
         match method {
-            "spawn" => self.spawn()?,
-            "join" => self.join()?,
-            "stdout" => return Ok(self.stdout()?),
-            "stderr" => return Ok(self.stderr()?),
-            "exit_code" => return Ok(self.exit_code()?),
-            "kill" => self.kill()?,
+            "spawn" => this.spawn()?,
+            "join" => this.join()?,
+            "stdout" => return Ok(this.stdout()?),
+            "stderr" => return Ok(this.stderr()?),
+            "exit_code" => return Ok(this.exit_code()?),
+            "kill" => this.kill()?,
             _ => return Err(RuntimeError::type_error("Unknown method")),
         }
 
@@ -158,8 +159,7 @@ impl Object for ShObject {
 }
 
 func_object!(Sh, (1..=1), args -> {
-    let arg0 = args[0].try_borrow()?;
-    let arg_any = arg0.as_any();
+    let arg_any = args[0].as_any();
     if let Some(str_obj) = arg_any.downcast_ref::<StringObject>() {
         let val = str_obj.val.read();
         Ok(ShObject::new(val.clone()))
@@ -169,8 +169,7 @@ func_object!(Sh, (1..=1), args -> {
 });
 
 func_object!(Cd, (1..=1), args -> {
-    let arg0 = args[0].try_borrow()?;
-    let arg_any = arg0.as_any();
+    let arg_any = args[0].as_any();
     if let Some(str_obj) = arg_any.downcast_ref::<StringObject>() {
         let val = str_obj.val.read();
         let path = Path::new(&*val);

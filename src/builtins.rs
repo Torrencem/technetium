@@ -9,10 +9,8 @@ use num::traits::identities::Zero;
 use num::traits::ToPrimitive;
 
 pub fn add(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
-    let a_any = a.try_borrow()?;
-    let b_any = b.try_borrow()?;
-    let a_any = a_any.as_any();
-    let b_any = b_any.as_any();
+    let a_any = a.as_any();
+    let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
@@ -40,40 +38,32 @@ pub fn add(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         }
         (a, _) if a == TypeId::of::<StringObject>() => {
             let a = a_any.downcast_ref::<StringObject>().unwrap();
-            let res = format!("{}{}", a.val.read(), b.try_borrow()?.to_string()?);
+            let res = format!("{}{}", a.val.read(), b.to_string()?);
             Ok(StringObject::new(res))
         }
         (_, b) if b == TypeId::of::<StringObject>() => {
             let b = b_any.downcast_ref::<StringObject>().unwrap();
-            let res = format!("{}{}", a.try_borrow()?.to_string()?, b.val.read());
+            let res = format!("{}{}", a.to_string()?, b.val.read());
             Ok(StringObject::new(res))
         }
         (a_, b_) if a_ == TypeId::of::<List>() && b_ == TypeId::of::<List>() => {
             let val_a = a_any.downcast_ref::<List>().unwrap();
             let val_b = b_any.downcast_ref::<List>().unwrap();
-            if Rc::ptr_eq(&a, &b) {
-                let mut res = val_a.contents.read().clone();
-                res.append(&mut val_a.contents.read().clone());
-                Ok(ObjectRef::new(List { contents: RwLock::new(res) }))
-            } else {
-                let mut res = val_a.contents.read().clone();
-                res.append(&mut val_b.contents.read().clone());
-                Ok(ObjectRef::new(List { contents: RwLock::new(res) }))
-            }
+            let mut res = val_a.contents.read().clone();
+            res.append(&mut val_b.contents.read().clone());
+            Ok(ObjectRef::new(List { contents: RwLock::new(res) }))
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot add type {} to type {}",
-            a.try_borrow()?.technetium_type_name(),
-            b.try_borrow()?.technetium_type_name()
+            a.technetium_type_name(),
+            b.technetium_type_name()
         ))),
     }
 }
 
 pub fn sub(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
-    let a_any = a.try_borrow()?;
-    let b_any = b.try_borrow()?;
-    let a_any = a_any.as_any();
-    let b_any = b_any.as_any();
+    let a_any = a.as_any();
+    let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
@@ -101,17 +91,15 @@ pub fn sub(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot subtract type {} and type {}",
-            a.try_borrow()?.technetium_type_name(),
-            b.try_borrow()?.technetium_type_name()
+            a.technetium_type_name(),
+            b.technetium_type_name()
         ))),
     }
 }
 
 pub fn mul(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
-    let a_any = a.try_borrow()?;
-    let b_any = b.try_borrow()?;
-    let a_any = a_any.as_any();
-    let b_any = b_any.as_any();
+    let a_any = a.as_any();
+    let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
@@ -161,15 +149,14 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot multiply type {} by type {}",
-            a.try_borrow()?.technetium_type_name(),
-            b.try_borrow()?.technetium_type_name()
+            a.technetium_type_name(),
+            b.technetium_type_name()
         ))),
     }
 }
 
 pub fn negate(a: ObjectRef) -> RuntimeResult<ObjectRef> {
-    let a_any = a.try_borrow()?;
-    let a_any = a_any.as_any();
+    let a_any = a.as_any();
     match a_any.type_id() {
         a if a == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
@@ -183,16 +170,14 @@ pub fn negate(a: ObjectRef) -> RuntimeResult<ObjectRef> {
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot negate type {}",
-            a.try_borrow()?.technetium_type_name()
+            a.technetium_type_name()
         ))),
     }
 }
 
 pub fn div(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
-    let a_any = a.try_borrow()?;
-    let b_any = b.try_borrow()?;
-    let a_any = a_any.as_any();
-    let b_any = b_any.as_any();
+    let a_any = a.as_any();
+    let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
@@ -220,17 +205,15 @@ pub fn div(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot divide type {} by type {}",
-            a.try_borrow()?.technetium_type_name(),
-            b.try_borrow()?.technetium_type_name()
+            a.technetium_type_name(),
+            b.technetium_type_name()
         ))),
     }
 }
 
 pub fn mod_(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
-    let a_any = a.try_borrow()?;
-    let b_any = b.try_borrow()?;
-    let a_any = a_any.as_any();
-    let b_any = b_any.as_any();
+    let a_any = a.as_any();
+    let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
@@ -258,14 +241,14 @@ pub fn mod_(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot mod type {} by type {}",
-            a.try_borrow()?.technetium_type_name(),
-            b.try_borrow()?.technetium_type_name()
+            a.technetium_type_name(),
+            b.technetium_type_name()
         ))),
     }
 }
 
 pub fn not(a: ObjectRef) -> RuntimeResult<ObjectRef> {
-    Ok(if a.try_borrow()?.truthy() {
+    Ok(if a.truthy() {
         BoolObject::new(false)
     } else {
         BoolObject::new(true)
@@ -273,7 +256,7 @@ pub fn not(a: ObjectRef) -> RuntimeResult<ObjectRef> {
 }
 
 pub fn or(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
-    Ok(if a.try_borrow()?.truthy() || b.try_borrow()?.truthy() {
+    Ok(if a.truthy() || b.truthy() {
         BoolObject::new(true)
     } else {
         BoolObject::new(false)
@@ -281,7 +264,7 @@ pub fn or(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
 }
 
 pub fn and(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
-    Ok(if a.try_borrow()?.truthy() && b.try_borrow()?.truthy() {
+    Ok(if a.truthy() && b.truthy() {
         BoolObject::new(true)
     } else {
         BoolObject::new(false)
@@ -289,10 +272,8 @@ pub fn and(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
 }
 
 pub fn cmp_lt(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
-    let a_any = a.try_borrow()?;
-    let b_any = b.try_borrow()?;
-    let a_any = a_any.as_any();
-    let b_any = b_any.as_any();
+    let a_any = a.as_any();
+    let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
@@ -326,17 +307,15 @@ pub fn cmp_lt(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot compare type {} with type {}",
-            a.try_borrow()?.technetium_type_name(),
-            b.try_borrow()?.technetium_type_name()
+            a.technetium_type_name(),
+            b.technetium_type_name()
         ))),
     }
 }
 
 pub fn cmp_gt(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
-    let a_any = a.try_borrow()?;
-    let b_any = b.try_borrow()?;
-    let a_any = a_any.as_any();
-    let b_any = b_any.as_any();
+    let a_any = a.as_any();
+    let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
@@ -370,17 +349,15 @@ pub fn cmp_gt(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot compare type {} with type {}",
-            a.try_borrow()?.technetium_type_name(),
-            b.try_borrow()?.technetium_type_name()
+            a.technetium_type_name(),
+            b.technetium_type_name()
         ))),
     }
 }
 
 pub fn cmp_eq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
-    let a_any = a.try_borrow()?;
-    let b_any = b.try_borrow()?;
-    let a_any = a_any.as_any();
-    let b_any = b_any.as_any();
+    let a_any = a.as_any();
+    let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
@@ -415,67 +392,52 @@ pub fn cmp_eq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a_, b_) if a_ == TypeId::of::<StringObject>() && b_ == TypeId::of::<StringObject>() => {
             let val_a = a_any.downcast_ref::<StringObject>().unwrap();
             let val_b = b_any.downcast_ref::<StringObject>().unwrap();
-            // Check for alias for speed (.read() .read() shouldn't deadlock)
-            if Rc::ptr_eq(&a, &b) {
-                Ok(BoolObject::new(true))
-            } else {
-                let res = BoolObject::new(*val_a.val.read() == *val_b.val.read());
-                Ok(res)
-            }
+            let res = BoolObject::new(*val_a.val.read() == *val_b.val.read());
+            Ok(res)
         }
         (a_, b_) if a_ == TypeId::of::<List>() && b_ == TypeId::of::<List>() => {
             let val_a = a_any.downcast_ref::<List>().unwrap();
             let val_b = b_any.downcast_ref::<List>().unwrap();
-            if Rc::ptr_eq(&a, &b) {
-                Ok(BoolObject::new(true))
-            } else {
-                let list_1 = val_a.contents.read();
-                let list_2 = val_b.contents.read();
-                if list_1.len() != list_2.len() {
+            let list_1 = val_a.contents.read();
+            let list_2 = val_b.contents.read();
+            if list_1.len() != list_2.len() {
+                return Ok(BoolObject::new(false));
+            }
+            for (index, obj_ref_1) in list_1.iter().enumerate() {
+                let obj_ref_2 = list_2.get(index).unwrap();
+                if !cmp_eq(ObjectRef::clone(obj_ref_1), ObjectRef::clone(obj_ref_2))?.truthy() {
                     return Ok(BoolObject::new(false));
                 }
-                for (index, obj_ref_1) in list_1.iter().enumerate() {
-                    let obj_ref_2 = list_2.get(index).unwrap();
-                    if !cmp_eq(ObjectRef::clone(obj_ref_1), ObjectRef::clone(obj_ref_2))?.try_borrow()?.truthy() {
-                        return Ok(BoolObject::new(false));
-                    }
-                }
-                Ok(BoolObject::new(true))
             }
+            Ok(BoolObject::new(true))
         }
         (a_, b_) if a_ == TypeId::of::<Tuple>() && b_ == TypeId::of::<Tuple>() => {
             let val_a = a_any.downcast_ref::<Tuple>().unwrap();
             let val_b = b_any.downcast_ref::<Tuple>().unwrap();
-            if Rc::ptr_eq(&a, &b) {
-                Ok(BoolObject::new(true))
-            } else {
-                let list_1 = &val_a.contents;
-                let list_2 = &val_b.contents;
-                if list_1.len() != list_2.len() {
+            let list_1 = &val_a.contents;
+            let list_2 = &val_b.contents;
+            if list_1.len() != list_2.len() {
+                return Ok(BoolObject::new(false));
+            }
+            for (index, obj_ref_1) in list_1.iter().enumerate() {
+                let obj_ref_2 = list_2.get(index).unwrap();
+                if !cmp_eq(ObjectRef::clone(obj_ref_1), ObjectRef::clone(obj_ref_2))?.truthy() {
                     return Ok(BoolObject::new(false));
                 }
-                for (index, obj_ref_1) in list_1.iter().enumerate() {
-                    let obj_ref_2 = list_2.get(index).unwrap();
-                    if !cmp_eq(ObjectRef::clone(obj_ref_1), ObjectRef::clone(obj_ref_2))?.try_borrow()?.truthy() {
-                        return Ok(BoolObject::new(false));
-                    }
-                }
-                Ok(BoolObject::new(true))
             }
+            Ok(BoolObject::new(true))
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot equate type {} to type {}",
-            a.try_borrow()?.technetium_type_name(),
-            b.try_borrow()?.technetium_type_name()
+            a.technetium_type_name(),
+            b.technetium_type_name()
         ))),
     }
 }
 
 pub fn cmp_neq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
-    let a_any = a.try_borrow()?;
-    let b_any = b.try_borrow()?;
-    let a_any = a_any.as_any();
-    let b_any = b_any.as_any();
+    let a_any = a.as_any();
+    let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
@@ -510,33 +472,26 @@ pub fn cmp_neq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         (a_, b_) if a_ == TypeId::of::<StringObject>() && b_ == TypeId::of::<StringObject>() => {
             let val_a = a_any.downcast_ref::<StringObject>().unwrap();
             let val_b = b_any.downcast_ref::<StringObject>().unwrap();
-            // Check for alias to avoid deadlock
-            if Rc::ptr_eq(&a, &b) {
-                Ok(BoolObject::new(false))
-            } else {
-                let res = BoolObject::new(*val_a.val.read() != *val_b.val.read());
-                Ok(res)
-            }
+            let res = BoolObject::new(*val_a.val.read() != *val_b.val.read());
+            Ok(res)
         }
         (a_, b_) if a_ == TypeId::of::<List>() && b_ == TypeId::of::<List>() => {
-            Ok(BoolObject::new(!cmp_eq(ObjectRef::clone(&a), ObjectRef::clone(&b))?.try_borrow()?.truthy()))
+            Ok(BoolObject::new(!cmp_eq(ObjectRef::clone(&a), ObjectRef::clone(&b))?.truthy()))
         }
         (a_, b_) if a_ == TypeId::of::<Tuple>() && b_ == TypeId::of::<Tuple>() => {
-            Ok(BoolObject::new(!cmp_eq(ObjectRef::clone(&a), ObjectRef::clone(&b))?.try_borrow()?.truthy()))
+            Ok(BoolObject::new(!cmp_eq(ObjectRef::clone(&a), ObjectRef::clone(&b))?.truthy()))
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot equate type {} to type {}",
-            a.try_borrow()?.technetium_type_name(),
-            b.try_borrow()?.technetium_type_name()
+            a.technetium_type_name(),
+            b.technetium_type_name()
         ))),
     }
 }
 
 pub fn cmp_leq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
-    let a_any = a.try_borrow()?;
-    let b_any = b.try_borrow()?;
-    let a_any = a_any.as_any();
-    let b_any = b_any.as_any();
+    let a_any = a.as_any();
+    let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
@@ -570,17 +525,15 @@ pub fn cmp_leq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot compare type {} with type {}",
-            a.try_borrow()?.technetium_type_name(),
-            b.try_borrow()?.technetium_type_name()
+            a.technetium_type_name(),
+            b.technetium_type_name()
         ))),
     }
 }
 
 pub fn cmp_geq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
-    let a_any = a.try_borrow()?;
-    let b_any = b.try_borrow()?;
-    let a_any = a_any.as_any();
-    let b_any = b_any.as_any();
+    let a_any = a.as_any();
+    let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<IntObject>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any.downcast_ref::<IntObject>().unwrap();
@@ -614,17 +567,15 @@ pub fn cmp_geq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot compare type {} with type {}",
-            a.try_borrow()?.technetium_type_name(),
-            b.try_borrow()?.technetium_type_name()
+            a.technetium_type_name(),
+            b.technetium_type_name()
         ))),
     }
 }
 
 pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
-    let a_any = a.try_borrow()?;
-    let b_any = b.try_borrow()?;
-    let a_any = a_any.as_any();
-    let b_any = b_any.as_any();
+    let a_any = a.as_any();
+    let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<List>() && b == TypeId::of::<IntObject>() => {
             let val_a = a_any
@@ -687,17 +638,15 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot index type {} with type {}",
-            a.try_borrow()?.technetium_type_name(),
-            b.try_borrow()?.technetium_type_name()
+            a.technetium_type_name(),
+            b.technetium_type_name()
         ))),
     }
 }
 
 pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> {
-    let a_any = a.try_borrow()?;
-    let b_any = b.try_borrow()?;
-    let a_any = a_any.as_any();
-    let b_any = b_any.as_any();
+    let a_any = a.as_any();
+    let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
         (a, b) if a == TypeId::of::<List>() && b == TypeId::of::<IntObject>() => {
             let mut val_a = a_any
@@ -720,7 +669,7 @@ pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> 
         (a, b)
             if a == TypeId::of::<StringObject>()
                 && b == TypeId::of::<IntObject>()
-                && c.try_borrow()?.as_any().is::<CharObject>() =>
+                && c.as_any().is::<CharObject>() =>
         {
             let mut val_a = a_any
                 .downcast_ref::<StringObject>()
@@ -733,7 +682,7 @@ pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> 
                 val = (val_a.len() as u64 as i64) + val;
             }
             let index = val.to_usize().ok_or_else(|| RuntimeError::index_oob_error("Index out of bounds"))?;
-            let val_c = c.try_borrow()?;
+            let val_c = c;
             let val_c = val_c.as_any().downcast_ref::<CharObject>().unwrap();
             let ch = val_c.val;
             if index >= val_a.len() {
@@ -750,8 +699,8 @@ pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> 
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot index type {} with type {}",
-            a.try_borrow()?.technetium_type_name(),
-            b.try_borrow()?.technetium_type_name()
+            a.technetium_type_name(),
+            b.technetium_type_name()
         ))),
     }
 }

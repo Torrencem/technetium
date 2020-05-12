@@ -75,7 +75,7 @@ macro_rules! func_object_void {
     ($id:ident, $args_range:tt, $args:ident -> $call:block) => {
         pub struct $id;
 
-        impl Object for $id {
+        impl Object for ObjectCell<$id> {
             fn technetium_type_name(&self) -> String {
                 "builtin func".to_string()
             }
@@ -96,7 +96,7 @@ macro_rules! func_object {
     ($id:ident, $args_range:tt, $args:ident -> $call:block) => {
         pub struct $id;
 
-        impl Object for $id {
+        impl Object for ObjectCell<$id> {
             fn technetium_type_name(&self) -> String {
                 "builtin func".to_string()
             }

@@ -26,7 +26,8 @@ func_object_void!(Print, (0..), args -> {
 
 func_object!(Exit, (1..=1), args -> {
     let arg_any = args[0].as_any();
-    if let Some(int_obj) = arg_any.downcast_ref::<IntObject>() {
+    if let Some(int_obj) = arg_any.downcast_ref::<ObjectCell<IntObject>>() {
+        let int_obj = int_obj.try_borrow()?;
         exit(int_obj.to_i64()? as i32)
     } else {
         exit(if args[0].truthy() { 1 } else { 0 })
@@ -99,7 +100,8 @@ impl Object for ObjectCell<RangeIterator> {
 
 func_object!(RangeFunc, (1..=3), args -> {
     if args.len() == 1 {
-        if let Some(int_obj) = args[0].as_any().downcast_ref::<IntObject>() {
+        if let Some(int_obj) = args[0].as_any().downcast_ref::<ObjectCell<IntObject>>() {
+            let int_obj = int_obj.try_borrow()?;
             Ok(ObjectRef::new(Range { 
                 start: 0,
                 end: int_obj.to_i64()?,
@@ -109,8 +111,10 @@ func_object!(RangeFunc, (1..=3), args -> {
             Err(RuntimeError::type_error("Expected integer arguments to range"))
         }
     } else if args.len() == 2 {
-        if let Some(int_obj_a) = args[0].as_any().downcast_ref::<IntObject>() {
-            if let Some(int_obj_b) = args[1].as_any().downcast_ref::<IntObject>() {
+        if let Some(int_obj_a) = args[0].as_any().downcast_ref::<ObjectCell<IntObject>>() {
+            if let Some(int_obj_b) = args[1].as_any().downcast_ref::<ObjectCell<IntObject>>() {
+                let int_obj_a = int_obj_a.try_borrow()?;
+                let int_obj_b = int_obj_b.try_borrow()?;
                 Ok(ObjectRef::new(Range {
                     start: int_obj_a.to_i64()?,
                     end: int_obj_b.to_i64()?,
@@ -123,9 +127,12 @@ func_object!(RangeFunc, (1..=3), args -> {
             Err(RuntimeError::type_error("Expected integer arguments to range"))
         }
     } else {
-        if let Some(int_obj_a) = args[0].as_any().downcast_ref::<IntObject>() {
-            if let Some(int_obj_b) = args[1].as_any().downcast_ref::<IntObject>() {
-                if let Some(int_obj_c) = args[2].as_any().downcast_ref::<IntObject>() {
+        if let Some(int_obj_a) = args[0].as_any().downcast_ref::<ObjectCell<IntObject>>() {
+            if let Some(int_obj_b) = args[1].as_any().downcast_ref::<ObjectCell<IntObject>>() {
+                if let Some(int_obj_c) = args[2].as_any().downcast_ref::<ObjectCell<IntObject>>() {
+                    let int_obj_a = int_obj_a.try_borrow()?;
+                    let int_obj_b = int_obj_b.try_borrow()?;
+                    let int_obj_c = int_obj_c.try_borrow()?;
                     Ok(ObjectRef::new(Range {
                         start: int_obj_a.to_i64()?,
                         end: int_obj_b.to_i64()?,

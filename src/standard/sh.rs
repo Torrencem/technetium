@@ -160,7 +160,8 @@ impl Object for ObjectCell<ShObject> {
 
 func_object!(Sh, (1..=1), args -> {
     let arg_any = args[0].as_any();
-    if let Some(str_obj) = arg_any.downcast_ref::<StringObject>() {
+    if let Some(str_obj) = arg_any.downcast_ref::<ObjectCell<StringObject>>() {
+        let str_obj = str_obj.try_borrow()?;
         let val = str_obj.val.read();
         Ok(ShObject::new(val.clone()))
     } else {
@@ -170,7 +171,8 @@ func_object!(Sh, (1..=1), args -> {
 
 func_object!(Cd, (1..=1), args -> {
     let arg_any = args[0].as_any();
-    if let Some(str_obj) = arg_any.downcast_ref::<StringObject>() {
+    if let Some(str_obj) = arg_any.downcast_ref::<ObjectCell<StringObject>>() {
+        let str_obj = str_obj.try_borrow()?;
         let val = str_obj.val.read();
         let path = Path::new(&*val);
         env::set_current_dir(path)?;

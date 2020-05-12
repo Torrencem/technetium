@@ -299,7 +299,8 @@ impl<'code> Frame<'code> {
                     let top = self.stack.pop();
                     if let Some(top) = top {
                         let top_any = top.as_any();
-                        if let Some(f) = top_any.downcast_ref::<Function>() {
+                        if let Some(f) = top_any.downcast_ref::<ObjectCell<Function>>() {
+                            let f = f.try_borrow()?;
                             let mut la = f.least_ancestors.write();
                             assert!(la.is_none());
                             *la = Some(self.least_ancestors.clone());
@@ -351,7 +352,8 @@ impl<'code> Frame<'code> {
                     let name = name;
                     let obj = self.stack.pop().unwrap();
                     let name = name.as_any();
-                    if let Some(method_name) = name.downcast_ref::<StringObject>() {
+                    if let Some(method_name) = name.downcast_ref::<ObjectCell<StringObject>>() {
+                        let method_name = method_name.try_borrow()?;
                         let val = method_name.val.read();
                         let res = try_debug!(self, ds, dsw, obj.call_method(val.as_ref(), &args));
                         self.stack.push(res);
@@ -382,7 +384,8 @@ impl<'code> Frame<'code> {
                     let attr = attr;
                     let obj = self.stack.pop().unwrap();
                     let attr = attr.as_any();
-                    if let Some(attr_name) = attr.downcast_ref::<StringObject>() {
+                    if let Some(attr_name) = attr.downcast_ref::<ObjectCell<StringObject>>() {
+                        let attr_name = attr_name.try_borrow()?;
                         let val = attr_name.val.read();
                         let res = try_debug!(self, ds, dsw, obj.get_attr(val.clone()));
                         self.stack.push(res);
@@ -401,7 +404,8 @@ impl<'code> Frame<'code> {
                     let attr = attr;
                     let obj = self.stack.pop().unwrap();
                     let attr = attr.as_any();
-                    if let Some(attr_name) = attr.downcast_ref::<StringObject>() {
+                    if let Some(attr_name) = attr.downcast_ref::<ObjectCell<StringObject>>() {
+                        let attr_name = attr_name.try_borrow()?;
                         let val = attr_name.val.read();
                         try_debug!(self, ds, dsw, obj.set_attr(val.clone(), toset));
                     } else {
@@ -434,8 +438,9 @@ impl<'code> Frame<'code> {
                         self.stack.drain((self.stack.len() - len)..).collect();
                     let subs = self.stack.pop();
                     if let Some(subs) = subs {
-                        if let Some(string) = subs.as_any().downcast_ref::<StringObject>() {
+                        if let Some(string) = subs.as_any().downcast_ref::<ObjectCell<StringObject>>() {
                             let mut result_string = String::new();
+                            let string = string.try_borrow()?;
                             let val = string.val.read();
                             let mut chars = val.chars().peekable();
                             loop {
@@ -656,35 +661,35 @@ impl<'code> Frame<'code> {
                         ));
                     }
                     let step = self.stack.pop().unwrap();
-                    let step = if step.as_any().type_id() == TypeId::of::<VoidObject>() {
+                    let step = if step.as_any().type_id() == TypeId::of::<ObjectCell<VoidObject>>() {
                         1
                     } else {
-                        if let Some(int_obj) = step.as_any().downcast_ref::<IntObject>() {
-                            int_obj.to_i64()?
+                        if let Some(int_obj) = step.as_any().downcast_ref::<ObjectCell<IntObject>>() {
+                            int_obj.try_borrow()?.to_i64()?
                         } else {
                             return Err(RuntimeError::type_error("Slice created with non-integer argument"));
                         }
                     };
                     let stop = self.stack.pop().unwrap();
-                    let mut stop = if stop.as_any().type_id() == TypeId::of::<VoidObject>() {
+                    let mut stop = if stop.as_any().type_id() == TypeId::of::<ObjectCell<VoidObject>>() {
                         None
                     } else {
-                        if let Some(int_obj) = stop.as_any().downcast_ref::<IntObject>() {
-                            Some(int_obj.to_i64()?)
+                        if let Some(int_obj) = stop.as_any().downcast_ref::<ObjectCell<IntObject>>() {
+                            Some(int_obj.try_borrow()?.to_i64()?)
                         } else {
                             return Err(RuntimeError::type_error("Slice created with non-integer argument"));
                         }
                     };
                     let start = self.stack.pop().unwrap();
-                    let mut start = if start.as_any().type_id() == TypeId::of::<VoidObject>() {
+                    let mut start = if start.as_any().type_id() == TypeId::of::<ObjectCell<VoidObject>>() {
                         if step < 0 {
                             -1
                         } else {
                             0
                         }
                     } else {
-                        if let Some(int_obj) = start.as_any().downcast_ref::<IntObject>() {
-                            int_obj.to_i64()?
+                        if let Some(int_obj) = start.as_any().downcast_ref::<ObjectCell<IntObject>>() {
+                            int_obj.try_borrow()?.to_i64()?
                         } else {
                             return Err(RuntimeError::type_error("Slice created with non-integer argument"));
                         }
@@ -842,8 +847,8 @@ impl<'code> Frame<'code> {
                     let top = self.stack.pop();
                     if let Some(top) = top {
                         let top = top.as_any();
-                        if let Some(top) = top.downcast_ref::<StringObject>() {
-                            let arg = top.val.read().clone();
+                        if let Some(top) = top.downcast_ref::<ObjectCell<StringObject>>() {
+                            let arg = top.try_borrow()?.val.read().clone();
                             let mut command = Command::new("sh");
                             let process = command.stdin(Stdio::piped()).spawn();
                             if let Ok(mut child) = process {

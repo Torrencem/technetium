@@ -659,7 +659,7 @@ impl Object for ObjectCell<Slice> {
     fn to_string(&self) -> RuntimeResult<String> {
         let this = self.try_borrow()?;
         let mut res = String::new();
-        if this.parent.as_any().type_id() != TypeId::of::<StringObject>() {
+        if this.parent.as_any().type_id() != TypeId::of::<ObjectCell<StringObject>>() {
             res.push('[');
             let mut first = true;
             let mut curr_index = this.start;

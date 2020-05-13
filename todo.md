@@ -1,6 +1,7 @@
 
 This is a rough todo list of features I need to add to the language:
 
+* pass Files from main around in compile context
 * add full stack trace to diagnostic message in src/error.rs
 * tertiery expressions (if blah then blah else blah)
 * dictionaries

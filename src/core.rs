@@ -148,7 +148,18 @@ where ObjectCell<T>: Object {
     }
 }
 
-pub trait Object: Any + ToAny + OpaqueClone {
+pub trait RawPointer {
+    fn raw_pointer(&self) -> *const ();
+}
+
+impl<T> RawPointer for ObjectCell<T>
+where ObjectCell<T>: Object {
+    fn raw_pointer(&self) -> *const () {
+        self.as_ptr() as *const ()
+    }
+}
+
+pub trait Object: Any + ToAny + OpaqueClone + RawPointer {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::type_error(format!(
             "{} can not be cloned",
@@ -214,6 +225,14 @@ pub trait Object: Any + ToAny + OpaqueClone {
     fn truthy(&self) -> bool {
         true
     }
+
+    fn technetium_eq(&self, _other: ObjectRef) -> Option<bool> {
+        None
+    }
+    
+    fn ref_eq(&self, other: ObjectRef) -> bool {
+        self.raw_pointer() == other.raw_pointer()
+    }
 }
 
 impl fmt::Debug for dyn Object {
@@ -221,6 +240,19 @@ impl fmt::Debug for dyn Object {
         write!(fmt, "{}", self.to_string().unwrap_or("Object".to_string()))
     }
 }
+
+impl PartialEq for ObjectRef {
+    fn eq(&self, other: &ObjectRef) -> bool {
+        match self.technetium_eq(ObjectRef::clone(other)) {
+            Some(val) => val,
+            None => {
+                self.ref_eq(ObjectRef::clone(other))
+            }
+        }
+    }
+}
+
+impl Eq for ObjectRef { }
 
 pub struct BoolObject {
     pub val: bool,
@@ -250,6 +282,14 @@ impl Object for ObjectCell<BoolObject> {
     fn truthy(&self) -> bool {
         let this = self.borrow();
         this.val
+    }
+
+    fn technetium_eq(&self, other: ObjectRef) -> Option<bool> {
+        if let Some(other) = other.as_any().downcast_ref::<Self>() {
+            Some(self.borrow().val == other.borrow().val)
+        } else {
+            None
+        }
     }
 }
 
@@ -292,6 +332,14 @@ impl Object for ObjectCell<IntObject> {
         let this = self.borrow();
         this.val != 0.to_bigint().unwrap()
     }
+
+    fn technetium_eq(&self, other: ObjectRef) -> Option<bool> {
+        if let Some(other) = other.as_any().downcast_ref::<Self>() {
+            Some(self.borrow().val == other.borrow().val)
+        } else {
+            None
+        }
+    }
 }
 
 pub struct FloatObject {
@@ -326,6 +374,14 @@ impl Object for ObjectCell<FloatObject> {
         let this = self.borrow();
         this.val != 0.0
     }
+
+    fn technetium_eq(&self, other: ObjectRef) -> Option<bool> {
+        if let Some(other) = other.as_any().downcast_ref::<Self>() {
+            Some(self.borrow().val == other.borrow().val)
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -357,6 +413,14 @@ impl Object for ObjectCell<CharObject> {
     fn truthy(&self) -> bool {
         let this = self.borrow();
         !this.val.is_whitespace()
+    }
+
+    fn technetium_eq(&self, other: ObjectRef) -> Option<bool> {
+        if let Some(other) = other.as_any().downcast_ref::<Self>() {
+            Some(self.borrow().val == other.borrow().val)
+        } else {
+            None
+        }
     }
 }
 
@@ -432,6 +496,14 @@ impl Object for ObjectCell<StringObject> {
                 "string has no method {}",
                 method
             ))),
+        }
+    }
+
+    fn technetium_eq(&self, other: ObjectRef) -> Option<bool> {
+        if let Some(other) = other.as_any().downcast_ref::<Self>() {
+            Some(self.borrow().val == other.borrow().val)
+        } else {
+            None
         }
     }
 }
@@ -599,6 +671,24 @@ impl Object for ObjectCell<List> {
         };
 
         Ok(ObjectRef::new(iter))
+    }
+
+    fn technetium_eq(&self, other: ObjectRef) -> Option<bool> {
+        if let Some(other) = other.as_any().downcast_ref::<Self>() {
+            let this = self.borrow();
+            let other = other.borrow();
+            if this.contents.len() != other.contents.len() {
+                return Some(false);
+            }
+            for index in 0..this.contents.len() {
+                if this.contents[index].technetium_eq(ObjectRef::clone(&other.contents[index])) != Some(true) {
+                    return Some(false);
+                }
+            }
+            Some(true)
+        } else {
+            None
+        }
     }
 }
 
@@ -777,6 +867,24 @@ impl Object for ObjectCell<Tuple> {
                 "list has no method {}",
                 method
             ))),
+        }
+    }
+
+    fn technetium_eq(&self, other: ObjectRef) -> Option<bool> {
+        if let Some(other) = other.as_any().downcast_ref::<Self>() {
+            let this = self.borrow();
+            let other = other.borrow();
+            if this.contents.len() != other.contents.len() {
+                return Some(false);
+            }
+            for index in 0..this.contents.len() {
+                if this.contents[index].technetium_eq(ObjectRef::clone(&other.contents[index])) != Some(true) {
+                    return Some(false);
+                }
+            }
+            Some(true)
+        } else {
+            None
         }
     }
 }

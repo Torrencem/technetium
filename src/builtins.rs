@@ -356,81 +356,12 @@ pub fn cmp_gt(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
 }
 
 pub fn cmp_eq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
-    let a_any = a.as_any();
-    let b_any = b.as_any();
-    match (a_any.type_id(), b_any.type_id()) {
-        (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let res = BoolObject::new(val_a.val == val_b.val);
-            Ok(res)
-        }
-        (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<FloatObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let res = BoolObject::new((val_a.to_i64()? as f64) == val_b.val);
-            Ok(res)
-        }
-        (a, b) if a == TypeId::of::<ObjectCell<FloatObject>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let res = BoolObject::new(val_a.val == (val_b.to_i64()? as f64));
-            Ok(res)
-        }
-        (a, b) if a == TypeId::of::<ObjectCell<FloatObject>>() && b == TypeId::of::<ObjectCell<FloatObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let res = BoolObject::new(val_a.val == val_b.val);
-            Ok(res)
-        }
-        (a, b) if a == TypeId::of::<ObjectCell<CharObject>>() && b == TypeId::of::<ObjectCell<CharObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<CharObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<CharObject>>().unwrap().try_borrow()?;
-            let res = BoolObject::new(val_a.val == val_b.val);
-            Ok(res)
-        }
-        (a_, b_) if a_ == TypeId::of::<ObjectCell<StringObject>>() && b_ == TypeId::of::<ObjectCell<StringObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<StringObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<StringObject>>().unwrap().try_borrow()?;
-            let res = BoolObject::new(*val_a.val == *val_b.val);
-            Ok(res)
-        }
-        (a_, b_) if a_ == TypeId::of::<ObjectCell<List>>() && b_ == TypeId::of::<ObjectCell<List>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<List>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<List>>().unwrap().try_borrow()?;
-            let list_1 = &val_a.contents;
-            let list_2 = &val_b.contents;
-            if list_1.len() != list_2.len() {
-                return Ok(BoolObject::new(false));
-            }
-            for (index, obj_ref_1) in list_1.iter().enumerate() {
-                let obj_ref_2 = list_2.get(index).unwrap();
-                if !cmp_eq(ObjectRef::clone(obj_ref_1), ObjectRef::clone(obj_ref_2))?.truthy() {
-                    return Ok(BoolObject::new(false));
-                }
-            }
-            Ok(BoolObject::new(true))
-        }
-        (a_, b_) if a_ == TypeId::of::<ObjectCell<Tuple>>() && b_ == TypeId::of::<ObjectCell<Tuple>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<Tuple>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<Tuple>>().unwrap().try_borrow()?;
-            let list_1 = &val_a.contents;
-            let list_2 = &val_b.contents;
-            if list_1.len() != list_2.len() {
-                return Ok(BoolObject::new(false));
-            }
-            for (index, obj_ref_1) in list_1.iter().enumerate() {
-                let obj_ref_2 = list_2.get(index).unwrap();
-                if !cmp_eq(ObjectRef::clone(obj_ref_1), ObjectRef::clone(obj_ref_2))?.truthy() {
-                    return Ok(BoolObject::new(false));
-                }
-            }
-            Ok(BoolObject::new(true))
-        }
-        _ => Err(RuntimeError::type_error(format!(
-            "Cannot equate type {} to type {}",
-            a.technetium_type_name(),
-            b.technetium_type_name()
+    match a.technetium_eq(ObjectRef::clone(&b)) {
+        Some(res) => Ok(BoolObject::new(res)),
+        None => Err(RuntimeError::type_error(format!(
+                    "Cannot equate type {} with type {}",
+                    a.technetium_type_name(),
+                    b.technetium_type_name()
         ))),
     }
 }

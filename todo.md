@@ -4,6 +4,7 @@ This is a rough todo list of features I need to add to the language:
 * dictionaries
 * eval
 * lambdas
+* list conversion function
 * generators
 * comprehensions
 * defer block

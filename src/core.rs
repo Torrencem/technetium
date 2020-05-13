@@ -1,7 +1,7 @@
 
 use crate::bytecode;
 use crate::bytecode::Op;
-use crate::bytecode::{ContextId, FrameId, NonLocalName};
+use crate::bytecode::{ContextId, FrameId};
 use crate::builtins::index_get;
 use crate::standard;
 use crate::memory::*;
@@ -10,10 +10,12 @@ use std::any::TypeId;
 use std::clone::Clone as RustClone;
 use std::collections::HashMap;
 use std::rc::Rc;
+use std::cell::RefCell;
 use parking_lot::RwLock;
 use std::ops::{Deref, DerefMut};
 use num::bigint::{BigInt, ToBigInt};
 use num::cast::ToPrimitive;
+use stable_deref_trait::StableDeref;
 
 use dtoa;
 
@@ -21,7 +23,93 @@ use std::fmt;
 
 use crate::error::*;
 
-pub type ObjectRef = Rc<dyn Object>;
+#[repr(transparent)]
+#[derive(Debug)]
+pub struct ObjectRef {
+    inner: Box<dyn Object>,
+}
+
+impl Deref for ObjectRef {
+    type Target = Box<dyn Object>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
+
+impl DerefMut for ObjectRef {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.inner
+    }
+}
+
+unsafe impl StableDeref for ObjectRef { }
+
+impl ObjectRef {
+    pub fn new_from_cell<T>(obj: ObjectCell<T>) -> Self
+    where ObjectCell<T>: Object {
+        ObjectRef {
+            inner: Box::new(obj),
+        }
+    }
+
+    pub fn new<T>(inner: T) -> Self
+    where ObjectCell<T>: Object {
+        ObjectRef {
+            inner: Box::new(ObjectCell::new(inner)),
+        }
+    }
+}
+
+impl Clone for ObjectRef {
+    fn clone(&self) -> Self {
+        self.inner.opaque_clone()
+    }
+}
+
+#[repr(transparent)]
+#[derive(Debug)]
+pub struct ObjectCell<T>
+where ObjectCell<T>: Object {
+    inner: Rc<RefCell<T>>,
+}
+
+impl<T> Clone for ObjectCell<T>
+where ObjectCell<T>: Object {
+    fn clone(&self) -> Self {
+        ObjectCell {
+            inner: Rc::clone(&self.inner),
+        }
+    }
+}
+
+impl<T> ObjectCell<T> 
+where ObjectCell<T>: Object {
+    pub fn new(val: T) -> Self {
+        ObjectCell {
+            inner: Rc::new(RefCell::new(val)),
+        }
+    }
+}
+
+impl<T> Deref for ObjectCell<T>
+where ObjectCell<T>: Object {
+    type Target = Rc<RefCell<T>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
+
+impl<T> DerefMut for ObjectCell<T>
+where ObjectCell<T>: Object {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.inner
+    }
+}
+
+unsafe impl<T> StableDeref for ObjectCell<T>
+where ObjectCell<T>: Object { }
 
 pub trait ToAny {
     fn as_any(&self) -> &dyn Any;
@@ -38,7 +126,23 @@ impl<T: Object> ToAny for T {
     }
 }
 
-pub trait Object: Any + ToAny {
+pub trait OpaqueClone {
+    fn opaque_clone(&self) -> ObjectRef;
+}
+
+impl<T> OpaqueClone for ObjectCell<T>
+where ObjectCell<T>: Object {
+    fn opaque_clone(&self) -> ObjectRef {
+        let self_copy = ObjectCell {
+            inner: Rc::clone(&self.inner),
+        };
+        ObjectRef {
+            inner: Box::new(self_copy),
+        }
+    }
+}
+
+pub trait Object: Any + ToAny + OpaqueClone {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::type_error(format!(
             "{} can not be cloned",
@@ -55,21 +159,21 @@ pub trait Object: Any + ToAny {
         ))
     }
 
-    fn get_attr(&self, attr: String) -> RuntimeResult<ObjectRef> {
+    fn get_attr(&self, _attr: String) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::attribute_error(format!(
             "{} has no attributes",
             self.technetium_type_name()
         )))
     }
 
-    fn set_attr(&self, attr: String, val: ObjectRef) -> RuntimeResult<()> {
+    fn set_attr(&self, _attr: String, _val: ObjectRef) -> RuntimeResult<()> {
         Err(RuntimeError::attribute_error(format!(
             "Cannot set attributes of {}",
             self.technetium_type_name()
         )))
     }
 
-    fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
+    fn call_method(&self, _method: &str, _args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::attribute_error(format!(
             "Cannot call method of {}",
             self.technetium_type_name()
@@ -78,8 +182,8 @@ pub trait Object: Any + ToAny {
 
     fn call(
         &self,
-        args: &[ObjectRef],
-        locals: &mut MemoryManager,
+        _args: &[ObjectRef],
+        _locals: &mut MemoryManager,
     ) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::type_error(format!(
             "Object of type {} is not callable",
@@ -118,13 +222,14 @@ pub struct BoolObject {
 
 impl BoolObject {
     pub fn new(val: bool) -> ObjectRef {
-        Rc::new(BoolObject { val })
+        ObjectRef::new(BoolObject { val })
     }
 }
 
-impl Object for BoolObject {
+impl Object for ObjectCell<BoolObject> {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        Ok(BoolObject::new(self.val))
+        let this = self.try_borrow()?;
+        Ok(BoolObject::new(this.val))
     }
 
     fn technetium_type_name(&self) -> String {
@@ -132,11 +237,13 @@ impl Object for BoolObject {
     }
 
     fn to_string(&self) -> RuntimeResult<String> {
-        Ok(format!("{}", self.val))
+        let this = self.try_borrow()?;
+        Ok(format!("{}", this.val))
     }
 
     fn truthy(&self) -> bool {
-        self.val
+        let this = self.borrow();
+        this.val
     }
 }
 
@@ -146,12 +253,12 @@ pub struct IntObject {
 
 impl IntObject {
     pub fn new(val: i64) -> ObjectRef {
-        let res = Rc::new(IntObject { val: val.to_bigint().unwrap() });
+        let res = ObjectRef::new(IntObject { val: val.to_bigint().unwrap() });
         res
     }
 
     pub fn new_big(val: BigInt) -> ObjectRef {
-        let res = Rc::new(IntObject { val });
+        let res = ObjectRef::new(IntObject { val });
         res
     }
 
@@ -160,9 +267,10 @@ impl IntObject {
     }
 }
 
-impl Object for IntObject {
+impl Object for ObjectCell<IntObject> {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        Ok(IntObject::new_big(self.val.clone()))
+        let this = self.try_borrow()?;
+        Ok(IntObject::new_big(this.val.clone()))
     }
 
     fn technetium_type_name(&self) -> String {
@@ -170,11 +278,13 @@ impl Object for IntObject {
     }
 
     fn to_string(&self) -> RuntimeResult<String> {
-        Ok(format!("{}", self.val))
+        let this = self.try_borrow()?;
+        Ok(format!("{}", this.val))
     }
 
     fn truthy(&self) -> bool {
-        self.val != 0.to_bigint().unwrap()
+        let this = self.borrow();
+        this.val != 0.to_bigint().unwrap()
     }
 }
 
@@ -184,14 +294,15 @@ pub struct FloatObject {
 
 impl FloatObject {
     pub fn new(val: f64) -> ObjectRef {
-        let res = Rc::new(FloatObject { val });
+        let res = ObjectRef::new(FloatObject { val });
         res
     }
 }
 
-impl Object for FloatObject {
+impl Object for ObjectCell<FloatObject> {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        Ok(FloatObject::new(self.val))
+        let this = self.try_borrow()?;
+        Ok(FloatObject::new(this.val))
     }
 
     fn technetium_type_name(&self) -> String {
@@ -199,13 +310,15 @@ impl Object for FloatObject {
     }
 
     fn to_string(&self) -> RuntimeResult<String> {
+        let this = self.try_borrow()?;
         let mut res: Vec<u8> = vec![];
-        dtoa::write(&mut res, self.val);
+        dtoa::write(&mut res, this.val)?;
         Ok(String::from_utf8(res).unwrap())
     }
 
     fn truthy(&self) -> bool {
-        self.val != 0.0
+        let this = self.borrow();
+        this.val != 0.0
     }
 }
 
@@ -216,13 +329,14 @@ pub struct CharObject {
 
 impl CharObject {
     pub fn new(c: char) -> ObjectRef {
-        Rc::new(CharObject { val: c })
+        ObjectRef::new(CharObject { val: c })
     }
 }
 
-impl Object for CharObject {
+impl Object for ObjectCell<CharObject> {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        Ok(Rc::new(self.clone()))
+        let this = self.try_borrow()?;
+        Ok(ObjectRef::new(this.clone()))
     }
 
     fn technetium_type_name(&self) -> String {
@@ -230,42 +344,31 @@ impl Object for CharObject {
     }
 
     fn to_string(&self) -> RuntimeResult<String> {
-        Ok(self.val.to_string())
+        let this = self.try_borrow()?;
+        Ok(this.val.to_string())
     }
 
     fn truthy(&self) -> bool {
-        !self.val.is_whitespace()
+        let this = self.borrow();
+        !this.val.is_whitespace()
     }
 }
 
 #[derive(Debug)]
 pub struct StringObject {
-    pub val: RwLock<String>,
-}
-
-impl Deref for StringObject {
-    type Target = RwLock<String>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.val
-    }
-}
-
-impl DerefMut for StringObject {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.val
-    }
+    pub val: String,
 }
 
 impl StringObject {
     pub fn new(s: String) -> ObjectRef {
-        Rc::new(StringObject { val: RwLock::new(s) })
+        ObjectRef::new(StringObject { val: s })
     }
 }
 
-impl Object for StringObject {
+impl Object for ObjectCell<StringObject> {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        let val = self.val.read();
+        let this = self.try_borrow()?;
+        let val = &this.val;
         Ok(StringObject::new(val.clone()))
     }
 
@@ -274,37 +377,39 @@ impl Object for StringObject {
     }
 
     fn to_string(&self) -> RuntimeResult<String> {
-        let val = self.val.read();
+        let this = self.try_borrow()?;
+        let val = &this.val;
         Ok(val.clone())
     }
 
     fn truthy(&self) -> bool {
-        let val = self.val.read();
-        *val != ""
+        let this = self.borrow();
+        this.val != ""
     }
 
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
+        let this = self.try_borrow()?;
         match method {
             "length" => {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
-                    Ok(IntObject::new(self.val.read().len() as i64))
+                    Ok(IntObject::new(this.val.len() as i64))
                 }
             },
             "escape" => {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
-                    Ok(StringObject::new(self.val.read().escape_default().collect()))
+                    Ok(StringObject::new(this.val.escape_default().collect()))
                 }
             },
             "lines" => {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("lines expects 0 args"))
                 } else {
-                    Ok(Rc::new(standard::string::Lines {
-                        parent: Rc::new(StringObject { val: RwLock::new(self.val.read().clone()) }),
+                    Ok(ObjectRef::new(standard::string::Lines {
+                        parent: ObjectCell::clone(self),
                     }))
                 }
             },
@@ -312,8 +417,8 @@ impl Object for StringObject {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("chars expects 0 args"))
                 } else {
-                    Ok(Rc::new(standard::string::Chars {
-                        parent: Rc::new(StringObject { val: RwLock::new(self.val.read().clone()) }),
+                    Ok(ObjectRef::new(standard::string::Chars {
+                        parent: ObjectCell::clone(self),
                     }))
                 }
             }
@@ -334,14 +439,15 @@ pub struct Function {
     pub least_ancestors: RwLock<Option<HashMap<ContextId, FrameId>>>,
 }
 
-impl Object for Function {
+impl Object for ObjectCell<Function> {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        Ok(Rc::new(Function {
-            nargs: self.nargs,
-            name: self.name.clone(),
-            context: Rc::clone(&self.context),
-            code: self.code.clone(),
-            context_id: self.context_id,
+        let this = self.try_borrow()?;
+        Ok(ObjectRef::new(Function {
+            nargs: this.nargs,
+            name: this.name.clone(),
+            context: Rc::clone(&this.context),
+            code: this.code.clone(),
+            context_id: this.context_id,
             least_ancestors: RwLock::new(None),
         }))
     }
@@ -359,49 +465,50 @@ impl Object for Function {
         args: &[ObjectRef],
         locals: &mut MemoryManager,
     ) -> RuntimeResult<ObjectRef> {
-        if args.len() != self.nargs {
+        let this = self.try_borrow()?;
+        if args.len() != this.nargs {
             return Err(RuntimeError::type_error(format!(
                 "Incorrect number of arguments given to {}: expected {}, got {}",
-                self.name,
-                self.nargs,
+                this.name,
+                this.nargs,
                 args.len()
             )));
         }
         let mut frame = bytecode::Frame::new(
-            &self.code,
+            &this.code,
             locals,
-            Rc::clone(&self.context),
-            self.least_ancestors
+            Rc::clone(&this.context),
+            this.least_ancestors
                 .read()
                 .as_ref()
                 .unwrap()
                 .clone(),
-            self.context_id,
+            this.context_id,
         );
         for arg in args.iter().rev() {
-            frame.stack.push(Rc::clone(arg));
+            frame.stack.push(ObjectRef::clone(arg));
         }
         let res = frame.run();
         let fid = frame.id;
         drop(frame);
-        locals.clear_frame(fid);
+        locals.clear_frame(fid)?;
         res
     }
 }
 
 pub struct List {
-    pub contents: RwLock<Vec<ObjectRef>>,
+    pub contents: Vec<ObjectRef>,
 }
 
-impl Object for List {
+impl Object for ObjectCell<List> {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
+        let this = self.try_borrow()?;
         let mut res_contents = vec![];
-        let contents_ = self.contents.read();
-        for val in contents_.iter() {
+        for val in this.contents.iter() {
             res_contents.push(val.technetium_clone()?);
         }
-        Ok(Rc::new(List {
-            contents: RwLock::new(res_contents),
+        Ok(ObjectRef::new(List {
+            contents: res_contents,
         }))
     }
 
@@ -410,11 +517,11 @@ impl Object for List {
     }
 
     fn to_string(&self) -> RuntimeResult<String> {
+        let this = self.try_borrow()?;
         let mut res = String::new();
         res.push('[');
         let mut first = true;
-        let vals = self.contents.read();
-        for val in vals.iter() {
+        for val in this.contents.iter() {
             if first {
                 first = false;
             } else {
@@ -427,39 +534,44 @@ impl Object for List {
     }
 
     fn truthy(&self) -> bool {
-        self.contents.read().len() != 0
+        let this = self.borrow();
+        this.contents.len() != 0
     }
 
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
         match method {
             "length" => {
+                let this = self.try_borrow()?;
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
-                    Ok(IntObject::new(self.contents.read().len() as i64))
+                    Ok(IntObject::new(this.contents.len() as i64))
                 }
             }
             "pop" => {
+                let mut this = self.try_borrow_mut()?;
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
-                    Ok(Rc::clone(&self.contents.write().pop().ok_or(RuntimeError::index_oob_error("Popped an empty list"))?))
+                    Ok(ObjectRef::clone(&this.contents.pop().ok_or(RuntimeError::index_oob_error("Popped an empty list"))?))
                 }
             }
             "push" => {
+                let mut this = self.try_borrow_mut()?;
                 if args.len() != 1 {
                     Err(RuntimeError::type_error("push expects 1 arg"))
                 } else {
-                    self.contents.write().push(Rc::clone(&args[0]));
+                    this.contents.push(ObjectRef::clone(&args[0]));
                     Ok(VoidObject::new())
                 }
             }
             "append" => {
+                let mut this = self.try_borrow_mut()?;
                 if args.len() != 1 {
                     Err(RuntimeError::type_error("append expects 1 arg"))
                 } else {
-                    let mut contents = self.contents.write();
-                    let mut iter = args[0].make_iter()?;
+                    let contents = &mut this.contents;
+                    let iter = args[0].make_iter()?;
 
                     while let Some(val) = iter.take_iter()? {
                         contents.push(val);
@@ -476,37 +588,34 @@ impl Object for List {
 
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
         let iter = ListIterator {
-            contents: self
-                .contents
-                .read()
-                .iter()
-                .map(|val| Rc::clone(val))
-                .collect(),
-            index: RwLock::new(0),
+            parent: ObjectCell::clone(self),
+            index: 0,
         };
 
-        Ok(Rc::new(iter))
+        Ok(ObjectRef::new(iter))
     }
 }
 
 pub struct ListIterator {
-    pub contents: Vec<ObjectRef>,
-    pub index: RwLock<usize>,
+    pub parent: ObjectCell<List>,
+    pub index: usize,
 }
 
-impl Object for ListIterator {
+impl Object for ObjectCell<ListIterator> {
     fn technetium_type_name(&self) -> String {
         "iterator(list)".to_string()
     }
 
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
-        let mut index = self.index.write();
-        if *index >= self.contents.len() {
+        let mut this = self.try_borrow_mut()?;
+        let len = this.parent.try_borrow()?.contents.len();
+        let index = &mut this.index;
+        if *index >= len {
             Ok(None)
         } else {
             let old = *index;
             *index += 1;
-            Ok(Some(Rc::clone(&self.contents[old])))
+            Ok(Some(ObjectRef::clone(&this.parent.try_borrow()?.contents[old])))
         }
     }
 }
@@ -519,13 +628,14 @@ pub struct Slice {
     pub step: i64,
 }
 
-impl Object for Slice {
+impl Object for ObjectCell<Slice> {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        Ok(Rc::new(Slice {
-            parent: Rc::clone(&self.parent),
-            start: self.start,
-            stop: self.stop,
-            step: self.step,
+        let this = self.try_borrow()?;
+        Ok(ObjectRef::new(Slice {
+            parent: ObjectRef::clone(&this.parent),
+            start: this.start,
+            stop: this.stop,
+            step: this.step,
         }))
     }
 
@@ -534,28 +644,30 @@ impl Object for Slice {
     }
 
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
-        Ok(Rc::new(SliceIterator {
-            parent: Rc::clone(&self.parent),
-            curr: RwLock::new(self.start),
-            stop: self.stop,
-            step: self.step,
+        let this = self.try_borrow()?;
+        Ok(ObjectRef::new(SliceIterator {
+            parent: ObjectRef::clone(&this.parent),
+            curr: RwLock::new(this.start),
+            stop: this.stop,
+            step: this.step,
         }))
     }
 
     fn to_string(&self) -> RuntimeResult<String> {
+        let this = self.try_borrow()?;
         let mut res = String::new();
-        if self.parent.as_any().type_id() != TypeId::of::<StringObject>() {
+        if this.parent.as_any().type_id() != TypeId::of::<ObjectCell<StringObject>>() {
             res.push('[');
             let mut first = true;
-            let mut curr_index = self.start;
+            let mut curr_index = this.start;
             loop {
-                if let Some(stop) = self.stop {
-                    if self.step < 0 && curr_index <= stop
-                    || self.step > 0 && curr_index >= stop {
+                if let Some(stop) = this.stop {
+                    if this.step < 0 && curr_index <= stop
+                    || this.step > 0 && curr_index >= stop {
                         break;
                     }
                 }
-                let val = index_get(Rc::clone(&self.parent), IntObject::new(curr_index));
+                let val = index_get(ObjectRef::clone(&this.parent), IntObject::new(curr_index));
                 if let Ok(val_) = val {
                     if first {
                         first = false;
@@ -566,26 +678,26 @@ impl Object for Slice {
                 } else {
                     break;
                 }
-                curr_index += self.step;
+                curr_index += this.step;
             }
             res.push(']');
             Ok(res)
         } else {
-            let mut curr_index = self.start;
+            let mut curr_index = this.start;
             loop {
-                if let Some(stop) = self.stop {
-                    if self.step < 0 && curr_index <= stop
-                    || self.step > 0 && curr_index >= stop {
+                if let Some(stop) = this.stop {
+                    if this.step < 0 && curr_index <= stop
+                    || this.step > 0 && curr_index >= stop {
                         break;
                     }
                 }
-                let val = index_get(Rc::clone(&self.parent), IntObject::new(curr_index));
+                let val = index_get(ObjectRef::clone(&this.parent), IntObject::new(curr_index));
                 if let Ok(val_) = val {
                     res.push_str(val_.to_string()?.as_ref());
                 } else {
                     break;
                 }
-                curr_index += self.step;
+                curr_index += this.step;
             }
             Ok(res)
         }
@@ -600,21 +712,22 @@ pub struct SliceIterator {
     pub step: i64,
 }
 
-impl Object for SliceIterator {
+impl Object for ObjectCell<SliceIterator> {
     fn technetium_type_name(&self) -> String {
         "iterator(slice)".to_string()
     }
 
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
-        let mut curr_ = self.curr.write();
-        if let Some(stop) = self.stop {
-            if self.step < 0 && *curr_ <= stop
-            || self.step > 0 && *curr_ >= stop {
+        let this = self.try_borrow()?;
+        let mut curr_ = this.curr.write();
+        if let Some(stop) = this.stop {
+            if this.step < 0 && *curr_ <= stop
+            || this.step > 0 && *curr_ >= stop {
                 return Ok(None);
             }
         }
-        let old = index_get(Rc::clone(&self.parent), IntObject::new(*curr_));
-        *curr_ += self.step;
+        let old = index_get(ObjectRef::clone(&this.parent), IntObject::new(*curr_));
+        *curr_ += this.step;
         Ok(old.ok())
     }
 }
@@ -623,13 +736,14 @@ pub struct Tuple {
     pub contents: Vec<ObjectRef>,
 }
 
-impl Object for Tuple {
+impl Object for ObjectCell<Tuple> {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
+        let this = self.try_borrow()?;
         let mut res_contents = vec![];
-        for val in self.contents.iter() {
+        for val in this.contents.iter() {
             res_contents.push(val.technetium_clone()?);
         }
-        Ok(Rc::new(Tuple {
+        Ok(ObjectRef::new(Tuple {
             contents: res_contents,
         }))
     }
@@ -639,16 +753,18 @@ impl Object for Tuple {
     }
 
     fn truthy(&self) -> bool {
-        self.contents.len() != 0
+        let this = self.borrow();
+        this.contents.len() != 0
     }
 
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
+        let this = self.try_borrow()?;
         match method {
             "length" => {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
-                    Ok(IntObject::new(self.contents.len() as i64))
+                    Ok(IntObject::new(this.contents.len() as i64))
                 }
             }
             _ => Err(RuntimeError::type_error(format!(
@@ -663,11 +779,11 @@ pub struct VoidObject;
 
 impl VoidObject {
     pub fn new() -> ObjectRef {
-        Rc::new(VoidObject)
+        ObjectRef::new(VoidObject)
     }
 }
 
-impl Object for VoidObject {
+impl Object for ObjectCell<VoidObject> {
     fn technetium_type_name(&self) -> String {
         "void".to_string()
     }

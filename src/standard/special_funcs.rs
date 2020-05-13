@@ -1,11 +1,5 @@
-use crate::builtins::*;
-use crate::bytecode::NonLocalName;
-use crate::bytecode::{ContextId, FrameId};
 use crate::core::*;
 use crate::error::*;
-use std::collections::HashMap;
-use parking_lot::RwLock;
-use std::rc::Rc;
 
 use crate::{func_object, func_object_void};
 
@@ -26,7 +20,8 @@ func_object_void!(Print, (0..), args -> {
 
 func_object!(Exit, (1..=1), args -> {
     let arg_any = args[0].as_any();
-    if let Some(int_obj) = arg_any.downcast_ref::<IntObject>() {
+    if let Some(int_obj) = arg_any.downcast_ref::<ObjectCell<IntObject>>() {
+        let int_obj = int_obj.try_borrow()?;
         exit(int_obj.to_i64()? as i32)
     } else {
         exit(if args[0].truthy() { 1 } else { 0 })
@@ -48,9 +43,10 @@ pub struct Range {
     step: i64,
 }
 
-impl Object for Range {
+impl Object for ObjectCell<Range> {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
-        Ok(Rc::new(self.clone()))
+        let this = self.try_borrow()?;
+        Ok(ObjectRef::new(this.clone()))
     }
 
     fn technetium_type_name(&self) -> String {
@@ -58,46 +54,51 @@ impl Object for Range {
     }
 
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
-        Ok(RangeIterator::new(self.clone()))
+        let this = self.try_borrow()?;
+        Ok(RangeIterator::new(this.clone()))
     }
 }
 
 pub struct RangeIterator {
     inner: Range,
-    curr: RwLock<i64>,
+    curr: i64,
 }
 
 impl RangeIterator {
     pub fn new(inner: Range) -> ObjectRef {
-        Rc::new(RangeIterator {
-            curr: RwLock::new(inner.start),
+        ObjectRef::new(RangeIterator {
+            curr: inner.start,
             inner,
         })
     }
 }
 
-impl Object for RangeIterator {
+impl Object for ObjectCell<RangeIterator> {
     fn technetium_type_name(&self) -> String {
         "iterator(range)".to_string()
     }
 
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
-        let mut _curr = self.curr.write();
-        if (self.inner.step < 0 && *_curr <= self.inner.end)
-            || (self.inner.step > 0 && *_curr >= self.inner.end)
+        let mut this = self.try_borrow_mut()?;
+        let step = this.inner.step;
+        let end = this.inner.end;
+        let _curr = &mut this.curr;
+        if (step < 0 && *_curr <= end)
+            || (step > 0 && *_curr >= end)
         {
             return Ok(None);
         }
         let old = *_curr;
-        *_curr += self.inner.step;
+        *_curr += step;
         Ok(Some(IntObject::new(old)))
     }
 }
 
 func_object!(RangeFunc, (1..=3), args -> {
     if args.len() == 1 {
-        if let Some(int_obj) = args[0].as_any().downcast_ref::<IntObject>() {
-            Ok(Rc::new(Range { 
+        if let Some(int_obj) = args[0].as_any().downcast_ref::<ObjectCell<IntObject>>() {
+            let int_obj = int_obj.try_borrow()?;
+            Ok(ObjectRef::new(Range { 
                 start: 0,
                 end: int_obj.to_i64()?,
                 step: 1,
@@ -106,9 +107,11 @@ func_object!(RangeFunc, (1..=3), args -> {
             Err(RuntimeError::type_error("Expected integer arguments to range"))
         }
     } else if args.len() == 2 {
-        if let Some(int_obj_a) = args[0].as_any().downcast_ref::<IntObject>() {
-            if let Some(int_obj_b) = args[1].as_any().downcast_ref::<IntObject>() {
-                Ok(Rc::new(Range {
+        if let Some(int_obj_a) = args[0].as_any().downcast_ref::<ObjectCell<IntObject>>() {
+            if let Some(int_obj_b) = args[1].as_any().downcast_ref::<ObjectCell<IntObject>>() {
+                let int_obj_a = int_obj_a.try_borrow()?;
+                let int_obj_b = int_obj_b.try_borrow()?;
+                Ok(ObjectRef::new(Range {
                     start: int_obj_a.to_i64()?,
                     end: int_obj_b.to_i64()?,
                     step: 1,
@@ -120,10 +123,13 @@ func_object!(RangeFunc, (1..=3), args -> {
             Err(RuntimeError::type_error("Expected integer arguments to range"))
         }
     } else {
-        if let Some(int_obj_a) = args[0].as_any().downcast_ref::<IntObject>() {
-            if let Some(int_obj_b) = args[1].as_any().downcast_ref::<IntObject>() {
-                if let Some(int_obj_c) = args[2].as_any().downcast_ref::<IntObject>() {
-                    Ok(Rc::new(Range {
+        if let Some(int_obj_a) = args[0].as_any().downcast_ref::<ObjectCell<IntObject>>() {
+            if let Some(int_obj_b) = args[1].as_any().downcast_ref::<ObjectCell<IntObject>>() {
+                if let Some(int_obj_c) = args[2].as_any().downcast_ref::<ObjectCell<IntObject>>() {
+                    let int_obj_a = int_obj_a.try_borrow()?;
+                    let int_obj_b = int_obj_b.try_borrow()?;
+                    let int_obj_c = int_obj_c.try_borrow()?;
+                    Ok(ObjectRef::new(Range {
                         start: int_obj_a.to_i64()?,
                         end: int_obj_b.to_i64()?,
                         step: int_obj_c.to_i64()?,

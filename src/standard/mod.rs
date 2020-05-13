@@ -4,11 +4,9 @@ pub mod special_funcs;
 pub mod conversion;
 pub mod string;
 
-use crate::bytecode::{ContextId, FrameId, GlobalConstantDescriptor, GlobalContext};
+use crate::bytecode::{ContextId, GlobalConstantDescriptor};
 use crate::core::*;
-use crate::error::*;
 use std::collections::HashMap;
-use std::rc::Rc;
 
 pub static STANDARD_CONTEXT_ID: ContextId = 0;
 
@@ -43,30 +41,30 @@ pub fn get_default_namespace_descriptors() -> HashMap<String, GlobalConstantDesc
 
 pub fn get_default_namespace() -> HashMap<GlobalConstantDescriptor, ObjectRef> {
         let mut res: HashMap<GlobalConstantDescriptor, ObjectRef> = HashMap::new();
-        res.insert((STANDARD_CONTEXT_ID, 0), Rc::new(special_funcs::Print));
-        res.insert((STANDARD_CONTEXT_ID, 1), Rc::new(special_funcs::Exit));
-        res.insert((STANDARD_CONTEXT_ID, 2), Rc::new(special_funcs::RangeFunc));
-        res.insert((STANDARD_CONTEXT_ID, 3), Rc::new(sh::Sh));
-        res.insert((STANDARD_CONTEXT_ID, 4), Rc::new(sh::Cd));
-        res.insert((STANDARD_CONTEXT_ID, 5), Rc::new(sh::Os));
-        res.insert((STANDARD_CONTEXT_ID, 6), Rc::new(sh::LinuxDistro));
-        res.insert((STANDARD_CONTEXT_ID, 7), Rc::new(math::Sin));
-        res.insert((STANDARD_CONTEXT_ID, 8), Rc::new(math::Cos));
-        res.insert((STANDARD_CONTEXT_ID, 9), Rc::new(math::Tan));
-        res.insert((STANDARD_CONTEXT_ID, 10), Rc::new(math::Abs));
-        res.insert((STANDARD_CONTEXT_ID, 11), Rc::new(math::Sqrt));
-        res.insert((STANDARD_CONTEXT_ID, 12), Rc::new(math::Exp));
-        res.insert((STANDARD_CONTEXT_ID, 13), Rc::new(math::Ln));
-        res.insert((STANDARD_CONTEXT_ID, 14), Rc::new(math::Arcsin));
-        res.insert((STANDARD_CONTEXT_ID, 15), Rc::new(math::Arccos));
-        res.insert((STANDARD_CONTEXT_ID, 16), Rc::new(math::Arctan));
-        res.insert((STANDARD_CONTEXT_ID, 17), Rc::new(special_funcs::Type));
-        res.insert((STANDARD_CONTEXT_ID, 18), Rc::new(conversion::String_));
-        res.insert((STANDARD_CONTEXT_ID, 19), Rc::new(special_funcs::Clone_));
-        res.insert((STANDARD_CONTEXT_ID, 20), Rc::new(conversion::Bool));
-        res.insert((STANDARD_CONTEXT_ID, 21), Rc::new(conversion::Int));
-        res.insert((STANDARD_CONTEXT_ID, 22), Rc::new(conversion::Float));
-        res.insert((STANDARD_CONTEXT_ID, 23), Rc::new(conversion::Char));
+        res.insert((STANDARD_CONTEXT_ID, 0), ObjectRef::new(special_funcs::Print));
+        res.insert((STANDARD_CONTEXT_ID, 1), ObjectRef::new(special_funcs::Exit));
+        res.insert((STANDARD_CONTEXT_ID, 2), ObjectRef::new(special_funcs::RangeFunc));
+        res.insert((STANDARD_CONTEXT_ID, 3), ObjectRef::new(sh::Sh));
+        res.insert((STANDARD_CONTEXT_ID, 4), ObjectRef::new(sh::Cd));
+        res.insert((STANDARD_CONTEXT_ID, 5), ObjectRef::new(sh::Os));
+        res.insert((STANDARD_CONTEXT_ID, 6), ObjectRef::new(sh::LinuxDistro));
+        res.insert((STANDARD_CONTEXT_ID, 7), ObjectRef::new(math::Sin));
+        res.insert((STANDARD_CONTEXT_ID, 8), ObjectRef::new(math::Cos));
+        res.insert((STANDARD_CONTEXT_ID, 9), ObjectRef::new(math::Tan));
+        res.insert((STANDARD_CONTEXT_ID, 10), ObjectRef::new(math::Abs));
+        res.insert((STANDARD_CONTEXT_ID, 11), ObjectRef::new(math::Sqrt));
+        res.insert((STANDARD_CONTEXT_ID, 12), ObjectRef::new(math::Exp));
+        res.insert((STANDARD_CONTEXT_ID, 13), ObjectRef::new(math::Ln));
+        res.insert((STANDARD_CONTEXT_ID, 14), ObjectRef::new(math::Arcsin));
+        res.insert((STANDARD_CONTEXT_ID, 15), ObjectRef::new(math::Arccos));
+        res.insert((STANDARD_CONTEXT_ID, 16), ObjectRef::new(math::Arctan));
+        res.insert((STANDARD_CONTEXT_ID, 17), ObjectRef::new(special_funcs::Type));
+        res.insert((STANDARD_CONTEXT_ID, 18), ObjectRef::new(conversion::String_));
+        res.insert((STANDARD_CONTEXT_ID, 19), ObjectRef::new(special_funcs::Clone_));
+        res.insert((STANDARD_CONTEXT_ID, 20), ObjectRef::new(conversion::Bool));
+        res.insert((STANDARD_CONTEXT_ID, 21), ObjectRef::new(conversion::Int));
+        res.insert((STANDARD_CONTEXT_ID, 22), ObjectRef::new(conversion::Float));
+        res.insert((STANDARD_CONTEXT_ID, 23), ObjectRef::new(conversion::Char));
         res
 }
 
@@ -75,7 +73,7 @@ macro_rules! func_object_void {
     ($id:ident, $args_range:tt, $args:ident -> $call:block) => {
         pub struct $id;
 
-        impl Object for $id {
+        impl Object for ObjectCell<$id> {
             fn technetium_type_name(&self) -> String {
                 "builtin func".to_string()
             }
@@ -96,7 +94,7 @@ macro_rules! func_object {
     ($id:ident, $args_range:tt, $args:ident -> $call:block) => {
         pub struct $id;
 
-        impl Object for $id {
+        impl Object for ObjectCell<$id> {
             fn technetium_type_name(&self) -> String {
                 "builtin func".to_string()
             }

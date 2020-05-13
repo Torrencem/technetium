@@ -1,5 +1,3 @@
-#![allow(unused)]
-#![allow(non_upper_case_globals)]
 #[macro_use]
 extern crate lalrpop_util;
 #[macro_use]
@@ -30,14 +28,13 @@ use std::process::exit;
 use std::rc::Rc;
 
 extern crate clap;
-use clap::{App, Arg, SubCommand};
+use clap::{App, Arg, };
 use std::io::{self, Read};
 
 use codespan::Files;
 use codespan_reporting::term;
 use codespan_reporting::term::termcolor::{ColorChoice, StandardStream};
 
-use lalrpop_util::ParseError;
 use log::Level;
 
 fn main() {
@@ -67,7 +64,7 @@ fn main() {
         _ => Level::Trace,
     };
 
-    logging::init(log_level);
+    logging::init(log_level).expect("error initializing logging");
 
     let mut files = Files::new();
 
@@ -89,8 +86,6 @@ fn main() {
         },
         &input,
     );
-
-    let verbose = matches.is_present("verbose");
 
     let lexer = Lexer::new(input.as_ref());
 

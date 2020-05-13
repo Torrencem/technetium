@@ -1,5 +1,3 @@
-use codespan::{FileId, Span};
-use codespan_reporting::diagnostic::{Diagnostic, Label};
 use std::str::CharIndices;
 use std::str::FromStr;
 
@@ -92,6 +90,7 @@ enum ParsedNum {
 
 pub struct Lexer<'input> {
     chars: std::iter::Peekable<CharIndices<'input>>,
+    #[allow(unused)]
     input: &'input str,
 }
 
@@ -487,15 +486,6 @@ impl<'input> Iterator for Lexer<'input> {
                     }
                     _ => {
                         return Some(Ok((i, Tok::Greater, i + 1)));
-                    }
-                },
-                Some((i, '!')) => match self.chars.peek() {
-                    Some((_, '=')) => {
-                        self.chars.next();
-                        return Some(Ok((i, Tok::Neq, i + 2)));
-                    }
-                    _ => {
-                        return Some(Ok((i, Tok::Not, i + 1)));
                     }
                 },
                 Some((i, '|')) => match self.chars.peek() {

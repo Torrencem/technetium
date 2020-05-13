@@ -3,19 +3,16 @@ use std::collections::HashMap;
 use crate::core::*;
 use crate::error::*;
 
-use parking_lot::RwLock;
 use std::sync;
 use std::rc::Rc;
 use std::clone::Clone as RustClone;
-use std::io::{self, Write};
+use std::io::Write;
 use std::process::{Command, Stdio};
 
 use crate::builtins;
 use crate::standard::get_default_namespace;
 use crate::standard::conversion;
 use crate::memory::*;
-
-use std::fmt;
 
 use std::any::TypeId;
 
@@ -269,7 +266,7 @@ impl<'code> Frame<'code> {
                 Op::store(local_name) => {
                     let res = self.stack.pop();
                     if let Some(val) = res {
-                        self.locals.set((self.id, *local_name), val);
+                        self.locals.set((self.id, *local_name), val)?;
                     } else {
                         return Err(RuntimeError::internal_error("Stored an empty stack!"));
                     }
@@ -280,7 +277,7 @@ impl<'code> Frame<'code> {
                         self.locals.set(
                             (*self.least_ancestors.get(&nl_name.0).unwrap(), nl_name.1),
                             val,
-                        );
+                        )?;
                     } else {
                         return Err(RuntimeError::internal_error("Stored an empty stack!"));
                     }
@@ -299,7 +296,8 @@ impl<'code> Frame<'code> {
                     let top = self.stack.pop();
                     if let Some(top) = top {
                         let top_any = top.as_any();
-                        if let Some(f) = top_any.downcast_ref::<Function>() {
+                        if let Some(f) = top_any.downcast_ref::<ObjectCell<Function>>() {
+                            let f = f.try_borrow()?;
                             let mut la = f.least_ancestors.write();
                             assert!(la.is_none());
                             *la = Some(self.least_ancestors.clone());
@@ -331,7 +329,7 @@ impl<'code> Frame<'code> {
                     }
                 }
                 Op::dup => {
-                    let dup = self.stack.last().map(|val| Rc::clone(val));
+                    let dup = self.stack.last().map(|val| ObjectRef::clone(val));
                     if let Some(val) = dup {
                         self.stack.push(val);
                     } else {
@@ -348,10 +346,12 @@ impl<'code> Frame<'code> {
                     let args: Vec<ObjectRef> =
                         self.stack.drain((self.stack.len() - nargs)..).collect();
                     let name = self.stack.pop().unwrap();
+                    let name = name;
                     let obj = self.stack.pop().unwrap();
                     let name = name.as_any();
-                    if let Some(method_name) = name.downcast_ref::<StringObject>() {
-                        let val = method_name.val.read();
+                    if let Some(method_name) = name.downcast_ref::<ObjectCell<StringObject>>() {
+                        let method_name = method_name.try_borrow()?;
+                        let val = &method_name.val;
                         let res = try_debug!(self, ds, dsw, obj.call_method(val.as_ref(), &args));
                         self.stack.push(res);
                     } else {
@@ -378,10 +378,12 @@ impl<'code> Frame<'code> {
                         ));
                     }
                     let attr = self.stack.pop().unwrap();
+                    let attr = attr;
                     let obj = self.stack.pop().unwrap();
                     let attr = attr.as_any();
-                    if let Some(attr_name) = attr.downcast_ref::<StringObject>() {
-                        let val = attr_name.val.read();
+                    if let Some(attr_name) = attr.downcast_ref::<ObjectCell<StringObject>>() {
+                        let attr_name = attr_name.try_borrow()?;
+                        let val = &attr_name.val;
                         let res = try_debug!(self, ds, dsw, obj.get_attr(val.clone()));
                         self.stack.push(res);
                     } else {
@@ -396,10 +398,12 @@ impl<'code> Frame<'code> {
                     }
                     let toset = self.stack.pop().unwrap();
                     let attr = self.stack.pop().unwrap();
+                    let attr = attr;
                     let obj = self.stack.pop().unwrap();
                     let attr = attr.as_any();
-                    if let Some(attr_name) = attr.downcast_ref::<StringObject>() {
-                        let val = attr_name.val.read();
+                    if let Some(attr_name) = attr.downcast_ref::<ObjectCell<StringObject>>() {
+                        let attr_name = attr_name.try_borrow()?;
+                        let val = &attr_name.val;
                         try_debug!(self, ds, dsw, obj.set_attr(val.clone(), toset));
                     } else {
                         return Err(RuntimeError::internal_error("Attribute name not a string!"));
@@ -431,9 +435,10 @@ impl<'code> Frame<'code> {
                         self.stack.drain((self.stack.len() - len)..).collect();
                     let subs = self.stack.pop();
                     if let Some(subs) = subs {
-                        if let Some(string) = subs.as_any().downcast_ref::<StringObject>() {
+                        if let Some(string) = subs.as_any().downcast_ref::<ObjectCell<StringObject>>() {
                             let mut result_string = String::new();
-                            let val = string.val.read();
+                            let string = string.try_borrow()?;
+                            let val = &string.val;
                             let mut chars = val.chars().peekable();
                             loop {
                                 match chars.next() {
@@ -653,35 +658,35 @@ impl<'code> Frame<'code> {
                         ));
                     }
                     let step = self.stack.pop().unwrap();
-                    let step = if step.as_any().type_id() == TypeId::of::<VoidObject>() {
+                    let step = if step.as_any().type_id() == TypeId::of::<ObjectCell<VoidObject>>() {
                         1
                     } else {
-                        if let Some(int_obj) = step.as_any().downcast_ref::<IntObject>() {
-                            int_obj.to_i64()?
+                        if let Some(int_obj) = step.as_any().downcast_ref::<ObjectCell<IntObject>>() {
+                            int_obj.try_borrow()?.to_i64()?
                         } else {
                             return Err(RuntimeError::type_error("Slice created with non-integer argument"));
                         }
                     };
                     let stop = self.stack.pop().unwrap();
-                    let mut stop = if stop.as_any().type_id() == TypeId::of::<VoidObject>() {
+                    let mut stop = if stop.as_any().type_id() == TypeId::of::<ObjectCell<VoidObject>>() {
                         None
                     } else {
-                        if let Some(int_obj) = stop.as_any().downcast_ref::<IntObject>() {
-                            Some(int_obj.to_i64()?)
+                        if let Some(int_obj) = stop.as_any().downcast_ref::<ObjectCell<IntObject>>() {
+                            Some(int_obj.try_borrow()?.to_i64()?)
                         } else {
                             return Err(RuntimeError::type_error("Slice created with non-integer argument"));
                         }
                     };
                     let start = self.stack.pop().unwrap();
-                    let mut start = if start.as_any().type_id() == TypeId::of::<VoidObject>() {
+                    let mut start = if start.as_any().type_id() == TypeId::of::<ObjectCell<VoidObject>>() {
                         if step < 0 {
                             -1
                         } else {
                             0
                         }
                     } else {
-                        if let Some(int_obj) = start.as_any().downcast_ref::<IntObject>() {
-                            int_obj.to_i64()?
+                        if let Some(int_obj) = start.as_any().downcast_ref::<ObjectCell<IntObject>>() {
+                            int_obj.try_borrow()?.to_i64()?
                         } else {
                             return Err(RuntimeError::type_error("Slice created with non-integer argument"));
                         }
@@ -706,7 +711,7 @@ impl<'code> Frame<'code> {
                             stop,
                             step,
                     };
-                    self.stack.push(Rc::new(slice));
+                    self.stack.push(ObjectRef::new(slice));
                 }
                 Op::make_iter => {
                     let val = self.stack.pop();
@@ -745,15 +750,15 @@ impl<'code> Frame<'code> {
                     let len = *len as usize;
                     let objs: Vec<ObjectRef> =
                         self.stack.drain((self.stack.len() - len)..).collect();
-                    self.stack.push(Rc::new(List {
-                        contents: RwLock::new(objs),
+                    self.stack.push(ObjectRef::new(List {
+                        contents: objs,
                     }));
                 }
                 Op::mktuple(len) => {
                     let len = *len as usize;
                     let objs: Vec<ObjectRef> =
                         self.stack.drain((self.stack.len() - len)..).collect();
-                    self.stack.push(Rc::new(Tuple { contents: objs }));
+                    self.stack.push(ObjectRef::new(Tuple { contents: objs }));
                 }
                 Op::push_int(int_val) => {
                     let obj = IntObject::new(*int_val as i64);
@@ -770,7 +775,7 @@ impl<'code> Frame<'code> {
                 Op::push_const(const_descr) => {
                     let obj = self.global_context.constant_descriptors.get(const_descr);
                     if let Some(obj) = obj {
-                        self.stack.push(Rc::clone(obj));
+                        self.stack.push(ObjectRef::clone(obj));
                     } else {
                         return Err(RuntimeError::internal_error(
                             "Reference to constant that doesn't exist!",
@@ -790,7 +795,7 @@ impl<'code> Frame<'code> {
                 Op::push_global_default(const_descr) => {
                     let obj = default_namespace.get(const_descr);
                     if let Some(obj) = obj {
-                        self.stack.push(Rc::clone(obj));
+                        self.stack.push(ObjectRef::clone(obj));
                     } else {
                         return Err(RuntimeError::internal_error(
                             "Reference to a global default that doesn't exist!",
@@ -839,15 +844,15 @@ impl<'code> Frame<'code> {
                     let top = self.stack.pop();
                     if let Some(top) = top {
                         let top = top.as_any();
-                        if let Some(top) = top.downcast_ref::<StringObject>() {
-                            let arg = top.val.read().clone();
+                        if let Some(top) = top.downcast_ref::<ObjectCell<StringObject>>() {
+                            let arg = top.try_borrow()?.val.clone();
                             let mut command = Command::new("sh");
                             let process = command.stdin(Stdio::piped()).spawn();
                             if let Ok(mut child) = process {
-                                child.stdin.as_mut().unwrap().write_all(arg.as_bytes());
+                                child.stdin.as_mut().unwrap().write_all(arg.as_bytes())?;
                                 let exit_code = try_debug!(self, ds, dsw, child.wait());
                                 if !exit_code.success() {
-                                    let mut err = RuntimeError::child_process_error(format!(
+                                    let err = RuntimeError::child_process_error(format!(
                                         "Child process returned {}",
                                         exit_code
                                     ));
@@ -863,7 +868,7 @@ impl<'code> Frame<'code> {
                                     return Err(err);
                                 }
                             } else {
-                                let mut err = RuntimeError::child_process_error(
+                                let err = RuntimeError::child_process_error(
                                     "Child process failed to start",
                                 );
                                 if let Some(ds) = ds {

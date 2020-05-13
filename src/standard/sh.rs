@@ -1,13 +1,7 @@
-use crate::builtins::*;
-use crate::bytecode::NonLocalName;
-use crate::bytecode::{ContextId, FrameId};
 use crate::core::*;
 use crate::error::*;
-use std::collections::HashMap;
-use parking_lot::RwLock;
-use std::rc::Rc;
 
-use std::io::{self, Write};
+use std::io::Write;
 use std::process::{Child, Command, Output, Stdio};
 use std::path::Path;
 use std::env;
@@ -20,9 +14,9 @@ use sys_info::os_type;
 #[derive(Debug)]
 pub struct ShObject {
     pub argument: String,
-    pub state: RwLock<ShObjectState>,
-    pub child: RwLock<Option<Child>>,
-    pub output: RwLock<Option<Output>>,
+    pub state: ShObjectState,
+    pub child: Option<Child>,
+    pub output: Option<Output>,
 }
 
 #[derive(Debug)]
@@ -34,18 +28,16 @@ pub enum ShObjectState {
 
 impl ShObject {
     pub fn new(command: String) -> ObjectRef {
-        Rc::new(ShObject {
+        ObjectRef::new(ShObject {
             argument: command,
-            state: RwLock::new(ShObjectState::Prepared),
-            child: RwLock::new(None),
-            output: RwLock::new(None),
+            state: ShObjectState::Prepared,
+            child: None,
+            output: None,
         })
     }
 
-    pub fn spawn(&self) -> RuntimeResult<()> {
+    pub fn spawn(&mut self) -> RuntimeResult<()> {
         trace!("Spawning subprocess from sh()");
-        let mut state_ = self.state.write();
-        let mut child_ = self.child.write();
         let mut cmd = Command::new("sh")
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
@@ -53,37 +45,31 @@ impl ShObject {
         cmd.stdin
             .as_mut()
             .unwrap()
-            .write_all(self.argument.clone().as_bytes());
-        if let ShObjectState::Prepared = *state_ {
-            *state_ = ShObjectState::Running;
-            *child_ = Some(cmd);
+            .write_all(self.argument.clone().as_bytes())?;
+        if let ShObjectState::Prepared = self.state {
+            self.state = ShObjectState::Running;
+            self.child = Some(cmd);
         }
         Ok(())
     }
 
-    pub fn join(&self) -> RuntimeResult<()> {
+    pub fn join(&mut self) -> RuntimeResult<()> {
         trace!("Joining subprocess from sh(..).join()");
-        let state_ = self.state.read();
-        if let ShObjectState::Prepared = *state_ {
-            drop(state_);
+        if let ShObjectState::Prepared = self.state {
             self.spawn()?;
         }
-        let mut state_ = self.state.write();
-        let mut child_ = self.child.write();
 
-        if let ShObjectState::Running = *state_ {
-            *state_ = ShObjectState::Finished;
-            let child_ = child_.take().unwrap();
-            let mut output_ = self.output.write();
-            *output_ = Some(child_.wait_with_output()?);
+        if let ShObjectState::Running = self.state {
+            self.state = ShObjectState::Finished;
+            let child = self.child.take().unwrap();
+            self.output = Some(child.wait_with_output()?);
         }
 
         Ok(())
     }
 
     pub fn stdout(&self) -> RuntimeResult<ObjectRef> {
-        let output = self.output.read();
-        if let Some(ref output) = *output {
+        if let Some(ref output) = self.output {
             let bytes = &output.stdout;
             Ok(StringObject::new(
                 String::from_utf8_lossy(bytes).into_owned(),
@@ -95,8 +81,7 @@ impl ShObject {
     }
 
     pub fn stderr(&self) -> RuntimeResult<ObjectRef> {
-        let output = self.output.read();
-        if let Some(ref output) = *output {
+        if let Some(ref output) = self.output {
             let bytes = &output.stderr;
             Ok(StringObject::new(
                 String::from_utf8_lossy(bytes).into_owned(),
@@ -107,8 +92,7 @@ impl ShObject {
     }
 
     pub fn exit_code(&self) -> RuntimeResult<ObjectRef> {
-        let output = self.output.read();
-        if let Some(ref output) = *output {
+        if let Some(ref output) = self.output {
             let status = &output.status;
             if let Some(val) = status.code() {
                 Ok(IntObject::new(val as i64))
@@ -120,9 +104,8 @@ impl ShObject {
         }
     }
 
-    pub fn kill(&self) -> RuntimeResult<()> {
-        let mut child = self.child.write();
-        if let Some(ref mut child) = *child {
+    pub fn kill(&mut self) -> RuntimeResult<()> {
+        if let Some(ref mut child) = self.child {
             child.kill()?;
             Ok(())
         } else {
@@ -131,12 +114,13 @@ impl ShObject {
     }
 }
 
-impl Object for ShObject {
+impl Object for ObjectCell<ShObject> {
     fn technetium_type_name(&self) -> String {
         "sh".to_string()
     }
 
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
+        let mut this = self.try_borrow_mut()?;
         if args.len() != 0 {
             return Err(RuntimeError::type_error(
                 "Unexpected arguments to method call",
@@ -144,12 +128,12 @@ impl Object for ShObject {
         }
 
         match method {
-            "spawn" => self.spawn()?,
-            "join" => self.join()?,
-            "stdout" => return Ok(self.stdout()?),
-            "stderr" => return Ok(self.stderr()?),
-            "exit_code" => return Ok(self.exit_code()?),
-            "kill" => self.kill()?,
+            "spawn" => this.spawn()?,
+            "join" => this.join()?,
+            "stdout" => return Ok(this.stdout()?),
+            "stderr" => return Ok(this.stderr()?),
+            "exit_code" => return Ok(this.exit_code()?),
+            "kill" => this.kill()?,
             _ => return Err(RuntimeError::type_error("Unknown method")),
         }
 
@@ -159,8 +143,9 @@ impl Object for ShObject {
 
 func_object!(Sh, (1..=1), args -> {
     let arg_any = args[0].as_any();
-    if let Some(str_obj) = arg_any.downcast_ref::<StringObject>() {
-        let val = str_obj.val.read();
+    if let Some(str_obj) = arg_any.downcast_ref::<ObjectCell<StringObject>>() {
+        let str_obj = str_obj.try_borrow()?;
+        let val = &str_obj.val;
         Ok(ShObject::new(val.clone()))
     } else {
         Err(RuntimeError::type_error("Incorrect type as argument to sh; expected string"))
@@ -169,8 +154,9 @@ func_object!(Sh, (1..=1), args -> {
 
 func_object!(Cd, (1..=1), args -> {
     let arg_any = args[0].as_any();
-    if let Some(str_obj) = arg_any.downcast_ref::<StringObject>() {
-        let val = str_obj.val.read();
+    if let Some(str_obj) = arg_any.downcast_ref::<ObjectCell<StringObject>>() {
+        let str_obj = str_obj.try_borrow()?;
+        let val = &str_obj.val;
         let path = Path::new(&*val);
         env::set_current_dir(path)?;
         Ok(VoidObject::new())

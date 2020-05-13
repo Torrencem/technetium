@@ -1,9 +1,8 @@
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use crate::bytecode::*;
 use crate::error::*;
 use crate::core::*;
-use std::rc::Rc;
 
 pub trait BackingIndex {
     fn to_usize(&self) -> usize;
@@ -113,7 +112,7 @@ impl MemoryManager {
 
     pub fn do_not_drop(&mut self, cid: ContextId, index: LocalName) -> RuntimeResult<()> {
         debug!("Registered a do-not-drop, cid: {}, index: {}", cid, index);
-        let mut dnd = self.do_not_drops.get_mut(cid);
+        let dnd = self.do_not_drops.get_mut(cid);
         if let Some(dnd) = dnd {
             dnd.insert(index);
             Ok(())
@@ -132,11 +131,11 @@ impl MemoryManager {
 
         let rc = frame.get(index.1).ok_or_else(|| RuntimeError::internal_error("Called get on a value in a frame that doesn't exist"))?;
 
-        Ok(Rc::clone(rc))
+        Ok(ObjectRef::clone(rc))
     }
 
     pub fn set(&mut self, index: NonLocalName, val: ObjectRef) -> RuntimeResult<()> {
-        let mut frame = self.memory.get_mut(index.0).ok_or_else(|| RuntimeError::internal_error("Called set on a frame that doesn't exist"))?;
+        let frame = self.memory.get_mut(index.0).ok_or_else(|| RuntimeError::internal_error("Called set on a frame that doesn't exist"))?;
         
         frame.insert(index.1, val);
 
@@ -145,7 +144,7 @@ impl MemoryManager {
 
     pub fn clear_frame(&mut self, fid: FrameId) -> RuntimeResult<()> {
         trace!("Clearing frame {}", fid);
-        let mut frame = self.memory.get_mut(fid).ok_or_else(|| RuntimeError::internal_error("Called clear frame on a frame that doesn't exist"))?;
+        let frame = self.memory.get_mut(fid).ok_or_else(|| RuntimeError::internal_error("Called clear frame on a frame that doesn't exist"))?;
 
         let context_id = self.frame_index.get(fid).ok_or_else(|| RuntimeError::internal_error("Called clear frame on a frame that doesn't correspond to a context"))?;
 

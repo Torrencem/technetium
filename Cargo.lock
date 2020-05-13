@@ -951,6 +951,7 @@ dependencies = [
  "parking_lot",
  "predicates",
  "rental",
+ "stable_deref_trait",
  "sys-info",
 ]
 

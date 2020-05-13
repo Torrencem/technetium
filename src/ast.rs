@@ -1,11 +1,8 @@
-use crate::compile::*;
 use codespan::Span;
 
 use crate::error::*;
-use crate::lexer;
 use crate::lexer::Lexer;
 use crate::script;
-use lalrpop_util;
 
 #[derive(Clone, Debug)]
 pub enum Literal {

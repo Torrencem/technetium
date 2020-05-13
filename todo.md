@@ -1,7 +1,8 @@
 
 This is a rough todo list of features I need to add to the language:
 
-* dictionaries
+* dictionaries and sets
+* add hash special function
 * eval
 * lambdas
 * list conversion function

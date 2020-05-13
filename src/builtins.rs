@@ -1,8 +1,6 @@
 use crate::core::*;
 use crate::error::*;
 use std::any::TypeId;
-use parking_lot::RwLock;
-use std::rc::Rc;
 use num::bigint::BigInt;
 use num::traits::identities::One;
 use num::traits::identities::Zero;
@@ -130,7 +128,7 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let val_a = &val_a.contents;
             let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
             let mut res: Vec<ObjectRef> = vec![];
-            for _ in (0..val_b.to_i64()?) {
+            for _ in 0..val_b.to_i64()? {
                 for obj_ref in val_a.iter() {
                     res.push(ObjectRef::clone(obj_ref));
                 }
@@ -142,7 +140,7 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let val_b = b_any.downcast_ref::<ObjectCell<List>>().unwrap().try_borrow()?;
             let val_b = &val_b.contents;
             let mut res: Vec<ObjectRef> = vec![];
-            for _ in (0..val_a.to_i64()?) {
+            for _ in 0..val_a.to_i64()? {
                 for obj_ref in val_b.iter() {
                     res.push(ObjectRef::clone(obj_ref));
                 }

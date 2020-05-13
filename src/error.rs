@@ -1,9 +1,8 @@
 //! Lextime, Parsetime, Compiletime, and Runtime errors for technetium
 
-use crate::bytecode::Op;
 use crate::lexer::Tok;
 use crate::bytecode::DebugSymbol;
-use codespan::{FileId, Span};
+use codespan::Span;
 use codespan_reporting::diagnostic::{Diagnostic, Label};
 use std::fmt;
 use std::sync;
@@ -349,11 +348,11 @@ pub fn offset_parse_error_spans(p: &mut ParseError, offset: usize) {
         ParseError::InvalidToken { location: l } => *l += offset,
         ParseError::UnrecognizedEOF {
             location: l,
-            expected: e,
+            expected: _e,
         } => *l += offset,
         ParseError::UnrecognizedToken {
             token: t,
-            expected: e,
+            expected: _e,
         } => *t = (t.0 + offset, t.1.clone(), t.2 + offset),
         ParseError::ExtraToken { token: t } => *t = (t.0 + offset, t.1.clone(), t.2 + offset),
         ParseError::User { error: e } => e.offset_spans(offset),

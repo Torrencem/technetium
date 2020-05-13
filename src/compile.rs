@@ -5,12 +5,10 @@ use crate::error::*;
 use crate::memory::*;
 use crate::standard::STANDARD_CONTEXT_ID;
 use crate::standard::get_default_namespace_descriptors;
-use codespan::{FileId, Span};
-use codespan_reporting::diagnostic::{Diagnostic, Label};
+use codespan::FileId;
 use std::clone::Clone as RustClone;
 use std::collections::HashMap;
 use std::i32;
-use std::result::Result as RustResult;
 use parking_lot::RwLock;
 use std::rc::Rc;
 
@@ -128,7 +126,11 @@ impl CompileManager {
                 if first {
                     return NameLookupResult::MyLocal(*local_index);
                 } else {
-                    self.memory_manager.do_not_drop(context.context_id, *local_index);
+                    // This unwrap *could* panic, but:
+                    // 1. it would be an internal_error
+                    // 2. it could happen at runtime or compile time, which
+                    //    would be difficult to handle correctly.
+                    self.memory_manager.do_not_drop(context.context_id, *local_index).expect("Internal memory manager error on do_not_drop");
                     return NameLookupResult::ExternLocal((context.context_id, *local_index));
                 }
             }
@@ -519,7 +521,7 @@ impl CompileManager {
         
         let new_cid = self.context_id_gen();
         self.memory_manager.register_context(new_cid);
-        let mut sub_context = CompileContext::new(new_cid, self.context().file_id);
+        let sub_context = CompileContext::new(new_cid, self.context().file_id);
         for arg in ast.args.iter() {
             let name = self.local_name_gen();
             self.local_index

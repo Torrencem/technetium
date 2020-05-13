@@ -1,13 +1,7 @@
-use crate::builtins::*;
-use crate::bytecode::NonLocalName;
-use crate::bytecode::{ContextId, FrameId};
 use crate::core::*;
 use crate::error::*;
-use std::collections::HashMap;
-use parking_lot::RwLock;
-use std::rc::Rc;
 
-use std::io::{self, Write};
+use std::io::Write;
 use std::process::{Child, Command, Output, Stdio};
 use std::path::Path;
 use std::env;
@@ -51,7 +45,7 @@ impl ShObject {
         cmd.stdin
             .as_mut()
             .unwrap()
-            .write_all(self.argument.clone().as_bytes());
+            .write_all(self.argument.clone().as_bytes())?;
         if let ShObjectState::Prepared = self.state {
             self.state = ShObjectState::Running;
             self.child = Some(cmd);

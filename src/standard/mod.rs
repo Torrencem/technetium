@@ -4,11 +4,9 @@ pub mod special_funcs;
 pub mod conversion;
 pub mod string;
 
-use crate::bytecode::{ContextId, FrameId, GlobalConstantDescriptor, GlobalContext};
+use crate::bytecode::{ContextId, GlobalConstantDescriptor};
 use crate::core::*;
-use crate::error::*;
 use std::collections::HashMap;
-use std::rc::Rc;
 
 pub static STANDARD_CONTEXT_ID: ContextId = 0;
 

@@ -1,7 +1,7 @@
 
 use crate::bytecode;
 use crate::bytecode::Op;
-use crate::bytecode::{ContextId, FrameId, NonLocalName};
+use crate::bytecode::{ContextId, FrameId};
 use crate::builtins::index_get;
 use crate::standard;
 use crate::memory::*;
@@ -159,21 +159,21 @@ pub trait Object: Any + ToAny + OpaqueClone {
         ))
     }
 
-    fn get_attr(&self, attr: String) -> RuntimeResult<ObjectRef> {
+    fn get_attr(&self, _attr: String) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::attribute_error(format!(
             "{} has no attributes",
             self.technetium_type_name()
         )))
     }
 
-    fn set_attr(&self, attr: String, val: ObjectRef) -> RuntimeResult<()> {
+    fn set_attr(&self, _attr: String, _val: ObjectRef) -> RuntimeResult<()> {
         Err(RuntimeError::attribute_error(format!(
             "Cannot set attributes of {}",
             self.technetium_type_name()
         )))
     }
 
-    fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
+    fn call_method(&self, _method: &str, _args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::attribute_error(format!(
             "Cannot call method of {}",
             self.technetium_type_name()
@@ -182,8 +182,8 @@ pub trait Object: Any + ToAny + OpaqueClone {
 
     fn call(
         &self,
-        args: &[ObjectRef],
-        locals: &mut MemoryManager,
+        _args: &[ObjectRef],
+        _locals: &mut MemoryManager,
     ) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::type_error(format!(
             "Object of type {} is not callable",
@@ -312,7 +312,7 @@ impl Object for ObjectCell<FloatObject> {
     fn to_string(&self) -> RuntimeResult<String> {
         let this = self.try_borrow()?;
         let mut res: Vec<u8> = vec![];
-        dtoa::write(&mut res, this.val);
+        dtoa::write(&mut res, this.val)?;
         Ok(String::from_utf8(res).unwrap())
     }
 
@@ -491,7 +491,7 @@ impl Object for ObjectCell<Function> {
         let res = frame.run();
         let fid = frame.id;
         drop(frame);
-        locals.clear_frame(fid);
+        locals.clear_frame(fid)?;
         res
     }
 }
@@ -570,8 +570,8 @@ impl Object for ObjectCell<List> {
                 if args.len() != 1 {
                     Err(RuntimeError::type_error("append expects 1 arg"))
                 } else {
-                    let mut contents = &mut this.contents;
-                    let mut iter = args[0].make_iter()?;
+                    let contents = &mut this.contents;
+                    let iter = args[0].make_iter()?;
 
                     while let Some(val) = iter.take_iter()? {
                         contents.push(val);
@@ -587,7 +587,6 @@ impl Object for ObjectCell<List> {
     }
 
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
-        let this = self.try_borrow()?;
         let iter = ListIterator {
             parent: ObjectCell::clone(self),
             index: 0,

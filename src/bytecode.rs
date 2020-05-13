@@ -3,19 +3,16 @@ use std::collections::HashMap;
 use crate::core::*;
 use crate::error::*;
 
-use parking_lot::RwLock;
 use std::sync;
 use std::rc::Rc;
 use std::clone::Clone as RustClone;
-use std::io::{self, Write};
+use std::io::Write;
 use std::process::{Command, Stdio};
 
 use crate::builtins;
 use crate::standard::get_default_namespace;
 use crate::standard::conversion;
 use crate::memory::*;
-
-use std::fmt;
 
 use std::any::TypeId;
 
@@ -269,7 +266,7 @@ impl<'code> Frame<'code> {
                 Op::store(local_name) => {
                     let res = self.stack.pop();
                     if let Some(val) = res {
-                        self.locals.set((self.id, *local_name), val);
+                        self.locals.set((self.id, *local_name), val)?;
                     } else {
                         return Err(RuntimeError::internal_error("Stored an empty stack!"));
                     }
@@ -280,7 +277,7 @@ impl<'code> Frame<'code> {
                         self.locals.set(
                             (*self.least_ancestors.get(&nl_name.0).unwrap(), nl_name.1),
                             val,
-                        );
+                        )?;
                     } else {
                         return Err(RuntimeError::internal_error("Stored an empty stack!"));
                     }
@@ -852,10 +849,10 @@ impl<'code> Frame<'code> {
                             let mut command = Command::new("sh");
                             let process = command.stdin(Stdio::piped()).spawn();
                             if let Ok(mut child) = process {
-                                child.stdin.as_mut().unwrap().write_all(arg.as_bytes());
+                                child.stdin.as_mut().unwrap().write_all(arg.as_bytes())?;
                                 let exit_code = try_debug!(self, ds, dsw, child.wait());
                                 if !exit_code.success() {
-                                    let mut err = RuntimeError::child_process_error(format!(
+                                    let err = RuntimeError::child_process_error(format!(
                                         "Child process returned {}",
                                         exit_code
                                     ));
@@ -871,7 +868,7 @@ impl<'code> Frame<'code> {
                                     return Err(err);
                                 }
                             } else {
-                                let mut err = RuntimeError::child_process_error(
+                                let err = RuntimeError::child_process_error(
                                     "Child process failed to start",
                                 );
                                 if let Some(ds) = ds {

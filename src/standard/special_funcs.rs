@@ -1,11 +1,5 @@
-use crate::builtins::*;
-use crate::bytecode::NonLocalName;
-use crate::bytecode::{ContextId, FrameId};
 use crate::core::*;
 use crate::error::*;
-use std::collections::HashMap;
-use parking_lot::RwLock;
-use std::rc::Rc;
 
 use crate::{func_object, func_object_void};
 

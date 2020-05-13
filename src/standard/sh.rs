@@ -20,9 +20,9 @@ use sys_info::os_type;
 #[derive(Debug)]
 pub struct ShObject {
     pub argument: String,
-    pub state: RwLock<ShObjectState>,
-    pub child: RwLock<Option<Child>>,
-    pub output: RwLock<Option<Output>>,
+    pub state: ShObjectState,
+    pub child: Option<Child>,
+    pub output: Option<Output>,
 }
 
 #[derive(Debug)]
@@ -36,16 +36,14 @@ impl ShObject {
     pub fn new(command: String) -> ObjectRef {
         ObjectRef::new(ShObject {
             argument: command,
-            state: RwLock::new(ShObjectState::Prepared),
-            child: RwLock::new(None),
-            output: RwLock::new(None),
+            state: ShObjectState::Prepared,
+            child: None,
+            output: None,
         })
     }
 
-    pub fn spawn(&self) -> RuntimeResult<()> {
+    pub fn spawn(&mut self) -> RuntimeResult<()> {
         trace!("Spawning subprocess from sh()");
-        let mut state_ = self.state.write();
-        let mut child_ = self.child.write();
         let mut cmd = Command::new("sh")
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
@@ -54,36 +52,30 @@ impl ShObject {
             .as_mut()
             .unwrap()
             .write_all(self.argument.clone().as_bytes());
-        if let ShObjectState::Prepared = *state_ {
-            *state_ = ShObjectState::Running;
-            *child_ = Some(cmd);
+        if let ShObjectState::Prepared = self.state {
+            self.state = ShObjectState::Running;
+            self.child = Some(cmd);
         }
         Ok(())
     }
 
-    pub fn join(&self) -> RuntimeResult<()> {
+    pub fn join(&mut self) -> RuntimeResult<()> {
         trace!("Joining subprocess from sh(..).join()");
-        let state_ = self.state.read();
-        if let ShObjectState::Prepared = *state_ {
-            drop(state_);
+        if let ShObjectState::Prepared = self.state {
             self.spawn()?;
         }
-        let mut state_ = self.state.write();
-        let mut child_ = self.child.write();
 
-        if let ShObjectState::Running = *state_ {
-            *state_ = ShObjectState::Finished;
-            let child_ = child_.take().unwrap();
-            let mut output_ = self.output.write();
-            *output_ = Some(child_.wait_with_output()?);
+        if let ShObjectState::Running = self.state {
+            self.state = ShObjectState::Finished;
+            let child = self.child.take().unwrap();
+            self.output = Some(child.wait_with_output()?);
         }
 
         Ok(())
     }
 
     pub fn stdout(&self) -> RuntimeResult<ObjectRef> {
-        let output = self.output.read();
-        if let Some(ref output) = *output {
+        if let Some(ref output) = self.output {
             let bytes = &output.stdout;
             Ok(StringObject::new(
                 String::from_utf8_lossy(bytes).into_owned(),
@@ -95,8 +87,7 @@ impl ShObject {
     }
 
     pub fn stderr(&self) -> RuntimeResult<ObjectRef> {
-        let output = self.output.read();
-        if let Some(ref output) = *output {
+        if let Some(ref output) = self.output {
             let bytes = &output.stderr;
             Ok(StringObject::new(
                 String::from_utf8_lossy(bytes).into_owned(),
@@ -107,8 +98,7 @@ impl ShObject {
     }
 
     pub fn exit_code(&self) -> RuntimeResult<ObjectRef> {
-        let output = self.output.read();
-        if let Some(ref output) = *output {
+        if let Some(ref output) = self.output {
             let status = &output.status;
             if let Some(val) = status.code() {
                 Ok(IntObject::new(val as i64))
@@ -120,9 +110,8 @@ impl ShObject {
         }
     }
 
-    pub fn kill(&self) -> RuntimeResult<()> {
-        let mut child = self.child.write();
-        if let Some(ref mut child) = *child {
+    pub fn kill(&mut self) -> RuntimeResult<()> {
+        if let Some(ref mut child) = self.child {
             child.kill()?;
             Ok(())
         } else {
@@ -137,7 +126,7 @@ impl Object for ObjectCell<ShObject> {
     }
 
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
-        let this = self.try_borrow()?;
+        let mut this = self.try_borrow_mut()?;
         if args.len() != 0 {
             return Err(RuntimeError::type_error(
                 "Unexpected arguments to method call",

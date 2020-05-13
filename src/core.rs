@@ -16,6 +16,9 @@ use std::ops::{Deref, DerefMut};
 use num::bigint::{BigInt, ToBigInt};
 use num::cast::ToPrimitive;
 use stable_deref_trait::StableDeref;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::Hash;
+use std::hash::Hasher;
 
 use dtoa;
 
@@ -45,6 +48,36 @@ impl DerefMut for ObjectRef {
 
 unsafe impl StableDeref for ObjectRef { }
 
+/// An object reference that's guaranteed to have a valid hash (that doesn't throw errors)
+///
+/// Construct a `HashableObjectRef` using the `hashable` method of `ObjectRef`
+///
+/// Unlike ObjectRef, HashableObjectRef implements Hash
+#[derive(Debug)]
+pub struct HashableObjectRef {
+    inner: Box<dyn Object>,
+}
+
+impl Deref for HashableObjectRef {
+    type Target = Box<dyn Object>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
+
+impl DerefMut for HashableObjectRef {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.inner
+    }
+}
+
+impl Hash for HashableObjectRef {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        state.write_u64(self.technetium_hash().unwrap());
+    }
+}
+
 impl ObjectRef {
     pub fn new_from_cell<T>(obj: ObjectCell<T>) -> Self
     where ObjectCell<T>: Object {
@@ -57,6 +90,16 @@ impl ObjectRef {
     where ObjectCell<T>: Object {
         ObjectRef {
             inner: Box::new(ObjectCell::new(inner)),
+        }
+    }
+    
+    /// Create a HashableObjectRef, by checking if it has a valid hash
+    pub fn hashable(&self) -> Option<HashableObjectRef> {
+        if self.technetium_hash().is_none() {
+            None
+        } else {
+            let new = self.opaque_clone();
+            Some(HashableObjectRef { inner: new.inner })
         }
     }
 }
@@ -167,6 +210,10 @@ pub trait Object: Any + ToAny + OpaqueClone + RawPointer {
         )))
     }
 
+    fn technetium_hash(&self) -> Option<u64> {
+        None
+    }
+
     fn technetium_type_name(&self) -> String;
 
     fn to_string(&self) -> RuntimeResult<String> {
@@ -254,6 +301,7 @@ impl PartialEq for ObjectRef {
 
 impl Eq for ObjectRef { }
 
+#[derive(Hash)]
 pub struct BoolObject {
     pub val: bool,
 }
@@ -268,6 +316,12 @@ impl Object for ObjectCell<BoolObject> {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         Ok(BoolObject::new(this.val))
+    }
+
+    fn technetium_hash(&self) -> Option<u64> {
+        let mut hasher = DefaultHasher::new();
+        self.try_borrow().ok()?.hash(&mut hasher);
+        Some(hasher.finish())
     }
 
     fn technetium_type_name(&self) -> String {
@@ -293,6 +347,7 @@ impl Object for ObjectCell<BoolObject> {
     }
 }
 
+#[derive(Hash)]
 pub struct IntObject {
     pub val: BigInt,
 }
@@ -321,6 +376,12 @@ impl Object for ObjectCell<IntObject> {
 
     fn technetium_type_name(&self) -> String {
         "int".to_string()
+    }
+    
+    fn technetium_hash(&self) -> Option<u64> {
+        let mut hasher = DefaultHasher::new();
+        self.try_borrow().ok()?.hash(&mut hasher);
+        Some(hasher.finish())
     }
 
     fn to_string(&self) -> RuntimeResult<String> {
@@ -362,6 +423,13 @@ impl Object for ObjectCell<FloatObject> {
     fn technetium_type_name(&self) -> String {
         "int".to_string()
     }
+    
+    fn technetium_hash(&self) -> Option<u64> {
+        let mut hasher = DefaultHasher::new();
+        let val = self.try_borrow().ok()?.val;
+        hasher.write(&val.to_be_bytes());
+        Some(hasher.finish())
+    }
 
     fn to_string(&self) -> RuntimeResult<String> {
         let this = self.try_borrow()?;
@@ -384,7 +452,7 @@ impl Object for ObjectCell<FloatObject> {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash)]
 pub struct CharObject {
     pub val: char,
 }
@@ -403,6 +471,12 @@ impl Object for ObjectCell<CharObject> {
 
     fn technetium_type_name(&self) -> String {
         "char".to_string()
+    }
+
+    fn technetium_hash(&self) -> Option<u64> {
+        let mut hasher = DefaultHasher::new();
+        self.try_borrow().ok()?.hash(&mut hasher);
+        Some(hasher.finish())
     }
 
     fn to_string(&self) -> RuntimeResult<String> {
@@ -424,7 +498,7 @@ impl Object for ObjectCell<CharObject> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Hash)]
 pub struct StringObject {
     pub val: String,
 }
@@ -444,6 +518,12 @@ impl Object for ObjectCell<StringObject> {
 
     fn technetium_type_name(&self) -> String {
         "string".to_string()
+    }
+
+    fn technetium_hash(&self) -> Option<u64> {
+        let mut hasher = DefaultHasher::new();
+        self.try_borrow().ok()?.hash(&mut hasher);
+        Some(hasher.finish())
     }
 
     fn to_string(&self) -> RuntimeResult<String> {
@@ -592,6 +672,14 @@ impl Object for ObjectCell<List> {
 
     fn technetium_type_name(&self) -> String {
         "list".to_string()
+    }
+
+    fn technetium_hash(&self) -> Option<u64> {
+        let mut hasher = DefaultHasher::new();
+        for val in self.try_borrow().ok()?.contents.iter() {
+            hasher.write_u64(val.technetium_hash()?);
+        }
+        Some(hasher.finish())
     }
 
     fn to_string(&self) -> RuntimeResult<String> {
@@ -846,6 +934,14 @@ impl Object for ObjectCell<Tuple> {
 
     fn technetium_type_name(&self) -> String {
         "tuple".to_string()
+    }
+    
+    fn technetium_hash(&self) -> Option<u64> {
+        let mut hasher = DefaultHasher::new();
+        for val in self.try_borrow().ok()?.contents.iter() {
+            hasher.write_u64(val.technetium_hash()?);
+        }
+        Some(hasher.finish())
     }
 
     fn truthy(&self) -> bool {

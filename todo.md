@@ -1,7 +1,6 @@
 
 This is a rough todo list of features I need to add to the language:
 
-* make a technetium_hash method in Object trait (Hash is not object safe because of the generic parameter). Then derive Hash for each of the Object structs and make that work
 * dictionaries
 * eval
 * lambdas

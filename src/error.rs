@@ -50,6 +50,7 @@ pub enum RuntimeErrorType {
     /// An error raised by trying to modify and read something at the same time
     BorrowError,
     BorrowMutError,
+    MutateImmutableError,
 }
 
 impl From<sys_info::Error> for RuntimeError {
@@ -98,6 +99,27 @@ impl From<cell::BorrowMutError> for RuntimeError {
             err: RuntimeErrorType::BorrowMutError,
             help: error.to_string(),
             symbols: vec![],
+        }
+    }
+}
+
+impl From<mlrefcell::BorrowMutError> for RuntimeError {
+    fn from(error: mlrefcell::BorrowMutError) -> Self {
+        match error {
+            mlrefcell::BorrowMutError::AlreadyBorrowed => {
+                RuntimeError {
+                    err: RuntimeErrorType::BorrowMutError,
+                    help: "tried to mutate and read from the same object".to_string(),
+                    symbols: vec![],
+                }
+            },
+            mlrefcell::BorrowMutError::Locked => {
+                RuntimeError {
+                    err: RuntimeErrorType::MutateImmutableError,
+                    help: "tried to mutate value that was forced to be immutable".to_string(),
+                    symbols: vec![],
+                }
+            }
         }
     }
 }

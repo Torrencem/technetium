@@ -47,11 +47,11 @@ rental! {
     mod line_rentals {
         use super::*;
         use std::cell::Ref;
-        use std::cell::RefCell;
+        use mlrefcell::MLRefCell;
         
         #[rental]
         pub struct LinesIteratorHead {
-            #[target_ty = "Rc<RefCell<StringObject>>"]
+            #[target_ty = "Rc<MLRefCell<StringObject>>"]
             head: ObjectCell<StringObject>,
             parent: Ref<'head, StringObject>,
         }
@@ -118,11 +118,11 @@ rental! {
     mod char_rentals {
         use super::*;
         use std::cell::Ref;
-        use std::cell::RefCell;
+        use mlrefcell::MLRefCell;
         
         #[rental]
         pub struct CharsIteratorHead {
-            #[target_ty = "Rc<RefCell<StringObject>>"]
+            #[target_ty = "Rc<MLRefCell<StringObject>>"]
             head: ObjectCell<StringObject>,
             parent: Ref<'head, StringObject>,
         }

@@ -24,6 +24,7 @@ rental = "0.5.4"
 parking_lot = "0.10.2"
 num = "0.2.1"
 stable_deref_trait = "1.1.1"
+mlrefcell = { path = "mlrefcell" }
 
 [dev-dependencies]
 assert_cmd = "1.0.1"

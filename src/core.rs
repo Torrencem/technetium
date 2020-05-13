@@ -10,7 +10,7 @@ use std::any::TypeId;
 use std::clone::Clone as RustClone;
 use std::collections::HashMap;
 use std::rc::Rc;
-use std::cell::RefCell;
+use mlrefcell::MLRefCell;
 use parking_lot::RwLock;
 use std::ops::{Deref, DerefMut};
 use num::bigint::{BigInt, ToBigInt};
@@ -71,7 +71,7 @@ impl Clone for ObjectRef {
 #[derive(Debug)]
 pub struct ObjectCell<T>
 where ObjectCell<T>: Object {
-    inner: Rc<RefCell<T>>,
+    inner: Rc<MLRefCell<T>>,
 }
 
 impl<T> Clone for ObjectCell<T>
@@ -87,14 +87,20 @@ impl<T> ObjectCell<T>
 where ObjectCell<T>: Object {
     pub fn new(val: T) -> Self {
         ObjectCell {
-            inner: Rc::new(RefCell::new(val)),
+            inner: Rc::new(MLRefCell::new(val)),
         }
+    }
+    /// Lock the `MLRefCell` inside the cell, effectively making the value immutable, giving a
+    /// runtime error for any future mutation of the object. This is useful if the value will need
+    /// to be used as the key in a HashMap, or in a HashSet
+    pub fn lock(&self) {
+        let _ = self.inner.lock();
     }
 }
 
 impl<T> Deref for ObjectCell<T>
 where ObjectCell<T>: Object {
-    type Target = Rc<RefCell<T>>;
+    type Target = Rc<MLRefCell<T>>;
 
     fn deref(&self) -> &Self::Target {
         &self.inner

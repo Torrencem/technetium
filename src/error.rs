@@ -3,10 +3,13 @@
 use crate::lexer::Tok;
 use crate::bytecode::DebugSymbol;
 use codespan::Span;
+use codespan::FileId;
+use codespan::Files;
 use codespan_reporting::diagnostic::{Diagnostic, Label};
 use std::fmt;
 use std::sync;
 use std::cell;
+use std::borrow::Cow;
 use sys_info;
 
 use lalrpop_util;
@@ -159,14 +162,24 @@ impl RuntimeError {
     }
 
     /// Create a diagnostic message from an error, for reporting to the user
-    pub fn as_diagnostic<FileId>(&self, fileid: FileId) -> Diagnostic<FileId> {
-        // TODO: use other spans in the stack
+    pub fn as_diagnostic(&self) -> Diagnostic<FileId> {
         match self.symbols.get(0) {
             Some(&symbol) => Diagnostic::error()
                 .with_message(format!("Runtime Error: {:?}", self.err))
-                .with_labels(vec![Label::primary(fileid, symbol.location).with_message(&self.help)]),
+                .with_labels(vec![Label::primary(symbol.file_id, symbol.location).with_message(&self.help)]),
             None => Diagnostic::error().with_message(&self.help),
         }
+    }
+
+    pub fn stack_trace(&self, files: &Files<Cow<'_, str>>) -> Vec<String> {
+        let mut res = vec![];
+        for symbol in self.symbols.iter() {
+            let slice = files.source_slice(symbol.file_id, symbol.location).unwrap_or("<Unknown>");
+            let location = files.location(symbol.file_id, symbol.location.start()).map_or("??".to_string(), |location| format!("line {}, col {}", location.line.number(), location.column.number()));
+            let fname = files.name(symbol.file_id).to_string_lossy();
+            res.push(format!("{} at {}: \"{}\"", fname, location, slice));
+        }
+        res
     }
 }
 

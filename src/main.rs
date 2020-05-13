@@ -26,6 +26,7 @@ use standard::STANDARD_CONTEXT_ID;
 use std::collections::HashMap;
 use std::process::exit;
 use std::rc::Rc;
+use std::borrow::Cow;
 
 extern crate clap;
 use clap::{App, Arg, };
@@ -66,7 +67,7 @@ fn main() {
 
     logging::init(log_level).expect("error initializing logging");
 
-    let mut files = Files::new();
+    let mut files: Files<Cow<'_, str>> = Files::new();
 
     let input: String = match matches.value_of("INPUT") {
         Some(file_name) => std::fs::read_to_string(file_name).expect("Error reading file"),
@@ -84,7 +85,7 @@ fn main() {
             Some(file_name) => file_name,
             None => "<anonymous>",
         },
-        &input,
+        Cow::from(&input),
     );
 
     let lexer = Lexer::new(input.as_ref());
@@ -149,12 +150,18 @@ fn main() {
 
     let computation = computation.unwrap_or_else(|e| {
         let writer = StandardStream::stderr(ColorChoice::Always);
-        let config = codespan_reporting::term::Config::default();
+        let primary_config = codespan_reporting::term::Config::default();
 
-        let diagnostic = e.as_diagnostic(file_id);
+        let primary_diagnostic = e.as_diagnostic();
 
-        term::emit(&mut writer.lock(), &config, &files, &diagnostic)
+        term::emit(&mut writer.lock(), &primary_config, &files, &primary_diagnostic)
             .expect("Error writing error message");
+        println!("Stack trace:");
+        let secondary_diagnostics = e.stack_trace(&files);
+        for secondary in secondary_diagnostics.iter() {
+            println!("{}", secondary);
+        }
+
         exit(1)
     });
 

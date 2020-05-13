@@ -1,8 +1,6 @@
 
 This is a rough todo list of features I need to add to the language:
 
-* pass Files from main around in compile context
-* add full stack trace to diagnostic message in src/error.rs
 * tertiery expressions (if blah then blah else blah)
 * dictionaries
 * eval
@@ -10,8 +8,9 @@ This is a rough todo list of features I need to add to the language:
 * generators
 * comprehensions
 * defer block
-* 2 places where memory is essentially leaked: Reference cycles (fix with change to Gc and GcCell), and "parent references"
+* pass Files from main around in compile context, to prepare for multi-file programs
 * multi-file programs (import from another file) using "module" objects
+* 2 places where memory is essentially leaked: Reference cycles (fix with change to Gc and GcCell), and "parent references"
 * windows?
 * standard library: get command line args
 * unicode string literal \u{blahblah}

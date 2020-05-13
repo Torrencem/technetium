@@ -8,6 +8,7 @@ This is a rough todo list of features I need to add to the language:
 * generators
 * comprehensions
 * defer block
+* interactive mode (a la python)
 * pass Files from main around in compile context, to prepare for multi-file programs
 * multi-file programs (import from another file) using "module" objects
 * 2 places where memory is essentially leaked: Reference cycles (fix with change to Gc and GcCell), and "parent references"

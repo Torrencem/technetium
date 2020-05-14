@@ -1,7 +1,7 @@
 
 This is a rough todo list of features I need to add to the language:
 
-* dictionaries and sets
+* dictionaries and set literals
 * add documentation for special_funcs (hash, lock, print, exit, etc.)
 * figure out a way to make a macro for implementing Object for ObjectCell stuff, so the .lock_immutable() boilerplate isn't necessary
 * eval

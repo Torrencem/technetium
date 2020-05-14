@@ -30,11 +30,11 @@ use stable_deref_trait::StableDeref;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::Hash;
 use std::hash::Hasher;
+use std::collections::HashSet;
 
 use dtoa;
 
 use std::fmt;
-
 
 #[repr(transparent)]
 #[derive(Debug)]
@@ -85,6 +85,25 @@ impl DerefMut for HashableObjectRef {
 impl Hash for HashableObjectRef {
     fn hash<H: Hasher>(&self, state: &mut H) {
         state.write_u64(self.technetium_hash().unwrap());
+    }
+}
+
+impl PartialEq for HashableObjectRef {
+    fn eq(&self, other: &HashableObjectRef  ) -> bool {
+        match self.technetium_eq(other.opaque_clone()) {
+            Some(val) => val,
+            None => {
+                self.ref_eq(other.opaque_clone())
+            }
+        }
+    }
+}
+
+impl Eq for HashableObjectRef { }
+
+impl Clone for HashableObjectRef {
+    fn clone(&self) -> Self {
+        self.inner.opaque_clone().hashable().unwrap()
     }
 }
 
@@ -1064,5 +1083,106 @@ impl Object for ObjectCell<VoidObject> {
 
     fn truthy(&self) -> bool {
         false
+    }
+}
+
+pub struct Set {
+    pub contents: HashSet<HashableObjectRef>,
+}
+
+impl Object for ObjectCell<Set> {
+    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
+        let this = self.try_borrow()?;
+        let mut res_contents = vec![];
+        for val in this.contents.iter() {
+            res_contents.push(val.technetium_clone()?);
+        }
+        Ok(ObjectRef::new(List {
+            contents: res_contents,
+        }))
+    }
+
+    fn technetium_type_name(&self) -> String {
+        "set".to_string()
+    }
+
+    fn lock_immutable(&self) {
+        self.lock()
+    }
+
+    fn technetium_hash(&self) -> Option<u64> {
+        let mut hasher = DefaultHasher::new();
+        for val in self.try_borrow().ok()?.contents.iter() {
+            hasher.write_u64(val.technetium_hash()?);
+        }
+        Some(hasher.finish())
+    }
+
+    fn to_string(&self) -> RuntimeResult<String> {
+        let this = self.try_borrow()?;
+        let mut res = String::new();
+        res.push('{');
+        let mut first = true;
+        for val in this.contents.iter() {
+            if first {
+                first = false;
+            } else {
+                res.push_str(", ");
+            }
+            res.push_str(&val.to_string()?);
+        }
+        res.push('}');
+        Ok(res)
+    }
+
+    fn truthy(&self) -> bool {
+        let this = self.borrow();
+        this.contents.len() != 0
+    }
+
+    fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
+        match method {
+            "length" => {
+                let this = self.try_borrow()?;
+                if args.len() > 0 {
+                    Err(RuntimeError::type_error("length expects 0 args"))
+                } else {
+                    Ok(IntObject::new(this.contents.len() as i64))
+                }
+            }
+            "add" => {
+                let mut this = self.try_borrow_mut()?;
+                if args.len() != 1 {
+                    Err(RuntimeError::type_error("add expects 1 arg"))
+                } else {
+                    this.contents.insert(args[0].hashable().ok_or(RuntimeError::type_error("value must be hashable to be added to a set"))?);
+                    args[0].lock_immutable();
+                    Ok(VoidObject::new())
+                }
+            }
+            "remove" => {
+                let mut this = self.try_borrow_mut()?;
+                if args.len() != 1 {
+                    Err(RuntimeError::type_error("add expects 1 arg"))
+                } else {
+                    let res = this.contents.remove(&args[0].hashable().ok_or(RuntimeError::type_error("value must be hashable to be added to a set"))?);
+                    Ok(BoolObject::new(res))
+                }
+            }
+            _ => Err(RuntimeError::type_error(format!(
+                "set has no method {}",
+                method
+            ))),
+        }
+    }
+
+    fn technetium_eq(&self, other: ObjectRef) -> Option<bool> {
+        if let Some(other) = other.as_any().downcast_ref::<Self>() {
+            let this = self.borrow();
+            let other = other.borrow();
+            Some(this.contents == other.contents)
+        } else {
+            None
+        }
     }
 }

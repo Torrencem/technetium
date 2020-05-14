@@ -126,9 +126,9 @@ impl MemoryManager {
     }
 
     pub fn get(&self, index: NonLocalName) -> RuntimeResult<ObjectRef> {
-        let frame = self.memory.get(index.0).ok_or_else(|| RuntimeError::internal_error("Called get on a frame that doesn't exist"))?;
+        let frame = self.memory.get(index.0).ok_or_else(|| RuntimeError::variable_undefined_error("Variable was not initialized"))?;
 
-        let rc = frame.get(index.1).ok_or_else(|| RuntimeError::internal_error("Called get on a value in a frame that doesn't exist"))?;
+        let rc = frame.get(index.1).ok_or_else(|| RuntimeError::variable_undefined_error("Variable was not initialized"))?;
 
         Ok(ObjectRef::clone(rc))
     }

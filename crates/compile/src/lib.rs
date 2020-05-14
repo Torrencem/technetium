@@ -25,7 +25,6 @@ use std::rc::Rc;
 pub type Bytecode = Vec<Op>;
 pub type CompileResult = std::result::Result<Bytecode, CompileError>;
 
-
 /// Determine if a f64 is exactly representable as a f32
 fn is_exact_float(val: f64) -> bool {
     ((val as f32) as f64) == val
@@ -315,14 +314,24 @@ impl CompileManager {
 
     pub fn compile_expr(&mut self, ast: &Expr) -> CompileResult {
         match ast {
-            Expr::Variable(v) => match self.name_lookup(&v.name) {
-                NameLookupResult::MyLocal(name) => Ok(vec![Op::load(name)]),
-                NameLookupResult::ExternLocal(name) => Ok(vec![Op::load_non_local(name)]),
-                NameLookupResult::Global(name) => Ok(vec![Op::push_global_default(name)]),
-                NameLookupResult::NotFound => Err(CompileError::new(
-                    CompileErrorType::UndefinedVariable(ast.span()),
-                    format!("Undefined variable: {}", v.name),
-                )),
+            Expr::Variable(v) => {
+                let mut res = vec![];
+                let debug_descr = self.context().dsd_gen();
+                let file_id = self.context().file_id;
+                self.context()
+                    .debug_symbol_descriptors
+                    .insert(debug_descr, DebugSymbol::new(file_id, v.span));
+                res.push(Op::debug(debug_descr));
+                res.push(match self.name_lookup(&v.name) {
+                    NameLookupResult::MyLocal(name) => Op::load(name),
+                    NameLookupResult::ExternLocal(name) => Op::load_non_local(name),
+                    NameLookupResult::Global(name) => Op::push_global_default(name),
+                    NameLookupResult::NotFound => return Err(CompileError::new(
+                        CompileErrorType::UndefinedVariable(ast.span()),
+                        format!("Undefined variable: {}", v.name),
+                    )),
+                });
+                Ok(res)
             },
             Expr::Literal(l) => self.compile_literal(l),
             Expr::ListLiteral(l) => self.compile_list_literal(l),
@@ -622,9 +631,15 @@ impl CompileManager {
     }
 
     pub fn compile_assign_to(&mut self, ast: &AssignmentLHS) -> CompileResult {
+        let debug_descr = self.context().dsd_gen();
+        let file_id = self.context().file_id;
+        self.context()
+            .debug_symbol_descriptors
+            .insert(debug_descr, DebugSymbol::new(file_id, ast.as_expr().span()));
         let mut res = vec![];
         match &ast {
             AssignmentLHS::Identifier(id) => {
+                res.push(Op::debug(debug_descr));
                 match self.name_lookup(&id.name) {
                     NameLookupResult::MyLocal(index) => {
                         res.push(Op::store(index));
@@ -650,6 +665,7 @@ impl CompileManager {
                 );
                 res.push(Op::push_const(name_descr));
                 res.push(Op::swap);
+                res.push(Op::debug(debug_descr));
                 res.push(Op::set_attr);
             }
             AssignmentLHS::Indexed(indexed) => {
@@ -657,6 +673,7 @@ impl CompileManager {
                 res.push(Op::swap);
                 res.append(&mut self.compile_expr(&indexed.index)?);
                 res.push(Op::swap);
+                res.push(Op::debug(debug_descr));
                 res.push(Op::index_set);
             }
         }

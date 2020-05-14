@@ -37,6 +37,8 @@ pub enum RuntimeErrorType {
     InternalError,
     IndexOutOfBounds,
     ChildProcessError,
+    /// Caused by trying to read an uninitialized variable
+    VariableUndefinedError,
     /// Wrapping an std::io::Error
     IOError,
     /// An error raised by the sys_info crate
@@ -140,6 +142,14 @@ impl RuntimeError {
     pub fn internal_error<S: ToString>(message: S) -> Self {
         RuntimeError {
             err: RuntimeErrorType::InternalError,
+            help: message.to_string(),
+            symbols: vec![],
+        }
+    }
+    
+    pub fn variable_undefined_error<S: ToString>(message: S) -> Self {
+        RuntimeError {
+            err: RuntimeErrorType::VariableUndefinedError,
             help: message.to_string(),
             symbols: vec![],
         }

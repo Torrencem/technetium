@@ -190,7 +190,7 @@ impl fmt::Display for Op {
             Op::nop => f.write_str("nop"),
             Op::store(x) => f.write_str(format!("store\t{}", x).as_ref()),
             Op::store_non_local(x) => f.write_str(format!("store_non_local\t{:?}", x).as_ref()),
-            Op::load(x) => f.write_str(format!("load\n{}", x).as_ref()),
+            Op::load(x) => f.write_str(format!("load\t{}", x).as_ref()),
             Op::load_non_local(x) => f.write_str(format!("load_non_local\t{:?}", x).as_ref()),
             Op::attach_ancestors => f.write_str("attach_ancestors"),
             Op::call_method(x) => f.write_str(format!("call_method\t{}", x).as_ref()),
@@ -312,7 +312,7 @@ impl<'code> Frame<'code> {
                 Op::store(local_name) => {
                     let res = self.stack.pop();
                     if let Some(val) = res {
-                        self.locals.set((self.id, *local_name), val)?;
+                        try_debug!(self, ds, dsw, self.locals.set((self.id, *local_name), val));
                     } else {
                         return Err(RuntimeError::internal_error("Stored an empty stack!"));
                     }
@@ -329,13 +329,13 @@ impl<'code> Frame<'code> {
                     }
                 }
                 Op::load(local_name) => {
-                    let local = self.locals.get((self.id, *local_name))?;
+                    let local = try_debug!(self, ds, dsw, self.locals.get((self.id, *local_name)));
                     self.stack.push(local);
                 }
                 Op::load_non_local(nl_name) => {
-                    let nl = self
+                    let nl = try_debug!(self, ds, dsw, self
                         .locals
-                        .get((*self.least_ancestors.get(&nl_name.0).unwrap(), nl_name.1))?;
+                        .get((*self.least_ancestors.get(&nl_name.0).unwrap(), nl_name.1)));
                     self.stack.push(nl);
                 }
                 Op::attach_ancestors => {

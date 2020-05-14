@@ -5,7 +5,7 @@ type TestError = Box<dyn std::error::Error>;
 
 #[test]
 fn capture_variables() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin("tc")?;
+    let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
 func create_counter() {
@@ -32,7 +32,7 @@ print(c1())
 
 #[test]
 fn loops() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin("tc")?;
+    let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
 x = 10
@@ -56,7 +56,7 @@ for val in [123, 123.456, "world"] {
 
 #[test]
 fn recursive_fib() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin("tc")?;
+    let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
 func fib(n) {
@@ -80,7 +80,7 @@ print(fib(15))
 
 #[test]
 fn method_simple() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin("tc")?;
+    let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
 print([1, 2, 3, "hello"].length())
@@ -95,7 +95,7 @@ print(["we", 123.01, 999].length())
 
 #[test]
 fn comments() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin("tc")?;
+    let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
 print("Hello world!")  # To the world
@@ -107,7 +107,7 @@ print("Hi again!")          # To whom?
         .success()
         .stdout(predicate::eq("Hello world!\nHi again!\n"));
 
-    let mut cmd = Command::cargo_bin("tc")?;
+    let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
 # blank here
@@ -127,7 +127,7 @@ print("Hi again!")          # To whom?
 
 #[test]
 fn test_substitution() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin("tc")?;
+    let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
 x = 10
@@ -141,7 +141,7 @@ print(~"S was: {s}")
         "I can say x isn't 12\nS was: I can say x isn't 12\n",
     ));
 
-    let mut cmd = Command::cargo_bin("tc")?;
+    let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
 my_num = 10
@@ -163,7 +163,7 @@ if my_num > 50 {
 
 #[test]
 fn test_case_of() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin("tc")?;
+    let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
 my_num = 1000
@@ -186,7 +186,7 @@ case my_num + 20 of {
 
     cmd.assert().success().stdout(predicate::eq("yes!\n"));
 
-    let mut cmd = Command::cargo_bin("tc")?;
+    let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
 my_val = "Hello there!"
@@ -208,7 +208,7 @@ case my_val of {
 
 #[test]
 fn test_short_circuiting() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin("tc")?;
+    let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
 print(true || exit(1))
@@ -217,7 +217,7 @@ print(true || exit(1))
 
     cmd.assert().success().stdout(predicate::eq("true\n"));
 
-    let mut cmd = Command::cargo_bin("tc")?;
+    let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
 print(false || exit(0))
@@ -226,7 +226,7 @@ print(false || exit(0))
 
     cmd.assert().success().stdout(predicate::eq(""));
 
-    let mut cmd = Command::cargo_bin("tc")?;
+    let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
 print(true && exit(0))
@@ -235,7 +235,7 @@ print(true && exit(0))
 
     cmd.assert().success().stdout(predicate::eq(""));
     
-    let mut cmd = Command::cargo_bin("tc")?;
+    let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
 print(false && exit(1))
@@ -250,7 +250,7 @@ print(false && exit(1))
 
 #[test]
 fn test_sh_and_substitution() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin("tc")?;
+    let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
 my_var = "hello"
@@ -264,7 +264,7 @@ $ echo {my_var} and {my_var2}
         .success()
         .stdout(predicate::eq("hello and hello2\n"));
 
-    let mut cmd = Command::cargo_bin("tc")?;
+    let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
 my_num = 10
@@ -286,7 +286,7 @@ if my_num > 50 {
 
 #[test]
 fn test_sh_objects() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin("tc")?;
+    let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
 
@@ -308,7 +308,7 @@ print(~"program output was: {program.stdout()}")
 
 #[test]
 fn test_post_pre_ops() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin("tc")?;
+    let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
 l = [0, 0, 0, 0]
@@ -331,7 +331,7 @@ print(l[0])  # 0
 
 #[test]
 fn test_negative_indexing() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin("tc")?;
+    let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
 l = [0, 1, 2, 3, 4, 5]
@@ -356,7 +356,7 @@ print(s)
 
 #[test]
 fn test_negative_slicing() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin("tc")?;
+    let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
 l = [0, 1, 2, 3, 4]
@@ -376,7 +376,7 @@ print(l[-2:])
 
 #[test]
 fn test_push_pop() -> Result<(), TestError> {
-    let mut cmd = Command::cargo_bin("tc")?;
+    let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
 l = [0, 1, 2]

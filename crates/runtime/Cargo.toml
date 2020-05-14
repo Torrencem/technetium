@@ -1,5 +1,5 @@
 [package]
-name = "tech"
+name = "runtime"
 version = "0.1.0"
 authors = ["Torrencem <matt@torrencefamily.net>"]
 edition = "2018"
@@ -19,9 +19,3 @@ num = "0.2.1"
 stable_deref_trait = "1.1.1"
 mlrefcell = { path = "../mlrefcell" }
 lexer = { path = "../lexer" }
-compile = { path = "../compile" }
-runtime = { path = "../runtime" }
-
-[dev-dependencies]
-assert_cmd = "1.0.1"
-predicates = "1"

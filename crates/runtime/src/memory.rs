@@ -2,7 +2,7 @@
 use std::collections::HashSet;
 use crate::bytecode::*;
 use crate::error::*;
-use crate::core::*;
+use crate::*;
 
 pub trait BackingIndex {
     fn to_usize(&self) -> usize;
@@ -111,7 +111,6 @@ impl MemoryManager {
     }
 
     pub fn do_not_drop(&mut self, cid: ContextId, index: LocalName) -> RuntimeResult<()> {
-        debug!("Registered a do-not-drop, cid: {}, index: {}", cid, index);
         let dnd = self.do_not_drops.get_mut(cid);
         if let Some(dnd) = dnd {
             dnd.insert(index);
@@ -143,7 +142,6 @@ impl MemoryManager {
     }
 
     pub fn clear_frame(&mut self, fid: FrameId) -> RuntimeResult<()> {
-        trace!("Clearing frame {}", fid);
         let frame = self.memory.get_mut(fid).ok_or_else(|| RuntimeError::internal_error("Called clear frame on a frame that doesn't exist"))?;
 
         let context_id = self.frame_index.get(fid).ok_or_else(|| RuntimeError::internal_error("Called clear frame on a frame that doesn't correspond to a context"))?;

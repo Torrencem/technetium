@@ -1,7 +1,6 @@
 //! Lextime, Parsetime, Compiletime, and Runtime errors for technetium
 
 use crate::bytecode::DebugSymbol;
-use codespan::Span;
 use codespan::FileId;
 use codespan::Files;
 use codespan_reporting::diagnostic::{Diagnostic, Label};
@@ -199,72 +198,5 @@ impl RuntimeError {
             res.push(format!("{} at {}: \"{}\"", fname, location, slice));
         }
         res
-    }
-}
-
-/// An error that has occured when translating code from the AST to bytecode
-#[derive(Debug, Clone)]
-pub struct CompileError {
-    pub kind: CompileErrorType,
-    pub help: String,
-}
-
-#[derive(Debug, Clone)]
-pub enum CompileErrorType {
-    UndefinedVariable(Span),
-}
-
-impl CompileError {
-    pub fn new<S: ToString>(kind: CompileErrorType, help: S) -> Self {
-        CompileError {
-            kind,
-            help: help.to_string(),
-        }
-    }
-
-    /// Create a diagnostic message from an error, for reporting to the user
-    pub fn as_diagnostic<FileId>(&self, fileid: FileId) -> Diagnostic<FileId> {
-        match self.kind {
-            CompileErrorType::UndefinedVariable(span) => Diagnostic::error()
-                .with_message(self.help.clone())
-                .with_labels(vec![
-                    Label::primary(fileid, span).with_message("Undefined variable")
-                ]),
-        }
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct LexError {
-    pub message: String,
-    pub loc: Option<usize>,
-}
-
-impl LexError {
-    pub fn new(message: &str, loc: Option<usize>) -> Self {
-        LexError {
-            message: message.to_owned(),
-            loc,
-        }
-    }
-
-    pub fn offset_spans(&mut self, offset: usize) {
-        if let Some(loc) = &mut self.loc {
-            *loc += offset;
-        }
-    }
-
-    pub fn as_diagnostic<FileId>(&self, fileid: FileId) -> Diagnostic<FileId> {
-        match self.loc {
-            Some(loc) => {
-                let loc = loc as u32;
-                Diagnostic::error()
-                    .with_message("Lex Error")
-                    .with_labels(vec![
-                        Label::primary(fileid, Span::new(loc, loc + 1)).with_message(&self.message)
-                    ])
-            }
-            None => Diagnostic::error().with_message(&self.message),
-        }
     }
 }

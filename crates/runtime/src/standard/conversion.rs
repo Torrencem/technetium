@@ -1,5 +1,5 @@
 
-use crate::core::*;
+use crate::*;
 use crate::error::*;
 use std::any::TypeId;
 use std::char;

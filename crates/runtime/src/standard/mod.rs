@@ -5,7 +5,7 @@ pub mod conversion;
 pub mod string;
 
 use crate::bytecode::{ContextId, GlobalConstantDescriptor};
-use crate::core::*;
+use crate::*;
 use std::collections::HashMap;
 
 pub static STANDARD_CONTEXT_ID: ContextId = 0;

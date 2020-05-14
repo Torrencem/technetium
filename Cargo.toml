@@ -3,6 +3,8 @@
 members = [
 	"crates/tech",
 	"crates/lexer",
+	"crates/runtime",
+	"crates/compile",
 	"crates/mlrefcell",
 ]
 

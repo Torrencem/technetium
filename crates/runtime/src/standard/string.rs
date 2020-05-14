@@ -1,4 +1,4 @@
-use crate::core::*;
+use crate::*;
 use crate::error::*;
 use std::rc::Rc;
 use std::str;

@@ -1,10 +1,21 @@
 
-use crate::bytecode;
-use crate::bytecode::Op;
-use crate::bytecode::{ContextId, FrameId};
-use crate::builtins::index_get;
-use crate::standard;
-use crate::memory::*;
+pub mod bytecode;
+pub mod builtins;
+pub mod standard;
+pub mod memory;
+pub mod error;
+
+#[macro_use]
+extern crate rental;
+
+#[macro_use]
+extern crate lazy_static;
+
+use bytecode::Op;
+use bytecode::{ContextId, FrameId};
+use builtins::index_get;
+use memory::*;
+use error::*;
 use std::any::Any;
 use std::any::TypeId;
 use std::clone::Clone as RustClone;
@@ -24,7 +35,6 @@ use dtoa;
 
 use std::fmt;
 
-use crate::error::*;
 
 #[repr(transparent)]
 #[derive(Debug)]

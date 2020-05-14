@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::core::*;
+use crate::*;
 use crate::error::*;
 
 use std::sync;
@@ -21,9 +21,6 @@ use num::traits::ToPrimitive;
 use codespan::Span;
 
 use codespan::FileId;
-
-pub type Bytecode = Vec<Op>;
-pub type CompileResult = std::result::Result<Bytecode, CompileError>;
 
 /// An identifier unique to each frame of computation
 pub type FrameId = u32;

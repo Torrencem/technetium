@@ -1,27 +1,12 @@
 #[macro_use]
-extern crate lalrpop_util;
-#[macro_use]
-extern crate lazy_static;
-#[macro_use]
 extern crate log;
-#[macro_use]
-extern crate rental;
 
-lalrpop_mod!(pub script);
-
-pub mod ast;
-pub mod builtins;
-pub mod bytecode;
-pub mod compile;
-pub mod core;
-pub mod error;
 pub mod logging;
-pub mod standard;
-pub mod memory;
 use compile::*;
 use lexer::Lexer;
 use lexer::error::parse_error_to_diagnostic;
-use standard::STANDARD_CONTEXT_ID;
+use runtime::standard::STANDARD_CONTEXT_ID;
+use runtime::bytecode;
 use std::collections::HashMap;
 use std::process::exit;
 use std::rc::Rc;

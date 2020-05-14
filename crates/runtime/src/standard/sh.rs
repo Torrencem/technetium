@@ -1,4 +1,4 @@
-use crate::core::*;
+use crate::*;
 use crate::error::*;
 
 use std::io::Write;
@@ -37,7 +37,6 @@ impl ShObject {
     }
 
     pub fn spawn(&mut self) -> RuntimeResult<()> {
-        trace!("Spawning subprocess from sh()");
         let mut cmd = Command::new("sh")
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
@@ -54,7 +53,6 @@ impl ShObject {
     }
 
     pub fn join(&mut self) -> RuntimeResult<()> {
-        trace!("Joining subprocess from sh(..).join()");
         if let ShObjectState::Prepared = self.state {
             self.spawn()?;
         }

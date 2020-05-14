@@ -1,16 +1,30 @@
-use crate::ast::*;
-use crate::bytecode::*;
-use crate::core::*;
-use crate::error::*;
-use crate::memory::*;
-use crate::standard::STANDARD_CONTEXT_ID;
-use crate::standard::get_default_namespace_descriptors;
+
+#[macro_use]
+extern crate lalrpop_util;
+
+lalrpop_mod!(pub script);
+
+pub mod error;
+use error::*;
+pub mod ast;
+use ast::*;
+
+use runtime::bytecode::*;
+use runtime::*;
+use runtime::memory::*;
+use runtime::standard::STANDARD_CONTEXT_ID;
+use runtime::standard::get_default_namespace_descriptors;
+
 use codespan::FileId;
 use std::clone::Clone as RustClone;
 use std::collections::HashMap;
 use std::i32;
 use parking_lot::RwLock;
 use std::rc::Rc;
+
+pub type Bytecode = Vec<Op>;
+pub type CompileResult = std::result::Result<Bytecode, CompileError>;
+
 
 /// Determine if a f64 is exactly representable as a f32
 fn is_exact_float(val: f64) -> bool {
@@ -528,7 +542,6 @@ impl CompileManager {
                 .insert((sub_context.context_id, arg.name.clone()), name);
         }
         
-        debug!("Context id {} corresponds to function name {}", sub_context.context_id, ast.name.name);
         let sub_context_id = sub_context.context_id;
         self.context_stack.push(sub_context);
 
@@ -622,7 +635,6 @@ impl CompileManager {
                     _ => {
                         let local_name = self.local_name_gen();
                         let cid = self.context().context_id;
-                        debug!("In context {}, local index {} corresponds to variable {}", cid, local_name, id.name);
                         self.local_index
                             .insert(RustClone::clone(&(cid, id.name.clone())), local_name);
                         res.push(Op::store(local_name));

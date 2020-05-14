@@ -6,7 +6,7 @@ This is a rough todo list of features I need to add to the language:
 * figure out a way to make a macro for implementing Object for ObjectCell stuff, so the .lock_immutable() boilerplate isn't necessary
 * eval
 * lambdas
-* list conversion function
+* list and set conversion functions that just iterate and add
 * generators
 * comprehensions
 * defer block

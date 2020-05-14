@@ -10,15 +10,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ansi_term"
-version = "0.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee49baf6cb617b853aa8d93bf420db2383fab46d314482ca2803b40d5fde979b"
-dependencies = [
- "winapi",
-]
-
-[[package]]
 name = "arrayref"
 version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -164,13 +155,10 @@ version = "2.33.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bdfa80d47f954d53a35a64987ca1422f495b8d6483c0fe9f7117b36c2a792129"
 dependencies = [
- "ansi_term",
- "atty",
  "bitflags",
  "strsim 0.8.0",
  "textwrap",
  "unicode-width",
- "vec_map",
 ]
 
 [[package]]
@@ -205,7 +193,6 @@ dependencies = [
 name = "compile"
 version = "0.1.0"
 dependencies = [
- "clap",
  "codespan",
  "codespan-reporting",
  "dtoa",
@@ -417,19 +404,9 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 name = "lexer"
 version = "0.1.0"
 dependencies = [
- "clap",
  "codespan",
  "codespan-reporting",
- "dtoa",
  "lalrpop-util",
- "lazy_static",
- "log",
- "mlrefcell",
- "num",
- "parking_lot",
- "rental",
- "stable_deref_trait",
- "sys-info",
 ]
 
 [[package]]
@@ -857,14 +834,10 @@ dependencies = [
 name = "runtime"
 version = "0.1.0"
 dependencies = [
- "clap",
  "codespan",
  "codespan-reporting",
  "dtoa",
- "lalrpop-util",
  "lazy_static",
- "lexer",
- "log",
  "mlrefcell",
  "num",
  "parking_lot",
@@ -1093,12 +1066,6 @@ name = "unicode-xid"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "826e7639553986605ec5979c7dd957c7895e93eabed50ab2ffa7f6128a75097c"
-
-[[package]]
-name = "vec_map"
-version = "0.8.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1bddf1187be692e79c5ffeab891132dfb0f236ed36a43c7ed39f1165ee20191"
 
 [[package]]
 name = "wait-timeout"

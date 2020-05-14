@@ -49,3 +49,6 @@ features = ["suggestions"]
 [dev-dependencies]
 assert_cmd = "1.0.1"
 predicates = "1"
+
+[profile.release]
+lto = true

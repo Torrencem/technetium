@@ -2,7 +2,10 @@
 This is a rough todo list of features I need to add to the language:
 
 * dictionaries and sets
-* add hash special function
+* add debug to assignments and all loads
+* add documentation for special_funcs (hash, lock, print, exit, etc.)
+* handle situation where variable is not initialized by the time they use it (this is currently an InternalError with no debug)
+* figure out a way to make a macro for implementing Object for ObjectCell stuff, so the .lock_immutable() boilerplate isn't necessary
 * eval
 * lambdas
 * list conversion function

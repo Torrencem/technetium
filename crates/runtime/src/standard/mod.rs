@@ -36,6 +36,8 @@ pub fn get_default_namespace_descriptors() -> HashMap<String, GlobalConstantDesc
         res.insert("int".to_string(), (STANDARD_CONTEXT_ID, 21));
         res.insert("float".to_string(), (STANDARD_CONTEXT_ID, 22));
         res.insert("char".to_string(), (STANDARD_CONTEXT_ID, 23));
+        res.insert("hash".to_string(), (STANDARD_CONTEXT_ID, 24));
+        res.insert("lock".to_string(), (STANDARD_CONTEXT_ID, 25));
         res
 }
 
@@ -65,6 +67,8 @@ pub fn get_default_namespace() -> HashMap<GlobalConstantDescriptor, ObjectRef> {
         res.insert((STANDARD_CONTEXT_ID, 21), ObjectRef::new(conversion::Int));
         res.insert((STANDARD_CONTEXT_ID, 22), ObjectRef::new(conversion::Float));
         res.insert((STANDARD_CONTEXT_ID, 23), ObjectRef::new(conversion::Char));
+        res.insert((STANDARD_CONTEXT_ID, 24), ObjectRef::new(special_funcs::Hash));
+        res.insert((STANDARD_CONTEXT_ID, 25), ObjectRef::new(special_funcs::Lock));
         res
 }
 
@@ -76,6 +80,10 @@ macro_rules! func_object_void {
         impl Object for ObjectCell<$id> {
             fn technetium_type_name(&self) -> String {
                 "builtin func".to_string()
+            }
+
+            fn lock_immutable(&self) {
+                self.lock()
             }
 
             fn call(&self, $args: &[ObjectRef], _locals: &mut crate::memory::MemoryManager) -> RuntimeResult<ObjectRef> {
@@ -97,6 +105,10 @@ macro_rules! func_object {
         impl Object for ObjectCell<$id> {
             fn technetium_type_name(&self) -> String {
                 "builtin func".to_string()
+            }
+
+            fn lock_immutable(&self) {
+                self.lock()
             }
 
             fn call(

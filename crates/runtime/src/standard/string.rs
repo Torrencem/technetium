@@ -20,6 +20,10 @@ impl Object for ObjectCell<Lines> {
         "lines".to_string()
     }
 
+    fn lock_immutable(&self) {
+        self.lock()
+    }
+
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         let lines_iter_rental_head = line_rentals::LinesIteratorHead::new(
@@ -70,6 +74,10 @@ impl Object for ObjectCell<LinesIterator> {
         "iterator(lines)".to_string()
     }
 
+    fn lock_immutable(&self) {
+        self.lock()
+    }
+
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
         let mut this = self.try_borrow_mut()?;
         let inner = &mut this.inner;
@@ -91,6 +99,10 @@ impl Object for ObjectCell<Chars> {
     
     fn technetium_type_name(&self) -> String {
         "chars".to_string()
+    }
+
+    fn lock_immutable(&self) {
+        self.lock()
     }
 
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
@@ -139,6 +151,10 @@ rental! {
 impl Object for ObjectCell<CharsIterator> {
     fn technetium_type_name(&self) -> String {
         "iterator(chars)".to_string()
+    }
+
+    fn lock_immutable(&self) {
+        self.lock()
     }
 
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {

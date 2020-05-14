@@ -394,3 +394,25 @@ print(l)
     Ok(())
 }
 
+#[test]
+fn test_lock() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+a = [1, 2, 3]
+
+lock(a)
+
+a.push(4)
+
+print(a)
+"#,
+    );
+
+    cmd.assert()
+        .failure()
+        .stderr(predicate::str::contains("Immutable"))
+        .stderr(predicate::str::contains("mutate value"));
+    Ok(())
+}
+

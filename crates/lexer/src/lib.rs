@@ -3,7 +3,8 @@ use std::str::FromStr;
 
 use std::collections::HashMap;
 
-use crate::error::*;
+pub mod error;
+use error::*;
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
 

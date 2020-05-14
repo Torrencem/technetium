@@ -1,6 +1,8 @@
 [workspace]
 
 members = [
-	"tech",
-	"mlrefcell",
+	"crates/tech",
+	"crates/lexer",
+	"crates/mlrefcell",
 ]
+

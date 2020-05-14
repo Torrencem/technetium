@@ -1,6 +1,6 @@
 use crate::ast::*;
-use crate::lexer::*;
-use crate::error::*;
+use lexer::*;
+use lexer::error::*;
 use codespan::Span;
 
 grammar;

@@ -1,11 +1,8 @@
 [package]
-name = "tech"
+name = "runtime"
 version = "0.1.0"
 authors = ["Torrencem <matt@torrencefamily.net>"]
 edition = "2018"
-
-[build-dependencies]
-lalrpop = "0.18.1"
 
 [dependencies]
 lalrpop-util = "0.18.1"
@@ -21,7 +18,3 @@ parking_lot = "0.10.2"
 num = "0.2.1"
 stable_deref_trait = "1.1.1"
 mlrefcell = { path = "../mlrefcell" }
-
-[dev-dependencies]
-assert_cmd = "1.0.1"
-predicates = "1"

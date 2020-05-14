@@ -1,7 +1,7 @@
 use codespan::Span;
 
-use crate::error::*;
-use crate::lexer::Lexer;
+use lexer::error::*;
+use lexer::Lexer;
 use crate::script;
 
 #[derive(Clone, Debug)]

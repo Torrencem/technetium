@@ -98,8 +98,6 @@ fn main() {
 
     let code = manager.compile_statement_list(&ast);
 
-    trace!("Bytecode {:?}", code);
-
     let compile_context = manager.context_stack.pop().unwrap();
 
     let code = code.unwrap_or_else(|e| {
@@ -120,6 +118,9 @@ fn main() {
         debug_descriptors: compile_context.debug_symbol_descriptors,
     };
 
+    trace!("Constant Descriptors: {:#?}", global_context.constant_descriptors);
+    trace!("Debug Descriptors: {:#?}", global_context.debug_descriptors);
+
     let mut frame = bytecode::Frame::new(
         &code,
         &mut manager.memory_manager,
@@ -127,6 +128,8 @@ fn main() {
         HashMap::new(),
         STANDARD_CONTEXT_ID + 1,
     );
+
+    trace!("{}", frame);
 
     trace!("Running frame");
 

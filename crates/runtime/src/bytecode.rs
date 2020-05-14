@@ -184,6 +184,43 @@ pub enum Op {
     debug(DebugSpanDescriptor),
 }
 
+impl fmt::Display for Op {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Op::nop => f.write_str("nop"),
+            Op::store(x) => f.write_str(format!("store\t{}", x).as_ref()),
+            Op::store_non_local(x) => f.write_str(format!("store_non_local\t{:?}", x).as_ref()),
+            Op::load(x) => f.write_str(format!("load\n{}", x).as_ref()),
+            Op::load_non_local(x) => f.write_str(format!("load_non_local\t{:?}", x).as_ref()),
+            Op::attach_ancestors => f.write_str("attach_ancestors"),
+            Op::call_method(x) => f.write_str(format!("call_method\t{}", x).as_ref()),
+            Op::call_function(x) => f.write_str(format!("call_method\t{}", x).as_ref()),
+            Op::fmt_string(x) => f.write_str(format!("fmt_string\t{}", x).as_ref()),
+            Op::take_iter(x) => f.write_str(format!("take_iter\t{}", x).as_ref()),
+            Op::mklist(x) => f.write_str(format!("mklist\t{}", x).as_ref()),
+            Op::mktuple(x) => f.write_str(format!("mktuple\t{}", x).as_ref()),
+            Op::push_int(x) => f.write_str(format!("push_int\t{}", x).as_ref()),
+            Op::push_float(x) => f.write_str(format!("push_float\t{}", x).as_ref()),
+            Op::push_bool(x) => f.write_str(format!("push_bool\t{}", x).as_ref()),
+            Op::push_const(x) => f.write_str(format!("push_const\t{:?}", x).as_ref()),
+            Op::push_const_clone(x) => f.write_str(format!("push_const_clone\t{:?}", x).as_ref()),
+            Op::push_global_default(x) => f.write_str(format!("push_global_default\t{:?}", x).as_ref()),
+            Op::jmp(x) => f.write_str(format!("jmp\t{}", x).as_ref()),
+            Op::cond_jmp(x) => f.write_str(format!("cond_jmp\t{}", x).as_ref()),
+            Op::debug(x) => f.write_str(format!("debug\t{}", x).as_ref()),
+            Op::mod_ => f.write_str("mod"),
+            Op::dup | Op::pop | Op::swap | Op::sh | 
+            Op::to_string | Op::set_attr | Op::get_attr |
+            Op::add | Op::sub | Op::mul | Op::div | Op::not | Op::neg |
+            Op::or | Op::and | Op::cmp_lt | Op::cmp_gt | Op::cmp_eq |
+            Op::cmp_neq | Op::cmp_leq | Op::cmp_geq | Op::index_get |
+            Op::index_set | Op::make_slice | Op::push_void | Op::ret |
+            Op::make_iter => f.write_str(format!("{:?}", self).as_ref()),
+            
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct GlobalContext {
     pub constant_descriptors: HashMap<GlobalConstantDescriptor, ObjectRef>,
@@ -200,6 +237,18 @@ pub struct Frame<'code> {
     least_ancestors: HashMap<ContextId, FrameId>,
     pub stack: Vec<ObjectRef>,
     pub locals: &'code mut MemoryManager,
+}
+
+impl<'code> fmt::Display for Frame<'code> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "Frame id: {}", self.id)?;
+        writeln!(f, "Context id: {}", self.context_id)?;
+        writeln!(f, "Code:")?;
+        for op in self.code.iter() {
+            writeln!(f, "{}", op)?;
+        }
+        Ok(())
+    }
 }
 
 macro_rules! try_debug {

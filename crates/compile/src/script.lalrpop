@@ -234,6 +234,7 @@ AttrableExpr: Expr = {
 	<l: Literal> => Expr::Literal(l),
 	<l: ListLiteral> => Expr::ListLiteral(l),
 	<t: TupleLiteral> => Expr::TupleLiteral(t),
+	<s: SetLiteral> => Expr::SetLiteral(s),
 	<m: MethodCall> => Expr::MethodCall(m),
 	<f: FuncCall> => Expr::FuncCall(f),
 	<a: AttrLookup> => Expr::AttrLookup(a),
@@ -279,6 +280,8 @@ Literal: Literal = {
 ListLiteral: ListLiteral = <l:@L> "[" <v: Comma<Expr>> "]" <r:@R> => ListLiteral::new(v, l, r);
 
 TupleLiteral: TupleLiteral = <l:@L> "(" <v: CommaNonEmpty<Expr>> ")" <r:@R> => TupleLiteral::new(v, l, r);
+
+SetLiteral: SetLiteral = <l:@L> "{" <v: CommaNonEmpty<Expr>> "}" <r:@R> => SetLiteral::new(v, l, r);
 
 Identifier: Identifier = <l:@L> <s:ident> <r:@R> => Identifier::new(s.to_owned(), l, r);
 

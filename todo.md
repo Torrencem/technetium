@@ -1,9 +1,11 @@
 
 This is a rough todo list of features I need to add to the language:
 
+* turn debug descriptor generation in compile into a function which returns a new descriptor, and replace all of the times it's used with a call to the function
 * dictionaries and set literals
 * add documentation for special_funcs (hash, lock, print, exit, etc.)
 * figure out a way to make a macro for implementing Object for ObjectCell stuff, so the .lock_immutable() boilerplate isn't necessary
+* allow newlines after commas in list and tuple and set literals
 * eval
 * lambdas
 * list and set conversion functions that just iterate and add

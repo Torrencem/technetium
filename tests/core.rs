@@ -416,3 +416,38 @@ print(a)
     Ok(())
 }
 
+#[test]
+fn test_set_literals() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+my_set = {1, 2, "hello!", 1, print}
+
+print(my_set)
+"#,
+    );
+
+    cmd.assert()
+        .failure()
+        .stderr(predicate::str::contains("not hashable"))
+        .stderr(predicate::str::contains("builtin func"))
+        .stderr(predicate::str::contains("my_set"));
+    
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+my_set = {1, 2, "hello!", 1}
+
+print(my_set)
+"#,
+    );
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("1"))
+        .stdout(predicate::str::contains("2"))
+        .stdout(predicate::str::contains("hello!"));
+
+    Ok(())
+}
+

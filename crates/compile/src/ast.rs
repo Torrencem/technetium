@@ -106,6 +106,33 @@ impl TupleLiteral {
 }
 
 #[derive(Clone, Debug)]
+pub struct SetLiteral {
+    pub span: Span,
+    pub values: Vec<Expr>,
+}
+
+impl SetLiteral {
+    pub fn new(values: Vec<Expr>, l: usize, r: usize) -> Self {
+        SetLiteral {
+            span: Span::new(l as u32, r as u32),
+            values,
+        }
+    }
+    
+    pub fn offset_spans(&mut self, offset: usize) {
+        let l = self.span.start();
+        let r = self.span.end();
+        self.span = Span::new(
+            u32::from(l) + (offset as u32),
+            u32::from(r) + (offset as u32),
+        );
+        for val in self.values.iter_mut() {
+            val.offset_spans(offset);
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct FuncCall {
     pub span: Span,
     pub fname: Identifier,
@@ -270,6 +297,7 @@ pub enum Expr {
     Literal(Literal),
     ListLiteral(ListLiteral),
     TupleLiteral(TupleLiteral),
+    SetLiteral(SetLiteral),
     MethodCall(MethodCall),
     FuncCall(FuncCall),
     AttrLookup(AttrLookup),
@@ -285,6 +313,7 @@ impl Expr {
             Expr::Literal(l) => l.span(),
             Expr::ListLiteral(l) => l.span,
             Expr::TupleLiteral(t) => t.span,
+            Expr::SetLiteral(l) => l.span,
             Expr::MethodCall(m) => m.span,
             Expr::FuncCall(f) => f.span,
             Expr::AttrLookup(a) => a.span,
@@ -300,6 +329,7 @@ impl Expr {
             Expr::Literal(l) => l.offset_spans(offset),
             Expr::ListLiteral(l) => l.offset_spans(offset),
             Expr::TupleLiteral(t) => t.offset_spans(offset),
+            Expr::SetLiteral(s) => s.offset_spans(offset),
             Expr::MethodCall(m) => m.offset_spans(offset),
             Expr::FuncCall(f) => f.offset_spans(offset),
             Expr::AttrLookup(a) => a.offset_spans(offset),

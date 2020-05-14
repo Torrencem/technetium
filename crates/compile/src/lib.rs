@@ -201,6 +201,23 @@ impl CompileManager {
         res.push(Op::mktuple(ast.values.len() as u16));
         Ok(res)
     }
+    
+    pub fn compile_set_literal(&mut self, ast: &SetLiteral) -> CompileResult {
+        let mut res = vec![];
+        for item in ast.values.iter() {
+            res.append(&mut self.compile_expr(item)?);
+        }
+        // Put a debug symbol in case an unhashable object was used
+        let debug_descr = self.context().dsd_gen();
+        let file_id = self.context().file_id;
+        self.context()
+            .debug_symbol_descriptors
+            .insert(debug_descr, DebugSymbol::new(file_id, ast.span));
+        res.push(Op::debug(debug_descr));
+
+        res.push(Op::mkset(ast.values.len() as u16));
+        Ok(res)
+    }
 
     pub fn compile_func_call(&mut self, ast: &FuncCall) -> CompileResult {
         let mut res = vec![];
@@ -335,6 +352,7 @@ impl CompileManager {
             },
             Expr::Literal(l) => self.compile_literal(l),
             Expr::ListLiteral(l) => self.compile_list_literal(l),
+            Expr::SetLiteral(l) => self.compile_set_literal(l),
             Expr::TupleLiteral(t) => self.compile_tuple_literal(t),
             Expr::MethodCall(m) => self.compile_method_call(m),
             Expr::FuncCall(f) => self.compile_func_call(f),

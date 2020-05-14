@@ -150,6 +150,8 @@ pub enum Op {
     mklist(u16),
 
     mktuple(u16),
+    
+    mkset(u16),
 
     push_int(i32),
 
@@ -199,6 +201,7 @@ impl fmt::Display for Op {
             Op::take_iter(x) => f.write_str(format!("take_iter\t{}", x).as_ref()),
             Op::mklist(x) => f.write_str(format!("mklist\t{}", x).as_ref()),
             Op::mktuple(x) => f.write_str(format!("mktuple\t{}", x).as_ref()),
+            Op::mkset(x) => f.write_str(format!("mkset\t{}", x).as_ref()),
             Op::push_int(x) => f.write_str(format!("push_int\t{}", x).as_ref()),
             Op::push_float(x) => f.write_str(format!("push_float\t{}", x).as_ref()),
             Op::push_bool(x) => f.write_str(format!("push_bool\t{}", x).as_ref()),
@@ -805,6 +808,19 @@ impl<'code> Frame<'code> {
                     let objs: Vec<ObjectRef> =
                         self.stack.drain((self.stack.len() - len)..).collect();
                     self.stack.push(ObjectRef::new(Tuple { contents: objs }));
+                }
+                Op::mkset(len) => {
+                    let len = *len as usize;
+                    let objs: Vec<ObjectRef> =
+                        self.stack.drain((self.stack.len() - len)..).collect();
+                    let mut as_hashset = HashSet::new();
+                    for obj in objs.into_iter() {
+                        let hashable = try_debug!(self, ds, dsw, obj
+                            .hashable()
+                            .ok_or(RuntimeError::type_error(format!("Object of type {} is not hashable", obj.technetium_type_name()))));
+                        as_hashset.insert(hashable);
+                    }
+                    self.stack.push(ObjectRef::new(Set { contents: as_hashset }));
                 }
                 Op::push_int(int_val) => {
                     let obj = IntObject::new(*int_val as i64);

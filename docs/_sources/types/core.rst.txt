@@ -86,6 +86,25 @@ Tuple Methods
 
     Returns the number of elements in the tuple
 
+Set
+---
+
+Sets are containers of hashable objects that ignore duplicates. Sets are constructed through bracket ``{}`` literals, similar to lists. Note that elements inside sets must be hashable and immutable. As all objects are essentially mutable, any objects added to the set will be "locked" immutable, so further changes to these objects will throw an error.
+
+Set Methods
+^^^^^^^^^^^^^
+
+.. function:: [set].length()  [int]
+
+    Returns the number of elements in the set
+
+.. function:: [set].add([object])
+
+    Add an object to the set. Locks the given object as immutable. Will throw an error if the object is not hashable.
+
+.. function:: [set].remove([object])  [bool]
+
+    Remove an object from the set. Will throw an error if the object is not hashable. Returns whether or not anything was found and removed from the set.
 
 Numeric Types (float and int)
 -----------------------------

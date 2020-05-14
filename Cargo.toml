@@ -1,10 +1,51 @@
-[workspace]
+[package]
+name = "technetium"
+version = "0.1.0"
+authors = ["Matt Torrence <matt@torrencefamily.net>"]
+description = """
+technetium is an interpreted scripting language, optimized for install, build,
+and configuration scripts.
+"""
+documentation = "https://matthewtorrence.com/technetium"
+homepage = "https://matthewtorrence.com/technetium"
+repository = "https://github.com/Torrencem/technetium"
+readme = "README.md"
+edition = "2018"
 
+[[bin]]
+path = "crates/core/main.rs"
+name = "tech"
+
+[workspace]
 members = [
-	"crates/tech",
 	"crates/lexer",
 	"crates/runtime",
 	"crates/compile",
 	"crates/mlrefcell",
 ]
 
+[dependencies]
+lalrpop-util = "0.18.1"
+codespan = "0.9.3"
+codespan-reporting = "0.9.2"
+lazy_static = "1.4.0"
+log = { features = ["std"], version = "0.4" }
+sys-info = "0.6.1"
+dtoa = "0.4"
+rental = "0.5.4"
+parking_lot = "0.10.2"
+num = "0.2.1"
+stable_deref_trait = "1.1.1"
+mlrefcell = { path = "crates/mlrefcell" }
+lexer = { path = "crates/lexer" }
+compile = { path = "crates/compile" }
+runtime = { path = "crates/runtime" }
+
+[dependencies.clap]
+version = "2.33.0"
+default-features = false
+features = ["suggestions"]
+
+[dev-dependencies]
+assert_cmd = "1.0.1"
+predicates = "1"

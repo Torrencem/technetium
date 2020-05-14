@@ -1,4 +1,4 @@
-//! Lextime, Parsetime, Compiletime, and Runtime errors for technetium
+//! Compiletime errors for technetium
 
 use codespan::Span;
 use codespan_reporting::diagnostic::{Diagnostic, Label};

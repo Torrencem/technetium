@@ -1,4 +1,4 @@
-//! Lextime, Parsetime, Compiletime, and Runtime errors for technetium
+//! Lextime and Parsetime errors for technetium
 
 use crate::Tok;
 use codespan::Span;

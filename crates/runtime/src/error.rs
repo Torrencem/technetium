@@ -1,4 +1,4 @@
-//! Lextime, Parsetime, Compiletime, and Runtime errors for technetium
+//! Runtime errors for technetium
 
 use crate::bytecode::DebugSymbol;
 use codespan::FileId;

@@ -88,7 +88,7 @@ fn main() {
             term::emit(&mut writer.lock(), &config, &files, &diagnostic)
                 .expect("Error writing error message");
 
-            eprintln!("The above error could not be recovered, and parsing stopped.");
+            eprintln!("The above error could not be recovered from, and parsing stopped.");
 
             exit(1)
         });

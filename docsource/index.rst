@@ -18,3 +18,4 @@ Technetium is a programming language designed around making short configuration 
    types/shell
    standard/math
    standard/utilities
+   standard/special_funcs

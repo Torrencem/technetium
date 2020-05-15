@@ -1,8 +1,7 @@
-
-use std::collections::HashSet;
 use crate::bytecode::*;
 use crate::error::*;
 use crate::*;
+use std::collections::HashSet;
 
 pub trait BackingIndex {
     fn to_usize(&self) -> usize;
@@ -55,7 +54,8 @@ impl<T: Clone> MemoryBacking<T> {
     pub fn insert<Num: BackingIndex>(&mut self, index: Num, val: T) {
         let index: usize = index.to_usize();
         if index >= self.backing.len() {
-            self.backing.append(&mut vec![None; index + self.backing.len() + 1]);
+            self.backing
+                .append(&mut vec![None; index + self.backing.len() + 1]);
         }
         self.backing[index] = Some(val);
     }
@@ -67,7 +67,9 @@ impl<T: Clone> MemoryBacking<T> {
     }
 
     pub fn retain<F>(&mut self, mut f: F)
-        where F: FnMut(usize) -> bool {
+    where
+        F: FnMut(usize) -> bool,
+    {
         for i in 0..self.backing.len() {
             if !f(i) {
                 self.backing[i] = None;
@@ -118,7 +120,9 @@ impl MemoryManager {
             dnd.insert(index);
             Ok(())
         } else {
-            Err(RuntimeError::internal_error("Inserted a do-not-drop into a context that doesn't exist"))
+            Err(RuntimeError::internal_error(
+                "Inserted a do-not-drop into a context that doesn't exist",
+            ))
         }
     }
 
@@ -128,31 +132,43 @@ impl MemoryManager {
     }
 
     pub fn get(&self, index: NonLocalName) -> RuntimeResult<ObjectRef> {
-        let frame = self.memory.get(index.0).ok_or_else(|| RuntimeError::variable_undefined_error("Variable was not initialized"))?;
+        let frame = self.memory.get(index.0).ok_or_else(|| {
+            RuntimeError::variable_undefined_error("Variable was not initialized")
+        })?;
 
-        let rc = frame.get(index.1).ok_or_else(|| RuntimeError::variable_undefined_error("Variable was not initialized"))?;
+        let rc = frame.get(index.1).ok_or_else(|| {
+            RuntimeError::variable_undefined_error("Variable was not initialized")
+        })?;
 
         Ok(ObjectRef::clone(rc))
     }
 
     pub fn set(&mut self, index: NonLocalName, val: ObjectRef) -> RuntimeResult<()> {
-        let frame = self.memory.get_mut(index.0).ok_or_else(|| RuntimeError::internal_error("Called set on a frame that doesn't exist"))?;
-        
+        let frame = self.memory.get_mut(index.0).ok_or_else(|| {
+            RuntimeError::internal_error("Called set on a frame that doesn't exist")
+        })?;
+
         frame.insert(index.1, val);
 
         Ok(())
     }
 
     pub fn clear_frame(&mut self, fid: FrameId) -> RuntimeResult<()> {
-        let frame = self.memory.get_mut(fid).ok_or_else(|| RuntimeError::internal_error("Called clear frame on a frame that doesn't exist"))?;
+        let frame = self.memory.get_mut(fid).ok_or_else(|| {
+            RuntimeError::internal_error("Called clear frame on a frame that doesn't exist")
+        })?;
 
-        let context_id = self.frame_index.get(fid).ok_or_else(|| RuntimeError::internal_error("Called clear frame on a frame that doesn't correspond to a context"))?;
+        let context_id = self.frame_index.get(fid).ok_or_else(|| {
+            RuntimeError::internal_error(
+                "Called clear frame on a frame that doesn't correspond to a context",
+            )
+        })?;
 
-        let dnd = self.do_not_drops.get(*context_id).ok_or_else(|| RuntimeError::internal_error("Called clear frame on an unregistered frame"))?;
-        
-        frame.retain(|index| {
-            dnd.contains(&(index as u16))
-        });
+        let dnd = self.do_not_drops.get(*context_id).ok_or_else(|| {
+            RuntimeError::internal_error("Called clear frame on an unregistered frame")
+        })?;
+
+        frame.retain(|index| dnd.contains(&(index as u16)));
 
         if frame.len() == 0 {
             self.memory.remove(fid);

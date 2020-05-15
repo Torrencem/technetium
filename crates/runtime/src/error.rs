@@ -4,10 +4,10 @@ use crate::bytecode::DebugSymbol;
 use codespan::FileId;
 use codespan::Files;
 use codespan_reporting::diagnostic::{Diagnostic, Label};
+use std::borrow::Cow;
+use std::cell;
 use std::fmt;
 use std::sync;
-use std::cell;
-use std::borrow::Cow;
 use sys_info;
 
 /// The result of a computation on the technetium runtime
@@ -106,20 +106,16 @@ impl From<cell::BorrowMutError> for RuntimeError {
 impl From<mlrefcell::BorrowMutError> for RuntimeError {
     fn from(error: mlrefcell::BorrowMutError) -> Self {
         match error {
-            mlrefcell::BorrowMutError::AlreadyBorrowed => {
-                RuntimeError {
-                    err: RuntimeErrorType::BorrowMutError,
-                    help: "tried to mutate and read from the same object".to_string(),
-                    symbols: vec![],
-                }
+            mlrefcell::BorrowMutError::AlreadyBorrowed => RuntimeError {
+                err: RuntimeErrorType::BorrowMutError,
+                help: "tried to mutate and read from the same object".to_string(),
+                symbols: vec![],
             },
-            mlrefcell::BorrowMutError::Locked => {
-                RuntimeError {
-                    err: RuntimeErrorType::MutateImmutableError,
-                    help: "tried to mutate value that was forced to be immutable".to_string(),
-                    symbols: vec![],
-                }
-            }
+            mlrefcell::BorrowMutError::Locked => RuntimeError {
+                err: RuntimeErrorType::MutateImmutableError,
+                help: "tried to mutate value that was forced to be immutable".to_string(),
+                symbols: vec![],
+            },
         }
     }
 }
@@ -140,7 +136,7 @@ impl RuntimeError {
             symbols: vec![],
         }
     }
-    
+
     pub fn key_error<S: ToString>(message: S) -> Self {
         RuntimeError {
             err: RuntimeErrorType::KeyError,
@@ -156,7 +152,7 @@ impl RuntimeError {
             symbols: vec![],
         }
     }
-    
+
     pub fn variable_undefined_error<S: ToString>(message: S) -> Self {
         RuntimeError {
             err: RuntimeErrorType::VariableUndefinedError,
@@ -172,7 +168,7 @@ impl RuntimeError {
             symbols: vec![],
         }
     }
-    
+
     pub fn index_too_big_error<S: ToString>(message: S) -> Self {
         RuntimeError {
             err: RuntimeErrorType::IntegerTooBigError,
@@ -204,7 +200,9 @@ impl RuntimeError {
         match self.symbols.get(0) {
             Some(&symbol) => Diagnostic::error()
                 .with_message(format!("Runtime Error: {:?}", self.err))
-                .with_labels(vec![Label::primary(symbol.file_id, symbol.location).with_message(&self.help)]),
+                .with_labels(vec![
+                    Label::primary(symbol.file_id, symbol.location).with_message(&self.help)
+                ]),
             None => Diagnostic::error().with_message(&self.help),
         }
     }
@@ -212,8 +210,18 @@ impl RuntimeError {
     pub fn stack_trace(&self, files: &Files<Cow<'_, str>>) -> Vec<String> {
         let mut res = vec![];
         for symbol in self.symbols.iter() {
-            let slice = files.source_slice(symbol.file_id, symbol.location).unwrap_or("<Unknown>");
-            let location = files.location(symbol.file_id, symbol.location.start()).map_or("??".to_string(), |location| format!("line {}, col {}", location.line.number(), location.column.number()));
+            let slice = files
+                .source_slice(symbol.file_id, symbol.location)
+                .unwrap_or("<Unknown>");
+            let location = files
+                .location(symbol.file_id, symbol.location.start())
+                .map_or("??".to_string(), |location| {
+                    format!(
+                        "line {}, col {}",
+                        location.line.number(),
+                        location.column.number()
+                    )
+                });
             let fname = files.name(symbol.file_id).to_string_lossy();
             res.push(format!("{} at {}: \"{}\"", fname, location, slice));
         }

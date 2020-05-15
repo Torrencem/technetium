@@ -1,18 +1,18 @@
 use std::collections::HashMap;
 
-use crate::*;
 use crate::error::*;
+use crate::*;
 
-use std::sync;
-use std::rc::Rc;
 use std::clone::Clone as RustClone;
 use std::io::Write;
 use std::process::{Command, Stdio};
+use std::rc::Rc;
+use std::sync;
 
 use crate::builtins;
-use crate::standard::get_default_namespace;
-use crate::standard::conversion;
 use crate::memory::*;
+use crate::standard::conversion;
+use crate::standard::get_default_namespace;
 
 use std::any::TypeId;
 
@@ -30,7 +30,8 @@ pub struct FrameIdGen {
 }
 
 lazy_static! {
-    pub static ref FRAME_ID_GEN: sync::Mutex<FrameIdGen> = sync::Mutex::new(FrameIdGen { last: 10 });
+    pub static ref FRAME_ID_GEN: sync::Mutex<FrameIdGen> =
+        sync::Mutex::new(FrameIdGen { last: 10 });
 }
 
 /// Generate a new unique FrameID. This uses a static counter behind
@@ -61,9 +62,7 @@ pub struct DebugSymbol {
 
 impl DebugSymbol {
     pub fn new(file_id: FileId, location: Span) -> Self {
-        DebugSymbol {
-            file_id, location
-        }
+        DebugSymbol { file_id, location }
     }
 }
 
@@ -150,7 +149,7 @@ pub enum Op {
     mklist(u16),
 
     mktuple(u16),
-    
+
     mkset(u16),
 
     mkdict(u16),
@@ -210,18 +209,40 @@ impl fmt::Display for Op {
             Op::push_bool(x) => f.write_str(format!("push_bool\t{}", x).as_ref()),
             Op::push_const(x) => f.write_str(format!("push_const\t{:?}", x).as_ref()),
             Op::push_const_clone(x) => f.write_str(format!("push_const_clone\t{:?}", x).as_ref()),
-            Op::push_global_default(x) => f.write_str(format!("push_global_default\t{:?}", x).as_ref()),
+            Op::push_global_default(x) => {
+                f.write_str(format!("push_global_default\t{:?}", x).as_ref())
+            }
             Op::jmp(x) => f.write_str(format!("jmp\t{}", x).as_ref()),
             Op::cond_jmp(x) => f.write_str(format!("cond_jmp\t{}", x).as_ref()),
             Op::debug(x) => f.write_str(format!("debug\t{}", x).as_ref()),
             Op::mod_ => f.write_str("mod"),
-            Op::dup | Op::pop | Op::swap | Op::sh | 
-            Op::to_string | Op::set_attr | Op::get_attr |
-            Op::add | Op::sub | Op::mul | Op::div | Op::not | Op::neg |
-            Op::or | Op::and | Op::cmp_lt | Op::cmp_gt | Op::cmp_eq |
-            Op::cmp_neq | Op::cmp_leq | Op::cmp_geq | Op::index_get |
-            Op::index_set | Op::make_slice | Op::push_void | Op::ret |
-            Op::make_iter => f.write_str(format!("{:?}", self).as_ref()),
+            Op::dup
+            | Op::pop
+            | Op::swap
+            | Op::sh
+            | Op::to_string
+            | Op::set_attr
+            | Op::get_attr
+            | Op::add
+            | Op::sub
+            | Op::mul
+            | Op::div
+            | Op::not
+            | Op::neg
+            | Op::or
+            | Op::and
+            | Op::cmp_lt
+            | Op::cmp_gt
+            | Op::cmp_eq
+            | Op::cmp_neq
+            | Op::cmp_leq
+            | Op::cmp_geq
+            | Op::index_get
+            | Op::index_set
+            | Op::make_slice
+            | Op::push_void
+            | Op::ret
+            | Op::make_iter => f.write_str(format!("{:?}", self).as_ref()),
         }
     }
 }
@@ -258,18 +279,17 @@ impl<'code> fmt::Display for Frame<'code> {
 
 macro_rules! try_debug {
     ($this: expr, $debug_symb: expr, $weak_debug_symb: expr, $expr: expr) => {
-        $expr
-            .map_err(|e| match $debug_symb {
-                None => RuntimeError::from(e),
-                Some(debug_symb) => {
-                    let debug = $this.global_context.debug_descriptors.get(&debug_symb);
-                    if let Some(debug) = debug {
-                        RuntimeError::from(e).attach_span(*debug)
-                    } else {
-                        RuntimeError::from(e)
-                    }
+        $expr.map_err(|e| match $debug_symb {
+            None => RuntimeError::from(e),
+            Some(debug_symb) => {
+                let debug = $this.global_context.debug_descriptors.get(&debug_symb);
+                if let Some(debug) = debug {
+                    RuntimeError::from(e).attach_span(*debug)
+                } else {
+                    RuntimeError::from(e)
                 }
-            })?;
+            }
+        })?;
     };
 }
 
@@ -338,9 +358,13 @@ impl<'code> Frame<'code> {
                     self.stack.push(local);
                 }
                 Op::load_non_local(nl_name) => {
-                    let nl = try_debug!(self, ds, dsw, self
-                        .locals
-                        .get((*self.least_ancestors.get(&nl_name.0).unwrap(), nl_name.1)));
+                    let nl = try_debug!(
+                        self,
+                        ds,
+                        dsw,
+                        self.locals
+                            .get((*self.least_ancestors.get(&nl_name.0).unwrap(), nl_name.1))
+                    );
                     self.stack.push(nl);
                 }
                 Op::attach_ancestors => {
@@ -486,7 +510,9 @@ impl<'code> Frame<'code> {
                         self.stack.drain((self.stack.len() - len)..).collect();
                     let subs = self.stack.pop();
                     if let Some(subs) = subs {
-                        if let Some(string) = subs.as_any().downcast_ref::<ObjectCell<StringObject>>() {
+                        if let Some(string) =
+                            subs.as_any().downcast_ref::<ObjectCell<StringObject>>()
+                        {
                             let mut result_string = String::new();
                             let string = string.try_borrow()?;
                             let val = &string.val;
@@ -705,45 +731,61 @@ impl<'code> Frame<'code> {
                 Op::make_slice => {
                     if self.stack.len() < 4 {
                         return Err(RuntimeError::internal_error(
-                                "Tried to make a slice with too few arguments"
+                            "Tried to make a slice with too few arguments",
                         ));
                     }
                     let step = self.stack.pop().unwrap();
-                    let step = if step.as_any().type_id() == TypeId::of::<ObjectCell<VoidObject>>() {
+                    let step = if step.as_any().type_id() == TypeId::of::<ObjectCell<VoidObject>>()
+                    {
                         1
                     } else {
-                        if let Some(int_obj) = step.as_any().downcast_ref::<ObjectCell<IntObject>>() {
+                        if let Some(int_obj) = step.as_any().downcast_ref::<ObjectCell<IntObject>>()
+                        {
                             int_obj.try_borrow()?.to_i64()?
                         } else {
-                            return Err(RuntimeError::type_error("Slice created with non-integer argument"));
+                            return Err(RuntimeError::type_error(
+                                "Slice created with non-integer argument",
+                            ));
                         }
                     };
                     let stop = self.stack.pop().unwrap();
-                    let mut stop = if stop.as_any().type_id() == TypeId::of::<ObjectCell<VoidObject>>() {
+                    let mut stop = if stop.as_any().type_id()
+                        == TypeId::of::<ObjectCell<VoidObject>>()
+                    {
                         None
                     } else {
-                        if let Some(int_obj) = stop.as_any().downcast_ref::<ObjectCell<IntObject>>() {
+                        if let Some(int_obj) = stop.as_any().downcast_ref::<ObjectCell<IntObject>>()
+                        {
                             Some(int_obj.try_borrow()?.to_i64()?)
                         } else {
-                            return Err(RuntimeError::type_error("Slice created with non-integer argument"));
+                            return Err(RuntimeError::type_error(
+                                "Slice created with non-integer argument",
+                            ));
                         }
                     };
                     let start = self.stack.pop().unwrap();
-                    let mut start = if start.as_any().type_id() == TypeId::of::<ObjectCell<VoidObject>>() {
-                        if step < 0 {
-                            -1
+                    let mut start =
+                        if start.as_any().type_id() == TypeId::of::<ObjectCell<VoidObject>>() {
+                            if step < 0 {
+                                -1
+                            } else {
+                                0
+                            }
                         } else {
-                            0
-                        }
-                    } else {
-                        if let Some(int_obj) = start.as_any().downcast_ref::<ObjectCell<IntObject>>() {
-                            int_obj.try_borrow()?.to_i64()?
-                        } else {
-                            return Err(RuntimeError::type_error("Slice created with non-integer argument"));
-                        }
-                    };
+                            if let Some(int_obj) =
+                                start.as_any().downcast_ref::<ObjectCell<IntObject>>()
+                            {
+                                int_obj.try_borrow()?.to_i64()?
+                            } else {
+                                return Err(RuntimeError::type_error(
+                                    "Slice created with non-integer argument",
+                                ));
+                            }
+                        };
                     let parent = self.stack.pop().unwrap();
-                    let length = conversion::to_int(parent.call_method("length", &[])?)?.to_i64().unwrap();
+                    let length = conversion::to_int(parent.call_method("length", &[])?)?
+                        .to_i64()
+                        .unwrap();
                     // Make slices like val[1:-1] work
                     if let Some(end) = stop {
                         if end < start && end < 0 && step > 0 {
@@ -757,10 +799,10 @@ impl<'code> Frame<'code> {
                         }
                     }
                     let slice = Slice {
-                            parent,
-                            start,
-                            stop,
-                            step,
+                        parent,
+                        start,
+                        stop,
+                        step,
                     };
                     self.stack.push(ObjectRef::new(slice));
                 }
@@ -801,9 +843,7 @@ impl<'code> Frame<'code> {
                     let len = *len as usize;
                     let objs: Vec<ObjectRef> =
                         self.stack.drain((self.stack.len() - len)..).collect();
-                    self.stack.push(ObjectRef::new(List {
-                        contents: objs,
-                    }));
+                    self.stack.push(ObjectRef::new(List { contents: objs }));
                 }
                 Op::mktuple(len) => {
                     let len = *len as usize;
@@ -817,12 +857,21 @@ impl<'code> Frame<'code> {
                         self.stack.drain((self.stack.len() - len)..).collect();
                     let mut as_hashset = HashSet::new();
                     for obj in objs.into_iter() {
-                        let hashable = try_debug!(self, ds, dsw, obj
-                            .hashable()
-                            .ok_or_else(|| RuntimeError::type_error(format!("Object of type {} is not hashable", obj.technetium_type_name()))));
+                        let hashable = try_debug!(
+                            self,
+                            ds,
+                            dsw,
+                            obj.hashable()
+                                .ok_or_else(|| RuntimeError::type_error(format!(
+                                    "Object of type {} is not hashable",
+                                    obj.technetium_type_name()
+                                )))
+                        );
                         as_hashset.insert(hashable);
                     }
-                    self.stack.push(ObjectRef::new(Set { contents: as_hashset }));
+                    self.stack.push(ObjectRef::new(Set {
+                        contents: as_hashset,
+                    }));
                 }
                 Op::mkdict(len) => {
                     let len = *len as usize;
@@ -832,12 +881,21 @@ impl<'code> Frame<'code> {
                     for objs in objs.chunks(2) {
                         let key = ObjectRef::clone(&objs[0]);
                         let val = ObjectRef::clone(&objs[1]);
-                        let hashable = try_debug!(self, ds, dsw, key
-                            .hashable()
-                            .ok_or_else(|| RuntimeError::type_error(format!("Object used as a key of type {} is not hashable", key.technetium_type_name()))));
+                        let hashable = try_debug!(
+                            self,
+                            ds,
+                            dsw,
+                            key.hashable()
+                                .ok_or_else(|| RuntimeError::type_error(format!(
+                                    "Object used as a key of type {} is not hashable",
+                                    key.technetium_type_name()
+                                )))
+                        );
                         as_hashmap.insert(hashable, val);
                     }
-                    self.stack.push(ObjectRef::new(Dictionary { contents: as_hashmap }));
+                    self.stack.push(ObjectRef::new(Dictionary {
+                        contents: as_hashmap,
+                    }));
                 }
                 Op::push_int(int_val) => {
                     let obj = IntObject::new(*int_val as i64);
@@ -881,9 +939,7 @@ impl<'code> Frame<'code> {
                         ));
                     }
                 }
-                Op::push_void => {
-                    self.stack.push(VoidObject::new())
-                }
+                Op::push_void => self.stack.push(VoidObject::new()),
                 Op::jmp(offset) => {
                     if *offset > 0 {
                         let offset: usize = *offset as u16 as usize;

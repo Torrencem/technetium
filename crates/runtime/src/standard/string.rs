@@ -1,5 +1,5 @@
-use crate::*;
 use crate::error::*;
+use crate::*;
 use std::rc::Rc;
 use std::str;
 
@@ -13,27 +13,25 @@ pub struct Lines {
 impl Object for ObjectCell<Lines> {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
-        Ok(ObjectRef::new(Lines { parent: ObjectCell::clone(&this.parent) }))
+        Ok(ObjectRef::new(Lines {
+            parent: ObjectCell::clone(&this.parent),
+        }))
     }
-    
+
     fn technetium_type_name(&self) -> String {
         "lines".to_string()
     }
 
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
-        let lines_iter_rental_head = line_rentals::LinesIteratorHead::new(
-            ObjectCell::clone(&this.parent),
-            |rc| rc.borrow()
-        );
+        let lines_iter_rental_head =
+            line_rentals::LinesIteratorHead::new(ObjectCell::clone(&this.parent), |rc| rc.borrow());
 
-        Ok(ObjectRef::new(
-                LinesIterator {
-                    inner: line_rentals::LinesIterator::new(
-                            Box::new(lines_iter_rental_head),
-                            |head| head.parent.val.lines())
-                }
-        ))
+        Ok(ObjectRef::new(LinesIterator {
+            inner: line_rentals::LinesIterator::new(Box::new(lines_iter_rental_head), |head| {
+                head.parent.val.lines()
+            }),
+        }))
     }
 }
 
@@ -48,7 +46,7 @@ rental! {
         use super::*;
         use std::cell::Ref;
         use mlrefcell::MLRefCell;
-        
+
         #[rental]
         pub struct LinesIteratorHead {
             #[target_ty = "Rc<MLRefCell<StringObject>>"]
@@ -73,7 +71,9 @@ impl Object for ObjectCell<LinesIterator> {
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
         let mut this = self.try_borrow_mut()?;
         let inner = &mut this.inner;
-        let next = line_rentals::LinesIterator::rent_mut(inner, |lines| lines.next().map(|val| val.to_string()));
+        let next = line_rentals::LinesIterator::rent_mut(inner, |lines| {
+            lines.next().map(|val| val.to_string())
+        });
         Ok(next.map(StringObject::new))
     }
 }
@@ -86,27 +86,25 @@ pub struct Chars {
 impl Object for ObjectCell<Chars> {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
-        Ok(ObjectRef::new(Chars { parent: ObjectCell::clone(&this.parent) }))
+        Ok(ObjectRef::new(Chars {
+            parent: ObjectCell::clone(&this.parent),
+        }))
     }
-    
+
     fn technetium_type_name(&self) -> String {
         "chars".to_string()
     }
 
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
-        let lines_iter_rental_head = char_rentals::CharsIteratorHead::new(
-            ObjectCell::clone(&this.parent),
-            |rc| rc.borrow()
-        );
+        let lines_iter_rental_head =
+            char_rentals::CharsIteratorHead::new(ObjectCell::clone(&this.parent), |rc| rc.borrow());
 
-        Ok(ObjectRef::new(
-                CharsIterator {
-                    inner: char_rentals::CharsIterator::new(
-                            Box::new(lines_iter_rental_head),
-                            |head| head.parent.val.chars())
-                }
-        ))
+        Ok(ObjectRef::new(CharsIterator {
+            inner: char_rentals::CharsIterator::new(Box::new(lines_iter_rental_head), |head| {
+                head.parent.val.chars()
+            }),
+        }))
     }
 }
 
@@ -119,7 +117,7 @@ rental! {
         use super::*;
         use std::cell::Ref;
         use mlrefcell::MLRefCell;
-        
+
         #[rental]
         pub struct CharsIteratorHead {
             #[target_ty = "Rc<MLRefCell<StringObject>>"]

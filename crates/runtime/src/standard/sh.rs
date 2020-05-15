@@ -1,11 +1,11 @@
-use crate::*;
 use crate::error::*;
 use crate::PARSED_CLARGS;
+use crate::*;
 
-use std::io::Write;
-use std::process::{Child, Command, Output, Stdio};
-use std::path::Path;
 use std::env;
+use std::io::Write;
+use std::path::Path;
+use std::process::{Child, Command, Output, Stdio};
 
 use crate::func_object;
 
@@ -99,7 +99,9 @@ impl ShObject {
                 Ok(BoolObject::new(status.success()))
             }
         } else {
-            Err(RuntimeError::type_error("Called exit_code() before process exited!"))
+            Err(RuntimeError::type_error(
+                "Called exit_code() before process exited!",
+            ))
         }
     }
 
@@ -108,7 +110,9 @@ impl ShObject {
             child.kill()?;
             Ok(())
         } else {
-            Err(RuntimeError::type_error("Called kill() on process that wasn't running!"))
+            Err(RuntimeError::type_error(
+                "Called kill() on process that wasn't running!",
+            ))
         }
     }
 }

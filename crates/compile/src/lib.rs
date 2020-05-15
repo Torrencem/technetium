@@ -1,4 +1,3 @@
-
 #[macro_use]
 extern crate lalrpop_util;
 
@@ -10,17 +9,17 @@ pub mod ast;
 use ast::*;
 
 use runtime::bytecode::*;
-use runtime::*;
 use runtime::memory::*;
-use runtime::standard::STANDARD_CONTEXT_ID;
 use runtime::standard::get_default_namespace_descriptors;
+use runtime::standard::STANDARD_CONTEXT_ID;
+use runtime::*;
 
 use codespan::FileId;
 use codespan::Span;
+use parking_lot::RwLock;
 use std::clone::Clone as RustClone;
 use std::collections::HashMap;
 use std::i32;
-use parking_lot::RwLock;
 use std::rc::Rc;
 
 pub type Bytecode = Vec<Op>;
@@ -134,9 +133,7 @@ impl CompileManager {
 
     pub fn create_constant_descriptor(&mut self, obj: ObjectRef) -> GlobalConstantDescriptor {
         let const_descr = self.context().gcd_gen();
-        self.context()
-            .constant_descriptors
-            .insert(const_descr, obj);
+        self.context().constant_descriptors.insert(const_descr, obj);
         const_descr
     }
 
@@ -161,7 +158,9 @@ impl CompileManager {
                     // 1. it would be an internal_error
                     // 2. it could happen at runtime or compile time, which
                     //    would be difficult to handle correctly.
-                    self.memory_manager.do_not_drop(context.context_id, *local_index).expect("Internal memory manager error on do_not_drop");
+                    self.memory_manager
+                        .do_not_drop(context.context_id, *local_index)
+                        .expect("Internal memory manager error on do_not_drop");
                     return NameLookupResult::ExternLocal((context.context_id, *local_index));
                 }
             }
@@ -219,7 +218,7 @@ impl CompileManager {
         res.push(Op::mktuple(ast.values.len() as u16));
         Ok(res)
     }
-    
+
     pub fn compile_set_literal(&mut self, ast: &SetLiteral) -> CompileResult {
         let mut res = vec![];
         for item in ast.values.iter() {
@@ -340,13 +339,15 @@ impl CompileManager {
                     NameLookupResult::MyLocal(name) => Op::load(name),
                     NameLookupResult::ExternLocal(name) => Op::load_non_local(name),
                     NameLookupResult::Global(name) => Op::push_global_default(name),
-                    NameLookupResult::NotFound => return Err(CompileError::new(
-                        CompileErrorType::UndefinedVariable(ast.span()),
-                        format!("Undefined variable: {}", v.name),
-                    )),
+                    NameLookupResult::NotFound => {
+                        return Err(CompileError::new(
+                            CompileErrorType::UndefinedVariable(ast.span()),
+                            format!("Undefined variable: {}", v.name),
+                        ))
+                    }
                 });
                 Ok(res)
-            },
+            }
             Expr::Literal(l) => self.compile_literal(l),
             Expr::ListLiteral(l) => self.compile_list_literal(l),
             Expr::SetLiteral(l) => self.compile_set_literal(l),
@@ -372,7 +373,7 @@ impl CompileManager {
         res.push(Op::index_get);
         Ok(res)
     }
-    
+
     pub fn compile_post_pre_op(&mut self, ast: &PostPreOp) -> CompileResult {
         let mut res = vec![];
 
@@ -386,19 +387,19 @@ impl CompileManager {
                 res.push(Op::push_int(1));
                 res.push(Op::debug(debug_descr));
                 res.push(Op::add);
-            },
+            }
             PPOVariant::PreIncrement => {
                 res.push(Op::push_int(1));
                 res.push(Op::debug(debug_descr));
                 res.push(Op::add);
                 res.push(Op::dup);
-            },
+            }
             PPOVariant::PostDecrement => {
                 res.push(Op::dup);
                 res.push(Op::push_int(1));
                 res.push(Op::debug(debug_descr));
                 res.push(Op::sub);
-            },
+            }
             PPOVariant::PreDecrement => {
                 res.push(Op::push_int(1));
                 res.push(Op::debug(debug_descr));
@@ -447,7 +448,7 @@ impl CompileManager {
         let mut res = vec![];
         // Evaluate the expression for the iterator
         res.append(&mut self.compile_expr(&ast.iter)?);
-        
+
         let debug_descr = self.create_debug_descriptor(ast.iter.span());
         res.push(Op::debug(debug_descr));
 
@@ -544,7 +545,7 @@ impl CompileManager {
         let cid = self.context().context_id;
         self.local_index
             .insert((cid, ast.name.name.clone()), my_local);
-        
+
         let new_cid = self.context_id_gen();
         self.memory_manager.register_context(new_cid);
         let sub_context = CompileContext::new(new_cid, self.context().file_id);
@@ -553,10 +554,9 @@ impl CompileManager {
             self.local_index
                 .insert((sub_context.context_id, arg.name.clone()), name);
         }
-        
+
         let sub_context_id = sub_context.context_id;
         self.context_stack.push(sub_context);
-
 
         let mut func_code = vec![];
         for arg in ast.args.iter() {
@@ -600,7 +600,9 @@ impl CompileManager {
     pub fn compile_format_string(&mut self, ast: &FormatString) -> CompileResult {
         let mut res = vec![];
         let debug_descr = self.create_debug_descriptor(ast.span);
-        res.push(Op::push_const(self.create_constant_descriptor(StringObject::new(ast.val.clone()))));
+        res.push(Op::push_const(
+            self.create_constant_descriptor(StringObject::new(ast.val.clone())),
+        ));
         for subs in ast.substitutions.iter().rev() {
             res.append(&mut self.compile_expr(subs)?);
         }
@@ -641,7 +643,9 @@ impl CompileManager {
             }
             AssignmentLHS::AttrLookup(a_lookup) => {
                 res.append(&mut self.compile_expr(&a_lookup.parent)?);
-                res.push(Op::push_const(self.create_constant_descriptor(StringObject::new(a_lookup.attribute.name.clone()))));
+                res.push(Op::push_const(self.create_constant_descriptor(
+                    StringObject::new(a_lookup.attribute.name.clone()),
+                )));
                 res.push(Op::swap);
                 res.push(Op::debug(debug_descr));
                 res.push(Op::set_attr);

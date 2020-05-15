@@ -234,7 +234,7 @@ print(true && exit(0))
     );
 
     cmd.assert().success().stdout(predicate::eq(""));
-    
+
     let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
@@ -246,7 +246,6 @@ print(false && exit(1))
 
     Ok(())
 }
-
 
 #[test]
 fn test_sh_and_substitution() -> Result<(), TestError> {
@@ -373,7 +372,6 @@ print(l[-2:])
     Ok(())
 }
 
-
 #[test]
 fn test_push_pop() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin("tech")?;
@@ -432,7 +430,7 @@ print(my_set)
         .stderr(predicate::str::contains("not hashable"))
         .stderr(predicate::str::contains("builtin func"))
         .stderr(predicate::str::contains("my_set"));
-    
+
     let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"

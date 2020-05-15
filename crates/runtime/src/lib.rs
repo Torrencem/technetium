@@ -1,9 +1,8 @@
-
-pub mod bytecode;
 pub mod builtins;
-pub mod standard;
-pub mod memory;
+pub mod bytecode;
 pub mod error;
+pub mod memory;
+pub mod standard;
 
 #[macro_use]
 extern crate rental;
@@ -11,27 +10,27 @@ extern crate rental;
 #[macro_use]
 extern crate lazy_static;
 
+use builtins::index_get;
 use bytecode::Op;
 use bytecode::{ContextId, FrameId};
-use builtins::index_get;
-use memory::*;
 use error::*;
+use memory::*;
+use mlrefcell::MLRefCell;
+use num::bigint::{BigInt, ToBigInt};
+use num::cast::ToPrimitive;
+use once_cell::sync::OnceCell;
+use parking_lot::RwLock;
+use stable_deref_trait::StableDeref;
 use std::any::Any;
 use std::any::TypeId;
 use std::clone::Clone as RustClone;
-use std::collections::HashMap;
-use std::rc::Rc;
-use mlrefcell::MLRefCell;
-use parking_lot::RwLock;
-use std::ops::{Deref, DerefMut};
-use num::bigint::{BigInt, ToBigInt};
-use num::cast::ToPrimitive;
-use stable_deref_trait::StableDeref;
 use std::collections::hash_map::DefaultHasher;
+use std::collections::HashMap;
+use std::collections::HashSet;
 use std::hash::Hash;
 use std::hash::Hasher;
-use std::collections::HashSet;
-use once_cell::sync::OnceCell;
+use std::ops::{Deref, DerefMut};
+use std::rc::Rc;
 
 use dtoa;
 
@@ -59,7 +58,7 @@ impl DerefMut for ObjectRef {
     }
 }
 
-unsafe impl StableDeref for ObjectRef { }
+unsafe impl StableDeref for ObjectRef {}
 
 /// An object reference that's guaranteed to have a valid hash (that doesn't throw errors)
 ///
@@ -92,17 +91,15 @@ impl Hash for HashableObjectRef {
 }
 
 impl PartialEq for HashableObjectRef {
-    fn eq(&self, other: &HashableObjectRef  ) -> bool {
+    fn eq(&self, other: &HashableObjectRef) -> bool {
         match self.technetium_eq(other.opaque_clone()) {
             Some(val) => val,
-            None => {
-                self.ref_eq(other.opaque_clone())
-            }
+            None => self.ref_eq(other.opaque_clone()),
         }
     }
 }
 
-impl Eq for HashableObjectRef { }
+impl Eq for HashableObjectRef {}
 
 impl Clone for HashableObjectRef {
     fn clone(&self) -> Self {
@@ -112,19 +109,23 @@ impl Clone for HashableObjectRef {
 
 impl ObjectRef {
     pub fn new_from_cell<T>(obj: ObjectCell<T>) -> Self
-    where ObjectCell<T>: Object {
+    where
+        ObjectCell<T>: Object,
+    {
         ObjectRef {
             inner: Box::new(obj),
         }
     }
 
     pub fn new<T>(inner: T) -> Self
-    where ObjectCell<T>: Object {
+    where
+        ObjectCell<T>: Object,
+    {
         ObjectRef {
             inner: Box::new(ObjectCell::new(inner)),
         }
     }
-    
+
     /// Create a HashableObjectRef, by checking if it has a valid hash
     pub fn hashable(&self) -> Option<HashableObjectRef> {
         if self.technetium_hash().is_none() {
@@ -145,12 +146,16 @@ impl Clone for ObjectRef {
 #[repr(transparent)]
 #[derive(Debug)]
 pub struct ObjectCell<T>
-where ObjectCell<T>: Object {
+where
+    ObjectCell<T>: Object,
+{
     inner: Rc<MLRefCell<T>>,
 }
 
 impl<T> Clone for ObjectCell<T>
-where ObjectCell<T>: Object {
+where
+    ObjectCell<T>: Object,
+{
     fn clone(&self) -> Self {
         ObjectCell {
             inner: Rc::clone(&self.inner),
@@ -158,8 +163,10 @@ where ObjectCell<T>: Object {
     }
 }
 
-impl<T> ObjectCell<T> 
-where ObjectCell<T>: Object {
+impl<T> ObjectCell<T>
+where
+    ObjectCell<T>: Object,
+{
     pub fn new(val: T) -> Self {
         ObjectCell {
             inner: Rc::new(MLRefCell::new(val)),
@@ -174,7 +181,9 @@ where ObjectCell<T>: Object {
 }
 
 impl<T> Deref for ObjectCell<T>
-where ObjectCell<T>: Object {
+where
+    ObjectCell<T>: Object,
+{
     type Target = Rc<MLRefCell<T>>;
 
     fn deref(&self) -> &Self::Target {
@@ -183,14 +192,15 @@ where ObjectCell<T>: Object {
 }
 
 impl<T> DerefMut for ObjectCell<T>
-where ObjectCell<T>: Object {
+where
+    ObjectCell<T>: Object,
+{
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.inner
     }
 }
 
-unsafe impl<T> StableDeref for ObjectCell<T>
-where ObjectCell<T>: Object { }
+unsafe impl<T> StableDeref for ObjectCell<T> where ObjectCell<T>: Object {}
 
 pub trait ToAny {
     fn as_any(&self) -> &dyn Any;
@@ -212,7 +222,9 @@ pub trait OpaqueClone {
 }
 
 impl<T> OpaqueClone for ObjectCell<T>
-where ObjectCell<T>: Object {
+where
+    ObjectCell<T>: Object,
+{
     fn opaque_clone(&self) -> ObjectRef {
         let self_copy = ObjectCell {
             inner: Rc::clone(&self.inner),
@@ -228,7 +240,9 @@ pub trait RawPointer {
 }
 
 impl<T> RawPointer for ObjectCell<T>
-where ObjectCell<T>: Object {
+where
+    ObjectCell<T>: Object,
+{
     fn raw_pointer(&self) -> *const () {
         self.as_ptr() as *const ()
     }
@@ -239,7 +253,9 @@ pub trait LockImmutable {
 }
 
 impl<T> LockImmutable for ObjectCell<T>
-where ObjectCell<T>: Object {
+where
+    ObjectCell<T>: Object,
+{
     fn lock_immutable(&self) {
         self.lock();
     }
@@ -260,10 +276,7 @@ pub trait Object: Any + ToAny + OpaqueClone + RawPointer + LockImmutable {
     fn technetium_type_name(&self) -> String;
 
     fn to_string(&self) -> RuntimeResult<String> {
-        Ok(format!(
-            "<{}>",
-            self.technetium_type_name()
-        ))
+        Ok(format!("<{}>", self.technetium_type_name()))
     }
 
     fn get_attr(&self, _attr: String) -> RuntimeResult<ObjectRef> {
@@ -287,11 +300,7 @@ pub trait Object: Any + ToAny + OpaqueClone + RawPointer + LockImmutable {
         )))
     }
 
-    fn call(
-        &self,
-        _args: &[ObjectRef],
-        _locals: &mut MemoryManager,
-    ) -> RuntimeResult<ObjectRef> {
+    fn call(&self, _args: &[ObjectRef], _locals: &mut MemoryManager) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::type_error(format!(
             "Object of type {} is not callable",
             self.technetium_type_name()
@@ -319,7 +328,7 @@ pub trait Object: Any + ToAny + OpaqueClone + RawPointer + LockImmutable {
     fn technetium_eq(&self, _other: ObjectRef) -> Option<bool> {
         None
     }
-    
+
     fn ref_eq(&self, other: ObjectRef) -> bool {
         self.raw_pointer() == other.raw_pointer()
     }
@@ -327,7 +336,11 @@ pub trait Object: Any + ToAny + OpaqueClone + RawPointer + LockImmutable {
 
 impl fmt::Debug for dyn Object {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(fmt, "{}", self.to_string().unwrap_or_else(|_| "Object".to_string()))
+        write!(
+            fmt,
+            "{}",
+            self.to_string().unwrap_or_else(|_| "Object".to_string())
+        )
     }
 }
 
@@ -335,14 +348,12 @@ impl PartialEq for ObjectRef {
     fn eq(&self, other: &ObjectRef) -> bool {
         match self.technetium_eq(ObjectRef::clone(other)) {
             Some(val) => val,
-            None => {
-                self.ref_eq(ObjectRef::clone(other))
-            }
+            None => self.ref_eq(ObjectRef::clone(other)),
         }
     }
 }
 
-impl Eq for ObjectRef { }
+impl Eq for ObjectRef {}
 
 #[derive(Hash)]
 pub struct BoolObject {
@@ -397,7 +408,9 @@ pub struct IntObject {
 
 impl IntObject {
     pub fn new(val: i64) -> ObjectRef {
-        ObjectRef::new(IntObject { val: val.to_bigint().unwrap() })
+        ObjectRef::new(IntObject {
+            val: val.to_bigint().unwrap(),
+        })
     }
 
     pub fn new_big(val: BigInt) -> ObjectRef {
@@ -405,7 +418,11 @@ impl IntObject {
     }
 
     pub fn to_i64(&self) -> RuntimeResult<i64> {
-        self.val.to_i64().ok_or_else(|| RuntimeError::index_too_big_error("Tried to use a bigint of too large size as 64-bit integer"))
+        self.val.to_i64().ok_or_else(|| {
+            RuntimeError::index_too_big_error(
+                "Tried to use a bigint of too large size as 64-bit integer",
+            )
+        })
     }
 }
 
@@ -586,25 +603,28 @@ impl Object for ObjectCell<StringObject> {
                 } else {
                     Ok(IntObject::new(this.val.len() as i64))
                 }
-            },
+            }
             "contains" => {
                 let this = self.try_borrow()?;
                 if args.len() != 1 {
                     Err(RuntimeError::type_error("contains expects 1 arg"))
-                } else if let Some(arg) = args[0].as_any().downcast_ref::<ObjectCell<CharObject>>() {
+                } else if let Some(arg) = args[0].as_any().downcast_ref::<ObjectCell<CharObject>>()
+                {
                     let arg = arg.try_borrow()?;
                     Ok(BoolObject::new(this.val.contains(|c| c == arg.val)))
                 } else {
-                    Err(RuntimeError::type_error("string contains expects a character as an argument"))
+                    Err(RuntimeError::type_error(
+                        "string contains expects a character as an argument",
+                    ))
                 }
-            },
+            }
             "escape" => {
                 if !args.is_empty() {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
                     Ok(StringObject::new(this.val.escape_default().collect()))
                 }
-            },
+            }
             "lines" => {
                 if !args.is_empty() {
                     Err(RuntimeError::type_error("lines expects 0 args"))
@@ -613,7 +633,7 @@ impl Object for ObjectCell<StringObject> {
                         parent: ObjectCell::clone(self),
                     }))
                 }
-            },
+            }
             "chars" => {
                 if !args.is_empty() {
                     Err(RuntimeError::type_error("chars expects 0 args"))
@@ -669,11 +689,7 @@ impl Object for ObjectCell<Function> {
         true
     }
 
-    fn call(
-        &self,
-        args: &[ObjectRef],
-        locals: &mut MemoryManager,
-    ) -> RuntimeResult<ObjectRef> {
+    fn call(&self, args: &[ObjectRef], locals: &mut MemoryManager) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         if args.len() != this.nargs {
             return Err(RuntimeError::type_error(format!(
@@ -687,11 +703,7 @@ impl Object for ObjectCell<Function> {
             &this.code,
             locals,
             Rc::clone(&this.context),
-            this.least_ancestors
-                .read()
-                .as_ref()
-                .unwrap()
-                .clone(),
+            this.least_ancestors.read().as_ref().unwrap().clone(),
             this.context_id,
         );
         for arg in args.iter().rev() {
@@ -778,7 +790,9 @@ impl Object for ObjectCell<List> {
                 if !args.is_empty() {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
-                    Ok(ObjectRef::clone(&this.contents.pop().ok_or_else(|| RuntimeError::index_oob_error("Popped an empty list"))?))
+                    Ok(ObjectRef::clone(&this.contents.pop().ok_or_else(|| {
+                        RuntimeError::index_oob_error("Popped an empty list")
+                    })?))
                 }
             }
             "push" => {
@@ -828,7 +842,9 @@ impl Object for ObjectCell<List> {
                 return Some(false);
             }
             for index in 0..this.contents.len() {
-                if this.contents[index].technetium_eq(ObjectRef::clone(&other.contents[index])) != Some(true) {
+                if this.contents[index].technetium_eq(ObjectRef::clone(&other.contents[index]))
+                    != Some(true)
+                {
                     return Some(false);
                 }
             }
@@ -858,7 +874,9 @@ impl Object for ObjectCell<ListIterator> {
         } else {
             let old = *index;
             *index += 1;
-            Ok(Some(ObjectRef::clone(&this.parent.try_borrow()?.contents[old])))
+            Ok(Some(ObjectRef::clone(
+                &this.parent.try_borrow()?.contents[old],
+            )))
         }
     }
 }
@@ -905,8 +923,7 @@ impl Object for ObjectCell<Slice> {
             let mut curr_index = this.start;
             loop {
                 if let Some(stop) = this.stop {
-                    if this.step < 0 && curr_index <= stop
-                    || this.step > 0 && curr_index >= stop {
+                    if this.step < 0 && curr_index <= stop || this.step > 0 && curr_index >= stop {
                         break;
                     }
                 }
@@ -929,8 +946,7 @@ impl Object for ObjectCell<Slice> {
             let mut curr_index = this.start;
             loop {
                 if let Some(stop) = this.stop {
-                    if this.step < 0 && curr_index <= stop
-                    || this.step > 0 && curr_index >= stop {
+                    if this.step < 0 && curr_index <= stop || this.step > 0 && curr_index >= stop {
                         break;
                     }
                 }
@@ -964,8 +980,7 @@ impl Object for ObjectCell<SliceIterator> {
         let this = self.try_borrow()?;
         let mut curr_ = this.curr.write();
         if let Some(stop) = this.stop {
-            if this.step < 0 && *curr_ <= stop
-            || this.step > 0 && *curr_ >= stop {
+            if this.step < 0 && *curr_ <= stop || this.step > 0 && *curr_ >= stop {
                 return Ok(None);
             }
         }
@@ -1041,7 +1056,9 @@ impl Object for ObjectCell<Tuple> {
                 return Some(false);
             }
             for index in 0..this.contents.len() {
-                if this.contents[index].technetium_eq(ObjectRef::clone(&other.contents[index])) != Some(true) {
+                if this.contents[index].technetium_eq(ObjectRef::clone(&other.contents[index]))
+                    != Some(true)
+                {
                     return Some(false);
                 }
             }
@@ -1139,9 +1156,9 @@ impl Object for ObjectCell<Set> {
                 if args.len() != 1 {
                     Err(RuntimeError::type_error("contains expects 1 arg"))
                 } else {
-                    let hashable = args[0]
-                        .hashable()
-                        .ok_or_else(|| RuntimeError::type_error("value must be hashable to check for containment"))?;
+                    let hashable = args[0].hashable().ok_or_else(|| {
+                        RuntimeError::type_error("value must be hashable to check for containment")
+                    })?;
                     Ok(BoolObject::new(this.contents.contains(&hashable)))
                 }
             }
@@ -1150,7 +1167,9 @@ impl Object for ObjectCell<Set> {
                 if args.len() != 1 {
                     Err(RuntimeError::type_error("add expects 1 arg"))
                 } else {
-                    this.contents.insert(args[0].hashable().ok_or_else(|| RuntimeError::type_error("value must be hashable to be added to a set"))?);
+                    this.contents.insert(args[0].hashable().ok_or_else(|| {
+                        RuntimeError::type_error("value must be hashable to be added to a set")
+                    })?);
                     args[0].lock_immutable();
                     Ok(VoidObject::new())
                 }
@@ -1160,7 +1179,9 @@ impl Object for ObjectCell<Set> {
                 if args.len() != 1 {
                     Err(RuntimeError::type_error("add expects 1 arg"))
                 } else {
-                    let res = this.contents.remove(&args[0].hashable().ok_or_else(|| RuntimeError::type_error("value must be hashable to be added to a set"))?);
+                    let res = this.contents.remove(&args[0].hashable().ok_or_else(|| {
+                        RuntimeError::type_error("value must be hashable to be added to a set")
+                    })?);
                     Ok(BoolObject::new(res))
                 }
             }
@@ -1191,7 +1212,10 @@ impl Object for ObjectCell<Dictionary> {
         let this = self.try_borrow()?;
         let mut res_contents = HashMap::new();
         for (key, val) in this.contents.iter() {
-            res_contents.insert(key.technetium_clone()?.hashable().unwrap(), val.technetium_clone()?);
+            res_contents.insert(
+                key.technetium_clone()?.hashable().unwrap(),
+                val.technetium_clone()?,
+            );
         }
         Ok(ObjectRef::new(Dictionary {
             contents: res_contents,

@@ -157,12 +157,10 @@ impl<'input> Lexer<'input> {
             Some((_, '\\')) => {
                 // Escaped character
                 match self.chars.next() {
-                    None => {
-                        Err(MiscParseError::lex(
-                            "Unexpected end of input when reading character literal",
-                            None,
-                        ))
-                    }
+                    None => Err(MiscParseError::lex(
+                        "Unexpected end of input when reading character literal",
+                        None,
+                    )),
                     Some((_, 'n')) => Ok('\n'),
                     Some((_, 't')) => Ok('\t'),
                     Some((_, '\'')) => Ok('\''),
@@ -174,15 +172,11 @@ impl<'input> Lexer<'input> {
                 }
             }
             Some((i, '\'')) => Err(MiscParseError::lex("Empty character literal", Some(i))),
-            Some((i, '\n')) => {
-                Err(MiscParseError::lex(
-                    "Unexpected end of line before end of character literal",
-                    Some(i),
-                ))
-            }
-            Some((_, c)) => {
-                Ok(c)
-            }
+            Some((i, '\n')) => Err(MiscParseError::lex(
+                "Unexpected end of line before end of character literal",
+                Some(i),
+            )),
+            Some((_, c)) => Ok(c),
         }
     }
 

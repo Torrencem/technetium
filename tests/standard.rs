@@ -79,7 +79,6 @@ for i in range(10, 100, 10) {
     Ok(())
 }
 
-
 #[test]
 fn test_no_string_deadlock() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin("tech")?;
@@ -186,7 +185,9 @@ print(bool(f) && bool(i) && bool(s) && bool(si))
 "#,
     );
 
-    cmd.assert().success().stdout(predicate::eq("true\ntrue\ntrue\ntrue\n"));
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("true\ntrue\ntrue\ntrue\n"));
 
     Ok(())
 }
@@ -219,7 +220,9 @@ print(s.escape())
 "#,
     );
 
-    cmd.assert().success().stdout(predicate::eq("random\\t\\\"string\\\"\\n\\n\n"));
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("random\\t\\\"string\\\"\\n\\n\n"));
 
     Ok(())
 }
@@ -238,8 +241,10 @@ print(list[2:-1:-1])
 "#,
     );
 
-    cmd.assert().success().stdout(predicate::eq("[1, 5]\n[2, 10]\n[1, 2, 5]\n[5, 2, 1]\n"));
-    
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("[1, 5]\n[2, 10]\n[1, 2, 5]\n[5, 2, 1]\n"));
+
     let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
@@ -251,7 +256,9 @@ print(list)
 "#,
     );
 
-    cmd.assert().success().stdout(predicate::eq("[1, 2, 100, 10]\n"));
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("[1, 2, 100, 10]\n"));
 
     Ok(())
 }
@@ -269,8 +276,10 @@ for line in s.lines() {
 "#,
     );
 
-    cmd.assert().success().stdout(predicate::eq("abc\n-\n123\n-\nj\n-\n"));
-    
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("abc\n-\n123\n-\nj\n-\n"));
+
     Ok(())
 }
 
@@ -296,8 +305,10 @@ print(t.contains({20, "hi"}))
 "#,
     );
 
-    cmd.assert().success().stdout(predicate::eq("true\nfalse\ntrue\nfalse\ntrue\nfalse\n"));
-    
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("true\nfalse\ntrue\nfalse\ntrue\nfalse\n"));
+
     Ok(())
 }
 
@@ -311,7 +322,7 @@ print(args())
     );
 
     cmd.assert().success().stdout(predicate::eq("[]\n"));
-    
+
     let mut cmd = Command::cargo_bin("tech")?;
     cmd.args(&["--", "alpha", "beta", "gamma"]);
     cmd.write_stdin(
@@ -320,7 +331,9 @@ print(args())
 "#,
     );
 
-    cmd.assert().success().stdout(predicate::eq("[alpha, beta, gamma]\n"));
-    
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("[alpha, beta, gamma]\n"));
+
     Ok(())
 }

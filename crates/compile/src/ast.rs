@@ -1,8 +1,8 @@
 use codespan::Span;
 
+use crate::script;
 use lexer::error::*;
 use lexer::Lexer;
-use crate::script;
 
 #[derive(Clone, Debug)]
 pub enum Literal {
@@ -118,7 +118,7 @@ impl SetLiteral {
             values,
         }
     }
-    
+
     pub fn offset_spans(&mut self, offset: usize) {
         let l = self.span.start();
         let r = self.span.end();
@@ -145,7 +145,7 @@ impl DictLiteral {
             values,
         }
     }
-    
+
     pub fn offset_spans(&mut self, offset: usize) {
         let l = self.span.start();
         let r = self.span.end();
@@ -289,7 +289,14 @@ pub struct SlicedExpr {
 }
 
 impl SlicedExpr {
-    pub fn new(parent: Expr, start: Option<Expr>, end: Option<Expr>, step: Option<Expr>, l: usize, r: usize) -> Self {
+    pub fn new(
+        parent: Expr,
+        start: Option<Expr>,
+        end: Option<Expr>,
+        step: Option<Expr>,
+        l: usize,
+        r: usize,
+    ) -> Self {
         SlicedExpr {
             span: Span::new(l as u32, r as u32),
             parent: Box::new(parent),
@@ -396,7 +403,7 @@ impl PostPreOp {
         PostPreOp {
             span: Span::new(l as u32, r as u32),
             variant: PPOVariant::PostIncrement,
-            val
+            val,
         }
     }
 
@@ -404,23 +411,23 @@ impl PostPreOp {
         PostPreOp {
             span: Span::new(l as u32, r as u32),
             variant: PPOVariant::PreIncrement,
-            val
+            val,
         }
     }
-    
+
     pub fn new_post_dec(val: AssignmentLHS, l: usize, r: usize) -> Self {
         PostPreOp {
             span: Span::new(l as u32, r as u32),
             variant: PPOVariant::PostDecrement,
-            val
+            val,
         }
     }
-    
+
     pub fn new_pre_dec(val: AssignmentLHS, l: usize, r: usize) -> Self {
         PostPreOp {
             span: Span::new(l as u32, r as u32),
             variant: PPOVariant::PreDecrement,
-            val
+            val,
         }
     }
 
@@ -635,7 +642,7 @@ impl AssignmentLHS {
             Expr::Variable(id) => Some(AssignmentLHS::Identifier(id)),
             Expr::AttrLookup(al) => Some(AssignmentLHS::AttrLookup(al)),
             Expr::IndexedExpr(ie) => Some(AssignmentLHS::Indexed(ie)),
-            _ => None
+            _ => None,
         }
     }
 }

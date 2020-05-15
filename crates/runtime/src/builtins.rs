@@ -1,52 +1,102 @@
-use crate::*;
 use crate::error::*;
-use std::any::TypeId;
+use crate::*;
 use num::bigint::BigInt;
 use num::traits::identities::One;
 use num::traits::identities::Zero;
 use num::traits::ToPrimitive;
+use std::any::TypeId;
 
 pub fn add(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
-        (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<IntObject>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = IntObject::new_big(val_a.val.clone() + val_b.val.clone());
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<FloatObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<IntObject>>()
+                && b == TypeId::of::<ObjectCell<FloatObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = FloatObject::new((val_a.to_i64()? as f64) + val_b.val);
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<FloatObject>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<FloatObject>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = FloatObject::new(val_a.val + (val_b.to_i64()? as f64));
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<FloatObject>>() && b == TypeId::of::<ObjectCell<FloatObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<FloatObject>>()
+                && b == TypeId::of::<ObjectCell<FloatObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = FloatObject::new(val_a.val + val_b.val);
             Ok(res)
         }
         (a, _) if a == TypeId::of::<ObjectCell<StringObject>>() => {
-            let a = a_any.downcast_ref::<ObjectCell<StringObject>>().unwrap().try_borrow()?;
+            let a = a_any
+                .downcast_ref::<ObjectCell<StringObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = format!("{}{}", a.val, b.to_string()?);
             Ok(StringObject::new(res))
         }
         (_, b) if b == TypeId::of::<ObjectCell<StringObject>>() => {
-            let b = b_any.downcast_ref::<ObjectCell<StringObject>>().unwrap().try_borrow()?;
+            let b = b_any
+                .downcast_ref::<ObjectCell<StringObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = format!("{}{}", a.to_string()?, b.val);
             Ok(StringObject::new(res))
         }
-        (a_, b_) if a_ == TypeId::of::<ObjectCell<List>>() && b_ == TypeId::of::<ObjectCell<List>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<List>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<List>>().unwrap().try_borrow()?;
+        (a_, b_)
+            if a_ == TypeId::of::<ObjectCell<List>>() && b_ == TypeId::of::<ObjectCell<List>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<List>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<List>>()
+                .unwrap()
+                .try_borrow()?;
             let mut res = val_a.contents.clone();
             res.append(&mut val_b.contents.clone());
             Ok(ObjectRef::new(List { contents: res }))
@@ -63,27 +113,63 @@ pub fn sub(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
-        (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<IntObject>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = IntObject::new_big(val_a.val.clone() - val_b.val.clone());
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<FloatObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<IntObject>>()
+                && b == TypeId::of::<ObjectCell<FloatObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = FloatObject::new((val_a.to_i64()? as f64) - val_b.val);
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<FloatObject>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<FloatObject>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = FloatObject::new(val_a.val - (val_b.to_i64()? as f64));
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<FloatObject>>() && b == TypeId::of::<ObjectCell<FloatObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<FloatObject>>()
+                && b == TypeId::of::<ObjectCell<FloatObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = FloatObject::new(val_a.val - val_b.val);
             Ok(res)
         }
@@ -99,34 +185,79 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
-        (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<IntObject>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = IntObject::new_big(val_a.val.clone() * val_b.val.clone());
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<FloatObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<IntObject>>()
+                && b == TypeId::of::<ObjectCell<FloatObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = FloatObject::new((val_a.to_i64()? as f64) * val_b.val);
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<FloatObject>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<FloatObject>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = FloatObject::new(val_a.val * (val_b.to_i64()? as f64));
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<FloatObject>>() && b == TypeId::of::<ObjectCell<FloatObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<FloatObject>>()
+                && b == TypeId::of::<ObjectCell<FloatObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = FloatObject::new(val_a.val * val_b.val);
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<List>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<List>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<List>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<List>>()
+                .unwrap()
+                .try_borrow()?;
             let val_a = &val_a.contents;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let mut res: Vec<ObjectRef> = vec![];
             for _ in 0..val_b.to_i64()? {
                 for obj_ref in val_a.iter() {
@@ -135,9 +266,18 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             }
             Ok(ObjectRef::new(List { contents: res }))
         }
-        (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<List>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<List>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<IntObject>>()
+                && b == TypeId::of::<ObjectCell<List>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<List>>()
+                .unwrap()
+                .try_borrow()?;
             let val_b = &val_b.contents;
             let mut res: Vec<ObjectRef> = vec![];
             for _ in 0..val_a.to_i64()? {
@@ -159,12 +299,18 @@ pub fn negate(a: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     match a_any.type_id() {
         a if a == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = IntObject::new_big(-val_a.val.clone());
             Ok(res)
         }
         a if a == TypeId::of::<ObjectCell<FloatObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = FloatObject::new(-val_a.val);
             Ok(res)
         }
@@ -179,27 +325,63 @@ pub fn div(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
-        (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<IntObject>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = IntObject::new_big(val_a.val.clone() / val_b.val.clone());
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<FloatObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<IntObject>>()
+                && b == TypeId::of::<ObjectCell<FloatObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = FloatObject::new((val_a.to_i64()? as f64) / val_b.val);
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<FloatObject>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<FloatObject>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = FloatObject::new(val_a.val / (val_b.to_i64()? as f64));
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<FloatObject>>() && b == TypeId::of::<ObjectCell<FloatObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<FloatObject>>()
+                && b == TypeId::of::<ObjectCell<FloatObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = FloatObject::new(val_a.val / val_b.val);
             Ok(res)
         }
@@ -215,27 +397,63 @@ pub fn mod_(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
-        (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<IntObject>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = IntObject::new_big(val_a.val.modpow(&BigInt::one(), &val_b.val));
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<FloatObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<IntObject>>()
+                && b == TypeId::of::<ObjectCell<FloatObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = FloatObject::new((val_a.to_i64()? as f64).rem_euclid(val_b.val));
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<FloatObject>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<FloatObject>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = FloatObject::new(val_a.val.rem_euclid(val_b.to_i64()? as f64));
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<FloatObject>>() && b == TypeId::of::<ObjectCell<FloatObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<FloatObject>>()
+                && b == TypeId::of::<ObjectCell<FloatObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = FloatObject::new(val_a.val.rem_euclid(val_b.val));
             Ok(res)
         }
@@ -275,33 +493,78 @@ pub fn cmp_lt(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
-        (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<IntObject>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = BoolObject::new(val_a.val < val_b.val);
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<FloatObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<IntObject>>()
+                && b == TypeId::of::<ObjectCell<FloatObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = BoolObject::new((val_a.to_i64()? as f64) < val_b.val);
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<FloatObject>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<FloatObject>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = BoolObject::new(val_a.val < (val_b.to_i64()? as f64));
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<FloatObject>>() && b == TypeId::of::<ObjectCell<FloatObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<FloatObject>>()
+                && b == TypeId::of::<ObjectCell<FloatObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = BoolObject::new(val_a.val < val_b.val);
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<CharObject>>() && b == TypeId::of::<ObjectCell<CharObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<CharObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<CharObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<CharObject>>()
+                && b == TypeId::of::<ObjectCell<CharObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<CharObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<CharObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = BoolObject::new(val_a.val < val_b.val);
             Ok(res)
         }
@@ -317,33 +580,78 @@ pub fn cmp_gt(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
-        (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<IntObject>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = BoolObject::new(val_a.val > val_b.val);
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<FloatObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<IntObject>>()
+                && b == TypeId::of::<ObjectCell<FloatObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = BoolObject::new((val_a.to_i64()? as f64) > val_b.val);
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<FloatObject>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<FloatObject>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = BoolObject::new(val_a.val > (val_b.to_i64()? as f64));
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<FloatObject>>() && b == TypeId::of::<ObjectCell<FloatObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<FloatObject>>()
+                && b == TypeId::of::<ObjectCell<FloatObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = BoolObject::new(val_a.val > val_b.val);
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<CharObject>>() && b == TypeId::of::<ObjectCell<CharObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<CharObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<CharObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<CharObject>>()
+                && b == TypeId::of::<ObjectCell<CharObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<CharObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<CharObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = BoolObject::new(val_a.val > val_b.val);
             Ok(res)
         }
@@ -367,33 +675,78 @@ pub fn cmp_leq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
-        (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<IntObject>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = BoolObject::new(val_a.val <= val_b.val);
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<FloatObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<IntObject>>()
+                && b == TypeId::of::<ObjectCell<FloatObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = BoolObject::new((val_a.to_i64()? as f64) <= val_b.val);
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<FloatObject>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<FloatObject>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = BoolObject::new(val_a.val <= (val_b.to_i64()? as f64));
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<FloatObject>>() && b == TypeId::of::<ObjectCell<FloatObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<FloatObject>>()
+                && b == TypeId::of::<ObjectCell<FloatObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = BoolObject::new(val_a.val <= val_b.val);
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<CharObject>>() && b == TypeId::of::<ObjectCell<CharObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<CharObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<CharObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<CharObject>>()
+                && b == TypeId::of::<ObjectCell<CharObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<CharObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<CharObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = BoolObject::new(val_a.val <= val_b.val);
             Ok(res)
         }
@@ -409,33 +762,78 @@ pub fn cmp_geq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
-        (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<IntObject>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = BoolObject::new(val_a.val >= val_b.val);
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<FloatObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<IntObject>>()
+                && b == TypeId::of::<ObjectCell<FloatObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = BoolObject::new((val_a.to_i64()? as f64) >= val_b.val);
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<FloatObject>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<FloatObject>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = BoolObject::new(val_a.val >= (val_b.to_i64()? as f64));
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<FloatObject>>() && b == TypeId::of::<ObjectCell<FloatObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<FloatObject>>()
+                && b == TypeId::of::<ObjectCell<FloatObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<FloatObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = BoolObject::new(val_a.val >= val_b.val);
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<CharObject>>() && b == TypeId::of::<ObjectCell<CharObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<CharObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<CharObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<CharObject>>()
+                && b == TypeId::of::<ObjectCell<CharObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<CharObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<CharObject>>()
+                .unwrap()
+                .try_borrow()?;
             let res = BoolObject::new(val_a.val >= val_b.val);
             Ok(res)
         }
@@ -451,73 +849,121 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
-        (a, b) if a == TypeId::of::<ObjectCell<List>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
+        (a, b)
+            if a == TypeId::of::<ObjectCell<List>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
             let val_a = a_any
                 .downcast_ref::<ObjectCell<List>>()
                 .unwrap()
                 .try_borrow()?;
 
             let val_a = &val_a.contents;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let mut val = val_b.val.clone();
             if val < BigInt::zero() {
                 val = (val_a.len() as u64 as i64) + val;
             }
-            let val = val.to_usize().ok_or_else(|| RuntimeError::index_oob_error("Index out of bounds"))?;
+            let val = val
+                .to_usize()
+                .ok_or_else(|| RuntimeError::index_oob_error("Index out of bounds"))?;
             if val >= val_a.len() {
                 return Err(RuntimeError::index_oob_error("Index out of bounds"));
             }
             let res = ObjectRef::clone(&val_a[val]);
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<Tuple>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<Tuple>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<Tuple>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<Tuple>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let mut val = val_b.val.clone();
             if val < BigInt::zero() {
                 val = (val_a.contents.len() as u64 as i64) + val;
             }
-            let val = val.to_usize().ok_or_else(|| RuntimeError::index_oob_error("Index out of bounds"))?;
+            let val = val
+                .to_usize()
+                .ok_or_else(|| RuntimeError::index_oob_error("Index out of bounds"))?;
             if (val as u64 as usize) >= val_a.contents.len() {
                 return Err(RuntimeError::index_oob_error("Index out of bounds"));
             }
             let res = ObjectRef::clone(&val_a.contents[val]);
             Ok(res)
         }
-        (a, b) if a == TypeId::of::<ObjectCell<StringObject>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<StringObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+        (a, b)
+            if a == TypeId::of::<ObjectCell<StringObject>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<StringObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let mut val = val_b.val.clone();
             if val < BigInt::zero() {
                 val = (val_a.val.len() as u64 as i64) + val;
             }
-            let val = val.to_usize().ok_or_else(|| RuntimeError::index_oob_error("Index out of bounds"))?;
-            let c = val_a
-                .val
-                .chars()
-                .nth(val);
+            let val = val
+                .to_usize()
+                .ok_or_else(|| RuntimeError::index_oob_error("Index out of bounds"))?;
+            let c = val_a.val.chars().nth(val);
             if let Some(c) = c {
                 Ok(CharObject::new(c))
             } else {
-                Err(RuntimeError::index_oob_error("Index out of bounds".to_string()))
+                Err(RuntimeError::index_oob_error(
+                    "Index out of bounds".to_string(),
+                ))
             }
         }
-        (a, b) if a == TypeId::of::<ObjectCell<Slice>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<Slice>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?.val.clone();
+        (a, b)
+            if a == TypeId::of::<ObjectCell<Slice>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<Slice>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?
+                .val
+                .clone();
             let index = val_a.start + val_b * val_a.step;
             index_get(ObjectRef::clone(&val_a.parent), IntObject::new_big(index))
         }
         (a, _) if a == TypeId::of::<ObjectCell<Dictionary>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<Dictionary>>().unwrap().try_borrow()?;
-            let hashable = b.hashable().ok_or_else(|| RuntimeError::type_error(format!("Type {} used as a key in dictionary is not hashable", b.technetium_type_name())))?;
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<Dictionary>>()
+                .unwrap()
+                .try_borrow()?;
+            let hashable = b.hashable().ok_or_else(|| {
+                RuntimeError::type_error(format!(
+                    "Type {} used as a key in dictionary is not hashable",
+                    b.technetium_type_name()
+                ))
+            })?;
             match val_a.contents.get(&hashable) {
-                Some(res) => {
-                    Ok(ObjectRef::clone(res))
-                }
-                None => Err(RuntimeError::key_error("Read key from dictionary that doesn't exist"))
+                Some(res) => Ok(ObjectRef::clone(res)),
+                None => Err(RuntimeError::key_error(
+                    "Read key from dictionary that doesn't exist",
+                )),
             }
-        },
+        }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot index type {} with type {}",
             a.technetium_type_name(),
@@ -530,19 +976,27 @@ pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> 
     let a_any = a.as_any();
     let b_any = b.as_any();
     match (a_any.type_id(), b_any.type_id()) {
-        (a, b) if a == TypeId::of::<ObjectCell<List>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
+        (a, b)
+            if a == TypeId::of::<ObjectCell<List>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
             let mut val_a = a_any
                 .downcast_ref::<ObjectCell<List>>()
                 .unwrap()
                 .try_borrow_mut()?;
 
             let val_a = &mut val_a.contents;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let mut val = val_b.val.clone();
             if val < BigInt::zero() {
                 val = (val_a.len() as u64 as i64) + val;
             }
-            let val = val.to_usize().ok_or_else(|| RuntimeError::index_oob_error("Index out of bounds"))?;
+            let val = val
+                .to_usize()
+                .ok_or_else(|| RuntimeError::index_oob_error("Index out of bounds"))?;
             if val >= val_a.len() {
                 return Err(RuntimeError::index_oob_error("Index out of bounds"));
             }
@@ -561,13 +1015,22 @@ pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> 
 
             let val_a = &mut val_a.val;
 
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
             let mut val = val_b.val.clone();
             if val < BigInt::zero() {
                 val = (val_a.len() as u64 as i64) + val;
             }
-            let index = val.to_usize().ok_or_else(|| RuntimeError::index_oob_error("Index out of bounds"))?;
-            let val_c = c.as_any().downcast_ref::<ObjectCell<CharObject>>().unwrap().try_borrow()?;
+            let index = val
+                .to_usize()
+                .ok_or_else(|| RuntimeError::index_oob_error("Index out of bounds"))?;
+            let val_c = c
+                .as_any()
+                .downcast_ref::<ObjectCell<CharObject>>()
+                .unwrap()
+                .try_borrow()?;
             let ch = val_c.val;
             if index >= val_a.len() {
                 return Err(RuntimeError::index_oob_error("Index out of bounds"));
@@ -575,15 +1038,38 @@ pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> 
             val_a.replace_range(index..index + 1, &ch.to_string());
             Ok(())
         }
-        (a, b) if a == TypeId::of::<ObjectCell<Slice>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<Slice>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?.val.clone();
+        (a, b)
+            if a == TypeId::of::<ObjectCell<Slice>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<Slice>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?
+                .val
+                .clone();
             let index = val_a.start + val_b * val_a.step;
-            index_set(ObjectRef::clone(&val_a.parent), IntObject::new_big(index), c)
+            index_set(
+                ObjectRef::clone(&val_a.parent),
+                IntObject::new_big(index),
+                c,
+            )
         }
         (a, _) if a == TypeId::of::<ObjectCell<Dictionary>>() => {
-            let mut val_a = a_any.downcast_ref::<ObjectCell<Dictionary>>().unwrap().try_borrow_mut()?;
-            let hashable = b.hashable().ok_or_else(|| RuntimeError::type_error(format!("Type {} used as a key in dictionary is not hashable", b.technetium_type_name())))?;
+            let mut val_a = a_any
+                .downcast_ref::<ObjectCell<Dictionary>>()
+                .unwrap()
+                .try_borrow_mut()?;
+            let hashable = b.hashable().ok_or_else(|| {
+                RuntimeError::type_error(format!(
+                    "Type {} used as a key in dictionary is not hashable",
+                    b.technetium_type_name()
+                ))
+            })?;
             val_a.contents.insert(hashable, c);
             Ok(())
         }

@@ -81,7 +81,9 @@ print(l)
 "#,
     );
 
-    cmd.assert().success().stdout(predicate::eq("[1, 1, 1, 2, 2, 2]\n"));
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("[1, 1, 1, 2, 2, 2]\n"));
 
     Ok(())
 }
@@ -98,8 +100,9 @@ print([1, 2, [3, [4]]] == [1, 2, [3, [4]]])
 "#,
     );
 
-    cmd.assert().success().stdout(predicate::eq("true\nfalse\nfalse\ntrue\n"));
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("true\nfalse\nfalse\ntrue\n"));
 
     Ok(())
 }
-

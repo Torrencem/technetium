@@ -3,18 +3,18 @@ extern crate log;
 
 pub mod logging;
 use compile::*;
-use lexer::Lexer;
 use lexer::error::parse_error_to_diagnostic;
-use runtime::standard::STANDARD_CONTEXT_ID;
-use runtime::bytecode;
+use lexer::Lexer;
 use runtime;
+use runtime::bytecode;
+use runtime::standard::STANDARD_CONTEXT_ID;
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::process::exit;
 use std::rc::Rc;
-use std::borrow::Cow;
 
 extern crate clap;
-use clap::{App, Arg, AppSettings};
+use clap::{App, AppSettings, Arg};
 use std::io::{self, Read};
 
 use codespan::Files;
@@ -66,23 +66,17 @@ fn main() {
 
     extra_args.append(
         &mut matches
-        .values_of("args")
-        .map(|val| 
-             val.map(|val| 
-                     val.to_owned()
-             )
-             .collect()
-        ).unwrap_or(vec![]));
+            .values_of("args")
+            .map(|val| val.map(|val| val.to_owned()).collect())
+            .unwrap_or(vec![]),
+    );
 
     extra_args.append(
         &mut matches
-        .values_of("more_args")
-        .map(|val| 
-             val.map(|val| 
-                     val.to_owned()
-             )
-             .collect()
-        ).unwrap_or(vec![]));
+            .values_of("more_args")
+            .map(|val| val.map(|val| val.to_owned()).collect())
+            .unwrap_or(vec![]),
+    );
 
     runtime::PARSED_CLARGS.set(extra_args).unwrap();
 
@@ -141,7 +135,11 @@ fn main() {
                 .expect("Error writing error message");
         }
 
-        eprintln!("Exiting without running due to previous {} parsing error{}", recoveries.len(), if recoveries.len() == 1 { "" } else { "s" });
+        eprintln!(
+            "Exiting without running due to previous {} parsing error{}",
+            recoveries.len(),
+            if recoveries.len() == 1 { "" } else { "s" }
+        );
 
         exit(1)
     }
@@ -174,7 +172,10 @@ fn main() {
         debug_descriptors: compile_context.debug_symbol_descriptors,
     };
 
-    trace!("Constant Descriptors: {:#?}", global_context.constant_descriptors);
+    trace!(
+        "Constant Descriptors: {:#?}",
+        global_context.constant_descriptors
+    );
     trace!("Debug Descriptors: {:#?}", global_context.debug_descriptors);
 
     let mut frame = bytecode::Frame::new(
@@ -197,8 +198,13 @@ fn main() {
 
         let primary_diagnostic = e.as_diagnostic();
 
-        term::emit(&mut writer.lock(), &primary_config, &files, &primary_diagnostic)
-            .expect("Error writing error message");
+        term::emit(
+            &mut writer.lock(),
+            &primary_config,
+            &files,
+            &primary_diagnostic,
+        )
+        .expect("Error writing error message");
         println!("Stack trace:");
         let secondary_diagnostics = e.stack_trace(&files);
         for secondary in secondary_diagnostics.iter() {

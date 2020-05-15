@@ -1,5 +1,5 @@
-use crate::*;
 use crate::error::*;
+use crate::*;
 
 use crate::{func_object, func_object_void};
 
@@ -95,9 +95,7 @@ impl Object for ObjectCell<RangeIterator> {
         let step = this.inner.step;
         let end = this.inner.end;
         let _curr = &mut this.curr;
-        if (step < 0 && *_curr <= end)
-            || (step > 0 && *_curr >= end)
-        {
+        if (step < 0 && *_curr <= end) || (step > 0 && *_curr >= end) {
             return Ok(None);
         }
         let old = *_curr;
@@ -110,7 +108,7 @@ func_object!(RangeFunc, (1..=3), args -> {
     if args.len() == 1 {
         if let Some(int_obj) = args[0].as_any().downcast_ref::<ObjectCell<IntObject>>() {
             let int_obj = int_obj.try_borrow()?;
-            Ok(ObjectRef::new(Range { 
+            Ok(ObjectRef::new(Range {
                 start: 0,
                 end: int_obj.to_i64()?,
                 step: 1,

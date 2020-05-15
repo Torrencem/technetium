@@ -30,7 +30,7 @@ pub struct FrameIdGen {
 }
 
 lazy_static! {
-    pub static ref FRAME_ID_GEN: sync::Mutex<FrameIdGen> = { sync::Mutex::new(FrameIdGen { last: 10 }) };
+    pub static ref FRAME_ID_GEN: sync::Mutex<FrameIdGen> = sync::Mutex::new(FrameIdGen { last: 10 });
 }
 
 /// Generate a new unique FrameID. This uses a static counter behind

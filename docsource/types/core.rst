@@ -31,6 +31,10 @@ String Methods
 
     Returns the length of the string.
 
+.. function:: [string].contains([char])  [bool]
+
+    Check if the string contains a given character
+
 .. function:: [string].chars()  [chars]
 
     Returns an iterator over the characters in the string.
@@ -62,6 +66,10 @@ List Methods
 
     Returns the length of the list
 
+.. function:: [list].contains([object])  [bool]
+
+    Check if the list contains a given object
+
 .. function:: [list].push([object])  [void]
 
     Push an object on the end of the list
@@ -86,6 +94,10 @@ Tuple Methods
 
     Returns the number of elements in the tuple
 
+.. function:: [tuple].contains([object])  [bool]
+
+    Check if the tuple contains a given object
+
 Set
 ---
 
@@ -97,6 +109,10 @@ Set Methods
 .. function:: [set].length()  [int]
 
     Returns the number of elements in the set
+
+.. function:: [set].contains([object])  [bool]
+
+    Check if the set contains a given object
 
 .. function:: [set].add([object])
 

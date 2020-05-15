@@ -587,6 +587,19 @@ impl Object for ObjectCell<StringObject> {
                     Ok(IntObject::new(this.val.len() as i64))
                 }
             },
+            "contains" => {
+                let this = self.try_borrow()?;
+                if args.len() != 1 {
+                    Err(RuntimeError::type_error("contains expects 1 arg"))
+                } else {
+                    if let Some(arg) = args[0].as_any().downcast_ref::<ObjectCell<CharObject>>() {
+                        let arg = arg.try_borrow()?;
+                        Ok(BoolObject::new(this.val.contains(|c| c == arg.val)))
+                    } else {
+                        Err(RuntimeError::type_error("string contains expects a character as an argument"))
+                    }
+                }
+            },
             "escape" => {
                 if args.len() > 0 {
                     Err(RuntimeError::type_error("length expects 0 args"))
@@ -752,6 +765,14 @@ impl Object for ObjectCell<List> {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
                     Ok(IntObject::new(this.contents.len() as i64))
+                }
+            }
+            "contains" => {
+                let this = self.try_borrow()?;
+                if args.len() != 1 {
+                    Err(RuntimeError::type_error("contains expects 1 arg"))
+                } else {
+                    Ok(BoolObject::new(this.contents.contains(&args[0])))
                 }
             }
             "pop" => {
@@ -999,6 +1020,14 @@ impl Object for ObjectCell<Tuple> {
                     Ok(IntObject::new(this.contents.len() as i64))
                 }
             }
+            "contains" => {
+                let this = self.try_borrow()?;
+                if args.len() != 1 {
+                    Err(RuntimeError::type_error("contains expects 1 arg"))
+                } else {
+                    Ok(BoolObject::new(this.contents.contains(&args[0])))
+                }
+            }
             _ => Err(RuntimeError::type_error(format!(
                 "list has no method {}",
                 method
@@ -1105,6 +1134,17 @@ impl Object for ObjectCell<Set> {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
                     Ok(IntObject::new(this.contents.len() as i64))
+                }
+            }
+            "contains" => {
+                let this = self.try_borrow()?;
+                if args.len() != 1 {
+                    Err(RuntimeError::type_error("contains expects 1 arg"))
+                } else {
+                    let hashable = args[0]
+                        .hashable()
+                        .ok_or(RuntimeError::type_error("value must be hashable to check for containment"))?;
+                    Ok(BoolObject::new(this.contents.contains(&hashable)))
                 }
             }
             "add" => {

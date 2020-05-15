@@ -273,3 +273,30 @@ for line in s.lines() {
     
     Ok(())
 }
+
+#[test]
+fn test_contains() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+s = "hello world"
+
+print(s.contains('w'))
+print(s.contains('!'))
+
+l = [1, 2, {15, "hi"}]
+
+print(l.contains({15, "hi"}))
+print(l.contains({20, "hi"}))
+
+t = (1, 2, {15, "hi"})
+
+print(t.contains({15, "hi"}))
+print(t.contains({20, "hi"}))
+"#,
+    );
+
+    cmd.assert().success().stdout(predicate::eq("true\nfalse\ntrue\nfalse\ntrue\nfalse\n"));
+    
+    Ok(())
+}

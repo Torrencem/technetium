@@ -206,3 +206,23 @@ print(d["hello"])
 
     Ok(())
 }
+
+#[test]
+fn multiple_error_reporting() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+a = 2 *
+
+b = 3 * 4 *
+"#,
+    );
+
+    cmd.assert()
+        .failure()
+        .stderr(predicate::str::contains("2 *"))
+        .stderr(predicate::str::contains("3 * 4 *"));
+
+    Ok(())
+}
+

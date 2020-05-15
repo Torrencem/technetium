@@ -358,6 +358,7 @@ impl CompileManager {
             Expr::IndexedExpr(i) => self.compile_indexed_expr(i),
             Expr::SlicedExpr(s) => self.compile_sliced_expr(s),
             Expr::PostPreOp(o) => self.compile_post_pre_op(o),
+            Expr::Error => unreachable!(),
         }
     }
 

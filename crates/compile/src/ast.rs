@@ -333,6 +333,9 @@ pub enum Expr {
     IndexedExpr(IndexedExpr),
     SlicedExpr(SlicedExpr),
     PostPreOp(PostPreOp),
+    /// An unreachable expression state, used to finish attempting to parse an AST (similar to
+    /// http://lalrpop.github.io/lalrpop/tutorial/008_error_recovery.html)
+    Error,
 }
 
 impl Expr {
@@ -350,6 +353,7 @@ impl Expr {
             Expr::IndexedExpr(e) => e.span,
             Expr::SlicedExpr(e) => e.span,
             Expr::PostPreOp(e) => e.span,
+            Expr::Error => unreachable!(),
         }
     }
 
@@ -367,6 +371,7 @@ impl Expr {
             Expr::IndexedExpr(e) => e.offset_spans(offset),
             Expr::SlicedExpr(e) => e.offset_spans(offset),
             Expr::PostPreOp(e) => e.offset_spans(offset),
+            Expr::Error => unreachable!(),
         }
     }
 }
@@ -576,9 +581,16 @@ impl FormatString {
         let mut subs = vec![];
         for s in substitutions.iter() {
             let lexer = Lexer::new(s.1.as_ref());
-            let mut e = script::ExprParser::new().parse(lexer);
+            // Recursive multiple errors are ignored, so errors is not used
+            let mut errors = vec![];
+            let mut e = script::ExprParser::new().parse(&mut errors, lexer);
             offset_parse_result_error_spans(&mut e, s.0 + 1);
             let mut e = e?;
+            if errors.len() > 0 {
+                let mut primary_error = errors[0].error.clone();
+                offset_parse_error_spans(&mut primary_error, s.0 + 1);
+                return Err(primary_error.into());
+            }
             e.offset_spans(s.0 + 1);
             subs.push(e);
         }

@@ -76,19 +76,38 @@ fn main() {
 
     trace!("Beginning parsing stage");
 
+    let mut recoveries = vec![];
+
     let ast = script::ProgramParser::new()
-        .parse(lexer)
+        .parse(&mut recoveries, lexer)
         .unwrap_or_else(|e| {
             let writer = StandardStream::stderr(ColorChoice::Always);
             let config = codespan_reporting::term::Config::default();
-
             let diagnostic = parse_error_to_diagnostic(&e, file_id);
 
             term::emit(&mut writer.lock(), &config, &files, &diagnostic)
                 .expect("Error writing error message");
 
+            eprintln!("Above error could not be recovered, and parsing stopped.");
+
             exit(1)
         });
+
+    if recoveries.len() != 0 {
+        let writer = StandardStream::stderr(ColorChoice::Always);
+        let config = codespan_reporting::term::Config::default();
+
+        for recovery in recoveries.iter() {
+            let diagnostic = parse_error_to_diagnostic(&recovery.error, file_id);
+
+            term::emit(&mut writer.lock(), &config, &files, &diagnostic)
+                .expect("Error writing error message");
+        }
+
+        eprintln!("Exiting without running due to previous {} parsing error{}", recoveries.len(), if recoveries.len() == 1 { "" } else { "s" });
+
+        exit(1)
+    }
 
     trace!("Completed parsing. AST: {:?}", ast);
 

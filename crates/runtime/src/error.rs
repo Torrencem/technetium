@@ -49,6 +49,8 @@ pub enum RuntimeErrorType {
     BorrowError,
     BorrowMutError,
     MutateImmutableError,
+    /// Caused by trying to read a key that doesn't exist in a dictionary
+    KeyError,
 }
 
 impl From<sys_info::Error> for RuntimeError {
@@ -134,6 +136,14 @@ impl RuntimeError {
     pub fn attribute_error<S: ToString>(message: S) -> Self {
         RuntimeError {
             err: RuntimeErrorType::AttributeError,
+            help: message.to_string(),
+            symbols: vec![],
+        }
+    }
+    
+    pub fn key_error<S: ToString>(message: S) -> Self {
+        RuntimeError {
+            err: RuntimeErrorType::KeyError,
             help: message.to_string(),
             symbols: vec![],
         }

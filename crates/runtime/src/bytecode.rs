@@ -153,6 +153,8 @@ pub enum Op {
     
     mkset(u16),
 
+    mkdict(u16),
+
     push_int(i32),
 
     push_float(f32),
@@ -202,6 +204,7 @@ impl fmt::Display for Op {
             Op::mklist(x) => f.write_str(format!("mklist\t{}", x).as_ref()),
             Op::mktuple(x) => f.write_str(format!("mktuple\t{}", x).as_ref()),
             Op::mkset(x) => f.write_str(format!("mkset\t{}", x).as_ref()),
+            Op::mkdict(x) => f.write_str(format!("mkdict\t{}", x).as_ref()),
             Op::push_int(x) => f.write_str(format!("push_int\t{}", x).as_ref()),
             Op::push_float(x) => f.write_str(format!("push_float\t{}", x).as_ref()),
             Op::push_bool(x) => f.write_str(format!("push_bool\t{}", x).as_ref()),
@@ -219,7 +222,6 @@ impl fmt::Display for Op {
             Op::cmp_neq | Op::cmp_leq | Op::cmp_geq | Op::index_get |
             Op::index_set | Op::make_slice | Op::push_void | Op::ret |
             Op::make_iter => f.write_str(format!("{:?}", self).as_ref()),
-            
         }
     }
 }
@@ -821,6 +823,21 @@ impl<'code> Frame<'code> {
                         as_hashset.insert(hashable);
                     }
                     self.stack.push(ObjectRef::new(Set { contents: as_hashset }));
+                }
+                Op::mkdict(len) => {
+                    let len = *len as usize;
+                    let objs: Vec<ObjectRef> =
+                        self.stack.drain((self.stack.len() - 2 * len)..).collect();
+                    let mut as_hashmap = HashMap::new();
+                    for objs in objs.chunks(2) {
+                        let key = ObjectRef::clone(&objs[0]);
+                        let val = ObjectRef::clone(&objs[1]);
+                        let hashable = try_debug!(self, ds, dsw, key
+                            .hashable()
+                            .ok_or(RuntimeError::type_error(format!("Object used as a key of type {} is not hashable", key.technetium_type_name()))));
+                        as_hashmap.insert(hashable, val);
+                    }
+                    self.stack.push(ObjectRef::new(Dictionary { contents: as_hashmap }));
                 }
                 Op::push_int(int_val) => {
                     let obj = IntObject::new(*int_val as i64);

@@ -187,3 +187,22 @@ print(~"{val * * 2}")
 
     Ok(())
 }
+
+#[test]
+fn dict_key_error() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+d = {1: 2}
+
+print(d["hello"])
+"#,
+    );
+
+    cmd.assert()
+        .failure()
+        .stderr(predicate::str::contains("key"))
+        .stderr(predicate::str::contains("print(d[\"hello\"])"));
+
+    Ok(())
+}

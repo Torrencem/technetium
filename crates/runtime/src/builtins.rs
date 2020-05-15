@@ -356,68 +356,11 @@ pub fn cmp_gt(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
 }
 
 pub fn cmp_eq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
-    match a.technetium_eq(ObjectRef::clone(&b)) {
-        Some(res) => Ok(BoolObject::new(res)),
-        None => Err(RuntimeError::type_error(format!(
-                    "Cannot equate type {} with type {}",
-                    a.technetium_type_name(),
-                    b.technetium_type_name()
-        ))),
-    }
+    Ok(BoolObject::new(a == b))
 }
 
 pub fn cmp_neq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
-    let a_any = a.as_any();
-    let b_any = b.as_any();
-    match (a_any.type_id(), b_any.type_id()) {
-        (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let res = BoolObject::new(val_a.val != val_b.val);
-            Ok(res)
-        }
-        (a, b) if a == TypeId::of::<ObjectCell<IntObject>>() && b == TypeId::of::<ObjectCell<FloatObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let res = BoolObject::new((val_a.to_i64()? as f64) != val_b.val);
-            Ok(res)
-        }
-        (a, b) if a == TypeId::of::<ObjectCell<FloatObject>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?;
-            let res = BoolObject::new(val_a.val != (val_b.to_i64()? as f64));
-            Ok(res)
-        }
-        (a, b) if a == TypeId::of::<ObjectCell<FloatObject>>() && b == TypeId::of::<ObjectCell<FloatObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<FloatObject>>().unwrap().try_borrow()?;
-            let res = BoolObject::new(val_a.val != val_b.val);
-            Ok(res)
-        }
-        (a, b) if a == TypeId::of::<ObjectCell<CharObject>>() && b == TypeId::of::<ObjectCell<CharObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<CharObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<CharObject>>().unwrap().try_borrow()?;
-            let res = BoolObject::new(val_a.val != val_b.val);
-            Ok(res)
-        }
-        (a_, b_) if a_ == TypeId::of::<ObjectCell<StringObject>>() && b_ == TypeId::of::<ObjectCell<StringObject>>() => {
-            let val_a = a_any.downcast_ref::<ObjectCell<StringObject>>().unwrap().try_borrow()?;
-            let val_b = b_any.downcast_ref::<ObjectCell<StringObject>>().unwrap().try_borrow()?;
-            let res = BoolObject::new(*val_a.val != *val_b.val);
-            Ok(res)
-        }
-        (a_, b_) if a_ == TypeId::of::<ObjectCell<List>>() && b_ == TypeId::of::<ObjectCell<List>>() => {
-            Ok(BoolObject::new(!cmp_eq(ObjectRef::clone(&a), ObjectRef::clone(&b))?.truthy()))
-        }
-        (a_, b_) if a_ == TypeId::of::<ObjectCell<Tuple>>() && b_ == TypeId::of::<ObjectCell<Tuple>>() => {
-            Ok(BoolObject::new(!cmp_eq(ObjectRef::clone(&a), ObjectRef::clone(&b))?.truthy()))
-        }
-        _ => Err(RuntimeError::type_error(format!(
-            "Cannot equate type {} to type {}",
-            a.technetium_type_name(),
-            b.technetium_type_name()
-        ))),
-    }
+    Ok(BoolObject::new(a != b))
 }
 
 pub fn cmp_leq(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
@@ -567,6 +510,16 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let index = val_a.start + val_b * val_a.step;
             index_get(ObjectRef::clone(&val_a.parent), IntObject::new_big(index))
         }
+        (a, _) if a == TypeId::of::<ObjectCell<Dictionary>>() => {
+            let val_a = a_any.downcast_ref::<ObjectCell<Dictionary>>().unwrap().try_borrow()?;
+            let hashable = b.hashable().ok_or(RuntimeError::type_error(format!("Type {} used as a key in dictionary is not hashable", b.technetium_type_name())))?;
+            match val_a.contents.get(&hashable) {
+                Some(res) => {
+                    Ok(ObjectRef::clone(res))
+                }
+                None => Err(RuntimeError::key_error("Read key from dictionary that doesn't exist"))
+            }
+        },
         _ => Err(RuntimeError::type_error(format!(
             "Cannot index type {} with type {}",
             a.technetium_type_name(),
@@ -629,6 +582,12 @@ pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> 
             let val_b = b_any.downcast_ref::<ObjectCell<IntObject>>().unwrap().try_borrow()?.val.clone();
             let index = val_a.start + val_b * val_a.step;
             index_set(ObjectRef::clone(&val_a.parent), IntObject::new_big(index), c)
+        }
+        (a, _) if a == TypeId::of::<ObjectCell<Dictionary>>() => {
+            let mut val_a = a_any.downcast_ref::<ObjectCell<Dictionary>>().unwrap().try_borrow_mut()?;
+            let hashable = b.hashable().ok_or(RuntimeError::type_error(format!("Type {} used as a key in dictionary is not hashable", b.technetium_type_name())))?;
+            val_a.contents.insert(hashable, c);
+            Ok(())
         }
         _ => Err(RuntimeError::type_error(format!(
             "Cannot set a[b] = c, where a is of type {}, b is of type {}, and c is of type {}",

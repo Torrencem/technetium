@@ -232,6 +232,18 @@ impl CompileManager {
         Ok(res)
     }
 
+    pub fn compile_dict_literal(&mut self, ast: &DictLiteral) -> CompileResult {
+        let mut res = vec![];
+        for (key, val) in ast.values.iter() {
+            res.append(&mut self.compile_expr(key)?);
+            res.append(&mut self.compile_expr(val)?);
+        }
+        res.push(Op::debug(self.create_debug_descriptor(ast.span)));
+
+        res.push(Op::mkdict(ast.values.len() as u16));
+        Ok(res)
+    }
+
     pub fn compile_func_call(&mut self, ast: &FuncCall) -> CompileResult {
         let mut res = vec![];
         let builtins = builtin_functions();
@@ -338,6 +350,7 @@ impl CompileManager {
             Expr::Literal(l) => self.compile_literal(l),
             Expr::ListLiteral(l) => self.compile_list_literal(l),
             Expr::SetLiteral(l) => self.compile_set_literal(l),
+            Expr::DictLiteral(l) => self.compile_dict_literal(l),
             Expr::TupleLiteral(t) => self.compile_tuple_literal(t),
             Expr::MethodCall(m) => self.compile_method_call(m),
             Expr::FuncCall(f) => self.compile_func_call(f),

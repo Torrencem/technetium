@@ -451,3 +451,29 @@ print(my_set)
     Ok(())
 }
 
+#[test]
+fn test_dict_literals() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+d = {"Hello": true}
+
+print(d["Hello"])
+
+d = {(2, 3): "right", (4, 5): "wrong"}
+
+print(d[(2, 3)])
+print(d[(4, 5)])
+
+d2 = clone(d)
+
+print(d == d2)
+"#,
+    );
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("true\nright\nwrong\ntrue\n"));
+
+    Ok(())
+}

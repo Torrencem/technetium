@@ -1083,11 +1083,11 @@ pub struct Set {
 impl Object for ObjectCell<Set> {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
-        let mut res_contents = vec![];
+        let mut res_contents = HashSet::new();
         for val in this.contents.iter() {
-            res_contents.push(val.technetium_clone()?);
+            res_contents.insert(val.technetium_clone()?.hashable().unwrap());
         }
-        Ok(ObjectRef::new(List {
+        Ok(ObjectRef::new(Set {
             contents: res_contents,
         }))
     }
@@ -1168,6 +1168,87 @@ impl Object for ObjectCell<Set> {
             }
             _ => Err(RuntimeError::type_error(format!(
                 "set has no method {}",
+                method
+            ))),
+        }
+    }
+
+    fn technetium_eq(&self, other: ObjectRef) -> Option<bool> {
+        if let Some(other) = other.as_any().downcast_ref::<Self>() {
+            let this = self.borrow();
+            let other = other.borrow();
+            Some(this.contents == other.contents)
+        } else {
+            None
+        }
+    }
+}
+
+pub struct Dictionary {
+    pub contents: HashMap<HashableObjectRef, ObjectRef>,
+}
+
+impl Object for ObjectCell<Dictionary> {
+    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
+        let this = self.try_borrow()?;
+        let mut res_contents = HashMap::new();
+        for (key, val) in this.contents.iter() {
+            res_contents.insert(key.technetium_clone()?.hashable().unwrap(), val.technetium_clone()?);
+        }
+        Ok(ObjectRef::new(Dictionary {
+            contents: res_contents,
+        }))
+    }
+
+    fn technetium_type_name(&self) -> String {
+        "dictionary".to_string()
+    }
+
+    fn technetium_hash(&self) -> Option<u64> {
+        let mut hasher = DefaultHasher::new();
+        for (key, val) in self.try_borrow().ok()?.contents.iter() {
+            hasher.write_u64(key.technetium_hash()?);
+            hasher.write_u64(val.technetium_hash()?);
+        }
+        Some(hasher.finish())
+    }
+
+    fn to_string(&self) -> RuntimeResult<String> {
+        let this = self.try_borrow()?;
+        let mut res = String::new();
+        res.push('{');
+        let mut first = true;
+        for (key, val) in this.contents.iter() {
+            if first {
+                first = false;
+            } else {
+                res.push_str(", ");
+            }
+            res.push_str(&key.to_string()?);
+            res.push_str(": ");
+            res.push_str(&val.to_string()?);
+        }
+        res.push('}');
+        Ok(res)
+    }
+
+    fn truthy(&self) -> bool {
+        let this = self.borrow();
+        this.contents.len() != 0
+    }
+
+    fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
+        match method {
+            "length" => {
+                let this = self.try_borrow()?;
+                if args.len() > 0 {
+                    Err(RuntimeError::type_error("length expects 0 args"))
+                } else {
+                    Ok(IntObject::new(this.contents.len() as i64))
+                }
+            }
+            _ => Err(RuntimeError::type_error(format!(
+                "dictionary has no method {}",
                 method
             ))),
         }

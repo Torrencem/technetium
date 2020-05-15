@@ -293,7 +293,7 @@ FuncCall: FuncCall = <l:@L> <i: Identifier> "(" <args: Comma<Expr>> ")" <r:@R> =
 AttrLookup: AttrLookup = <l:@L> <e: AttrableExpr>  "." <i: Identifier> <r:@R> => AttrLookup::new(e, i, l, r);
 
 Comma<T>: Vec<T> = {
-	<v:(<T> ",")*> <e:T?> => match e {
+	<v:(<T> "," "\n"?)*> <e:T?> => match e {
 		None => v,
 		Some(e) => {
 			let mut v = v;
@@ -319,7 +319,7 @@ CommaNewline<T>: Vec<T> = {
 };
 
 CommaNonEmpty<T>: Vec<T> = {
-	<v:(<T> ",")+> <e:T?> => match e {
+	<v:(<T> "," "\n"?)+> <e:T?> => match e {
 		None => v,
 		Some(e) => {
 			let mut v = v;

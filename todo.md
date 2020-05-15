@@ -3,7 +3,6 @@ This is a rough todo list of features I need to add to the language:
 
 * dictionaries
 * add documentation for special_funcs (hash, lock, print, exit, etc.)
-* allow newlines after commas in list and tuple and set literals
 * eval
 * lambdas
 * list and set conversion functions that just iterate and add

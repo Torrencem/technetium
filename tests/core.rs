@@ -477,3 +477,42 @@ print(d == d2)
 
     Ok(())
 }
+
+#[test]
+fn test_list_conversion() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+s = "Hello!"
+
+print(list(s.chars()))
+"#,
+    );
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("[H, e, l, l, o, !]\n"));
+
+    Ok(())
+}
+
+#[test]
+fn test_char_conversion() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+s = "Hello!"
+
+s = set(s.chars())
+
+print(s.contains('!'))
+print(s.contains('h'))
+"#,
+    );
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("true\nfalse\n"));
+
+    Ok(())
+}

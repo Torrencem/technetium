@@ -38,6 +38,8 @@ pub fn get_default_namespace_descriptors() -> HashMap<String, GlobalConstantDesc
         res.insert("char".to_string(), (STANDARD_CONTEXT_ID, 23));
         res.insert("hash".to_string(), (STANDARD_CONTEXT_ID, 24));
         res.insert("lock".to_string(), (STANDARD_CONTEXT_ID, 25));
+        res.insert("list".to_string(), (STANDARD_CONTEXT_ID, 26));
+        res.insert("set".to_string(), (STANDARD_CONTEXT_ID, 27));
         res
 }
 
@@ -69,6 +71,8 @@ pub fn get_default_namespace() -> HashMap<GlobalConstantDescriptor, ObjectRef> {
         res.insert((STANDARD_CONTEXT_ID, 23), ObjectRef::new(conversion::Char));
         res.insert((STANDARD_CONTEXT_ID, 24), ObjectRef::new(special_funcs::Hash));
         res.insert((STANDARD_CONTEXT_ID, 25), ObjectRef::new(special_funcs::Lock));
+        res.insert((STANDARD_CONTEXT_ID, 26), ObjectRef::new(conversion::List_));
+        res.insert((STANDARD_CONTEXT_ID, 27), ObjectRef::new(conversion::Set_));
         res
 }
 

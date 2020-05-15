@@ -327,7 +327,7 @@ pub trait Object: Any + ToAny + OpaqueClone + RawPointer + LockImmutable {
 
 impl fmt::Debug for dyn Object {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(fmt, "{}", self.to_string().unwrap_or("Object".to_string()))
+        write!(fmt, "{}", self.to_string().unwrap_or_else(|_| "Object".to_string()))
     }
 }
 
@@ -397,13 +397,11 @@ pub struct IntObject {
 
 impl IntObject {
     pub fn new(val: i64) -> ObjectRef {
-        let res = ObjectRef::new(IntObject { val: val.to_bigint().unwrap() });
-        res
+        ObjectRef::new(IntObject { val: val.to_bigint().unwrap() })
     }
 
     pub fn new_big(val: BigInt) -> ObjectRef {
-        let res = ObjectRef::new(IntObject { val });
-        res
+        ObjectRef::new(IntObject { val })
     }
 
     pub fn to_i64(&self) -> RuntimeResult<i64> {
@@ -452,8 +450,7 @@ pub struct FloatObject {
 
 impl FloatObject {
     pub fn new(val: f64) -> ObjectRef {
-        let res = ObjectRef::new(FloatObject { val });
-        res
+        ObjectRef::new(FloatObject { val })
     }
 }
 
@@ -584,7 +581,7 @@ impl Object for ObjectCell<StringObject> {
         let this = self.try_borrow()?;
         match method {
             "length" => {
-                if args.len() > 0 {
+                if !args.is_empty() {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
                     Ok(IntObject::new(this.val.len() as i64))
@@ -594,24 +591,22 @@ impl Object for ObjectCell<StringObject> {
                 let this = self.try_borrow()?;
                 if args.len() != 1 {
                     Err(RuntimeError::type_error("contains expects 1 arg"))
+                } else if let Some(arg) = args[0].as_any().downcast_ref::<ObjectCell<CharObject>>() {
+                    let arg = arg.try_borrow()?;
+                    Ok(BoolObject::new(this.val.contains(|c| c == arg.val)))
                 } else {
-                    if let Some(arg) = args[0].as_any().downcast_ref::<ObjectCell<CharObject>>() {
-                        let arg = arg.try_borrow()?;
-                        Ok(BoolObject::new(this.val.contains(|c| c == arg.val)))
-                    } else {
-                        Err(RuntimeError::type_error("string contains expects a character as an argument"))
-                    }
+                    Err(RuntimeError::type_error("string contains expects a character as an argument"))
                 }
             },
             "escape" => {
-                if args.len() > 0 {
+                if !args.is_empty() {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
                     Ok(StringObject::new(this.val.escape_default().collect()))
                 }
             },
             "lines" => {
-                if args.len() > 0 {
+                if !args.is_empty() {
                     Err(RuntimeError::type_error("lines expects 0 args"))
                 } else {
                     Ok(ObjectRef::new(standard::string::Lines {
@@ -620,7 +615,7 @@ impl Object for ObjectCell<StringObject> {
                 }
             },
             "chars" => {
-                if args.len() > 0 {
+                if !args.is_empty() {
                     Err(RuntimeError::type_error("chars expects 0 args"))
                 } else {
                     Ok(ObjectRef::new(standard::string::Chars {
@@ -757,14 +752,14 @@ impl Object for ObjectCell<List> {
 
     fn truthy(&self) -> bool {
         let this = self.borrow();
-        this.contents.len() != 0
+        !this.contents.is_empty()
     }
 
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
         match method {
             "length" => {
                 let this = self.try_borrow()?;
-                if args.len() > 0 {
+                if !args.is_empty() {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
                     Ok(IntObject::new(this.contents.len() as i64))
@@ -780,10 +775,10 @@ impl Object for ObjectCell<List> {
             }
             "pop" => {
                 let mut this = self.try_borrow_mut()?;
-                if args.len() > 0 {
+                if !args.is_empty() {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
-                    Ok(ObjectRef::clone(&this.contents.pop().ok_or(RuntimeError::index_oob_error("Popped an empty list"))?))
+                    Ok(ObjectRef::clone(&this.contents.pop().ok_or_else(|| RuntimeError::index_oob_error("Popped an empty list"))?))
                 }
             }
             "push" => {
@@ -1010,14 +1005,14 @@ impl Object for ObjectCell<Tuple> {
 
     fn truthy(&self) -> bool {
         let this = self.borrow();
-        this.contents.len() != 0
+        !this.contents.is_empty()
     }
 
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         match method {
             "length" => {
-                if args.len() > 0 {
+                if !args.is_empty() {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
                     Ok(IntObject::new(this.contents.len() as i64))
@@ -1126,14 +1121,14 @@ impl Object for ObjectCell<Set> {
 
     fn truthy(&self) -> bool {
         let this = self.borrow();
-        this.contents.len() != 0
+        !this.contents.is_empty()
     }
 
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
         match method {
             "length" => {
                 let this = self.try_borrow()?;
-                if args.len() > 0 {
+                if !args.is_empty() {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
                     Ok(IntObject::new(this.contents.len() as i64))
@@ -1146,7 +1141,7 @@ impl Object for ObjectCell<Set> {
                 } else {
                     let hashable = args[0]
                         .hashable()
-                        .ok_or(RuntimeError::type_error("value must be hashable to check for containment"))?;
+                        .ok_or_else(|| RuntimeError::type_error("value must be hashable to check for containment"))?;
                     Ok(BoolObject::new(this.contents.contains(&hashable)))
                 }
             }
@@ -1155,7 +1150,7 @@ impl Object for ObjectCell<Set> {
                 if args.len() != 1 {
                     Err(RuntimeError::type_error("add expects 1 arg"))
                 } else {
-                    this.contents.insert(args[0].hashable().ok_or(RuntimeError::type_error("value must be hashable to be added to a set"))?);
+                    this.contents.insert(args[0].hashable().ok_or_else(|| RuntimeError::type_error("value must be hashable to be added to a set"))?);
                     args[0].lock_immutable();
                     Ok(VoidObject::new())
                 }
@@ -1165,7 +1160,7 @@ impl Object for ObjectCell<Set> {
                 if args.len() != 1 {
                     Err(RuntimeError::type_error("add expects 1 arg"))
                 } else {
-                    let res = this.contents.remove(&args[0].hashable().ok_or(RuntimeError::type_error("value must be hashable to be added to a set"))?);
+                    let res = this.contents.remove(&args[0].hashable().ok_or_else(|| RuntimeError::type_error("value must be hashable to be added to a set"))?);
                     Ok(BoolObject::new(res))
                 }
             }
@@ -1237,14 +1232,14 @@ impl Object for ObjectCell<Dictionary> {
 
     fn truthy(&self) -> bool {
         let this = self.borrow();
-        this.contents.len() != 0
+        !this.contents.is_empty()
     }
 
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
         match method {
             "length" => {
                 let this = self.try_borrow()?;
-                if args.len() > 0 {
+                if !args.is_empty() {
                     Err(RuntimeError::type_error("length expects 0 args"))
                 } else {
                     Ok(IntObject::new(this.contents.len() as i64))

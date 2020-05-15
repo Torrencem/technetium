@@ -34,12 +34,10 @@ impl<T: Clone> MemoryBacking<T> {
         let index: usize = index.to_usize();
         if index >= self.backing.len() {
             None
+        } else if let Some(r) = &self.backing[index] {
+            Some(r)
         } else {
-            if let Some(r) = &self.backing[index] {
-                Some(r)
-            } else {
-                None
-            }
+            None
         }
     }
 
@@ -47,19 +45,17 @@ impl<T: Clone> MemoryBacking<T> {
         let index: usize = index.to_usize();
         if index >= self.backing.len() {
             None
+        } else if let Some(r) = &mut self.backing[index] {
+            Some(r)
         } else {
-            if let Some(r) = &mut self.backing[index] {
-                Some(r)
-            } else {
-                None
-            }
+            None
         }
     }
 
     pub fn insert<Num: BackingIndex>(&mut self, index: Num, val: T) {
         let index: usize = index.to_usize();
         if index >= self.backing.len() {
-            self.backing.append(&mut vec![None; (usize::from(index) + self.backing.len()) + 1]);
+            self.backing.append(&mut vec![None; index + self.backing.len() + 1]);
         }
         self.backing[index] = Some(val);
     }
@@ -95,6 +91,12 @@ pub struct MemoryManager {
     memory: MemoryBacking<MemoryBacking<ObjectRef>>,
     frame_index: MemoryBacking<ContextId>,
     do_not_drops: MemoryBacking<HashSet<LocalName>>,
+}
+
+impl Default for memory::MemoryManager {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl MemoryManager {
@@ -153,7 +155,6 @@ impl MemoryManager {
         });
 
         if frame.len() == 0 {
-            drop(frame);
             self.memory.remove(fid);
             self.frame_index.remove(fid);
         }

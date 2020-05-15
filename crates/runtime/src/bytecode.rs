@@ -308,7 +308,7 @@ impl<'code> Frame<'code> {
                 stale_debug_symb = true;
             }
             let instr = self.code.get(self.curr_instruction);
-            if let None = instr {
+            if instr.is_none() {
                 return Ok(VoidObject::new());
             }
             let instr = instr.unwrap();
@@ -578,14 +578,14 @@ impl<'code> Frame<'code> {
                         .push(try_debug!(self, ds, dsw, builtins::mod_(b, a)))
                 }
                 Op::not => {
-                    if self.stack.len() < 1 {
+                    if self.stack.is_empty() {
                         return Err(RuntimeError::internal_error("Tried to not nothing!"));
                     }
                     let a = self.stack.pop().unwrap();
                     self.stack.push(try_debug!(self, ds, dsw, builtins::not(a)));
                 }
                 Op::neg => {
-                    if self.stack.len() < 1 {
+                    if self.stack.is_empty() {
                         return Err(RuntimeError::internal_error("Tried to negate nothing!"));
                     }
                     let a = self.stack.pop().unwrap();
@@ -743,7 +743,7 @@ impl<'code> Frame<'code> {
                         }
                     };
                     let parent = self.stack.pop().unwrap();
-                    let length = conversion::to_int(parent.call_method("length", &vec![])?)?.to_i64().unwrap();
+                    let length = conversion::to_int(parent.call_method("length", &[])?)?.to_i64().unwrap();
                     // Make slices like val[1:-1] work
                     if let Some(end) = stop {
                         if end < start && end < 0 && step > 0 {
@@ -751,7 +751,7 @@ impl<'code> Frame<'code> {
                         }
                     }
                     // Make slices like val[-2:] work
-                    if let None = stop {
+                    if stop.is_none() {
                         if start < 0 && step > 0 {
                             start += length;
                         }
@@ -819,7 +819,7 @@ impl<'code> Frame<'code> {
                     for obj in objs.into_iter() {
                         let hashable = try_debug!(self, ds, dsw, obj
                             .hashable()
-                            .ok_or(RuntimeError::type_error(format!("Object of type {} is not hashable", obj.technetium_type_name()))));
+                            .ok_or_else(|| RuntimeError::type_error(format!("Object of type {} is not hashable", obj.technetium_type_name()))));
                         as_hashset.insert(hashable);
                     }
                     self.stack.push(ObjectRef::new(Set { contents: as_hashset }));
@@ -834,7 +834,7 @@ impl<'code> Frame<'code> {
                         let val = ObjectRef::clone(&objs[1]);
                         let hashable = try_debug!(self, ds, dsw, key
                             .hashable()
-                            .ok_or(RuntimeError::type_error(format!("Object used as a key of type {} is not hashable", key.technetium_type_name()))));
+                            .ok_or_else(|| RuntimeError::type_error(format!("Object used as a key of type {} is not hashable", key.technetium_type_name()))));
                         as_hashmap.insert(hashable, val);
                     }
                     self.stack.push(ObjectRef::new(Dictionary { contents: as_hashmap }));

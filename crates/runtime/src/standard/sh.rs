@@ -120,7 +120,7 @@ impl Object for ObjectCell<ShObject> {
 
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
         let mut this = self.try_borrow_mut()?;
-        if args.len() != 0 {
+        if !args.is_empty() {
             return Err(RuntimeError::type_error(
                 "Unexpected arguments to method call",
             ));
@@ -169,7 +169,7 @@ func_object!(Os, (0..=0), args -> {
 });
 
 func_object!(LinuxDistro, (0..=0), args -> {
-    Ok(StringObject::new(linux_os_release()?.name.unwrap_or("Unknown".to_string())))
+    Ok(StringObject::new(linux_os_release()?.name.unwrap_or_else(|| "Unknown".to_string())))
 });
 
 func_object!(Args, (0..=0), args -> {

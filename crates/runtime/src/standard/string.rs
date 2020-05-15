@@ -74,7 +74,7 @@ impl Object for ObjectCell<LinesIterator> {
         let mut this = self.try_borrow_mut()?;
         let inner = &mut this.inner;
         let next = line_rentals::LinesIterator::rent_mut(inner, |lines| lines.next().map(|val| val.to_string()));
-        Ok(next.map(|s| StringObject::new(s.to_string())))
+        Ok(next.map(StringObject::new))
     }
 }
 
@@ -145,6 +145,6 @@ impl Object for ObjectCell<CharsIterator> {
         let mut this = self.try_borrow_mut()?;
         let inner = &mut this.inner;
         let next = char_rentals::CharsIterator::rent_mut(inner, |lines| lines.next());
-        Ok(next.map(|s| CharObject::new(s)))
+        Ok(next.map(CharObject::new))
     }
 }

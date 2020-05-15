@@ -107,7 +107,7 @@ pub fn to_char(val: ObjectRef) -> RuntimeResult<char> {
             if as_str.len() != 1 {
                 Err(RuntimeError::type_error(format!("Unable to convert string of length {} to character", as_str.len())))
             } else {
-                Ok(as_str.chars().nth(0).unwrap())
+                Ok(as_str.chars().next().unwrap())
             }
         },
         _ => {
@@ -133,7 +133,7 @@ func_object!(Set_, (1..=1), args -> {
     let mut res = HashSet::new();
     let iter = args[0].make_iter()?;
     while let Some(val) = iter.take_iter()? {
-        let hashable = val.hashable().ok_or(RuntimeError::type_error(format!("Type {} used in set is not hashable", val.technetium_type_name())))?;
+        let hashable = val.hashable().ok_or_else(|| RuntimeError::type_error(format!("Type {} used in set is not hashable", val.technetium_type_name())))?;
         res.insert(hashable);
     }
     Ok(ObjectRef::new(Set { contents: res }))

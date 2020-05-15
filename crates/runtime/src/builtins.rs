@@ -499,9 +499,7 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             if let Some(c) = c {
                 Ok(CharObject::new(c))
             } else {
-                Err(RuntimeError::index_oob_error(format!(
-                    "Index out of bounds"
-                )))
+                Err(RuntimeError::index_oob_error("Index out of bounds".to_string()))
             }
         }
         (a, b) if a == TypeId::of::<ObjectCell<Slice>>() && b == TypeId::of::<ObjectCell<IntObject>>() => {
@@ -512,7 +510,7 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
         }
         (a, _) if a == TypeId::of::<ObjectCell<Dictionary>>() => {
             let val_a = a_any.downcast_ref::<ObjectCell<Dictionary>>().unwrap().try_borrow()?;
-            let hashable = b.hashable().ok_or(RuntimeError::type_error(format!("Type {} used as a key in dictionary is not hashable", b.technetium_type_name())))?;
+            let hashable = b.hashable().ok_or_else(|| RuntimeError::type_error(format!("Type {} used as a key in dictionary is not hashable", b.technetium_type_name())))?;
             match val_a.contents.get(&hashable) {
                 Some(res) => {
                     Ok(ObjectRef::clone(res))
@@ -585,7 +583,7 @@ pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> 
         }
         (a, _) if a == TypeId::of::<ObjectCell<Dictionary>>() => {
             let mut val_a = a_any.downcast_ref::<ObjectCell<Dictionary>>().unwrap().try_borrow_mut()?;
-            let hashable = b.hashable().ok_or(RuntimeError::type_error(format!("Type {} used as a key in dictionary is not hashable", b.technetium_type_name())))?;
+            let hashable = b.hashable().ok_or_else(|| RuntimeError::type_error(format!("Type {} used as a key in dictionary is not hashable", b.technetium_type_name())))?;
             val_a.contents.insert(hashable, c);
             Ok(())
         }

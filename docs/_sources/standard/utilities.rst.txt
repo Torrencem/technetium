@@ -22,6 +22,10 @@ Command Line Utils
 
     This is because using the shell operator ($) spawns a subprocess, which does not affect the parent process.
 
+.. function:: which([string])  [string]
+
+    Equivelent of the Unix command ``which``. Wraps the `rust crate 'which' <https://docs.rs/which/3.1.1/which/>`_.
+
 .. function:: args()  [list(string)]
 
     Returns a list of the command line arguments passed to the script, excluding the executable name and script name, if applicable.

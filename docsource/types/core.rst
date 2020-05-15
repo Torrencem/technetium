@@ -51,7 +51,7 @@ String Methods
 List
 ----
 
-Lists are created through square bracket ``[]`` literals. Lists can be iterated over through for loops::
+Lists are created through square bracket ``[]`` literals, or through the ``list`` conversion function. Lists can be iterated over through for loops::
 
     l = ["alpha", 123, 3.14]
 
@@ -101,7 +101,7 @@ Tuple Methods
 Set
 ---
 
-Sets are containers of hashable objects that ignore duplicates. Sets are constructed through bracket ``{}`` literals, similar to lists. Note that elements inside sets must be hashable and immutable. As all objects are essentially mutable, any objects added to the set will be "locked" immutable, so further changes to these objects will throw an error.
+Sets are containers of hashable objects that ignore duplicates. Sets are constructed through bracket ``{}`` literals, or through the ``set`` conversion function, similar to lists. Note that elements inside sets must be hashable and immutable. As all objects are essentially mutable, any objects added to the set will be "locked" immutable, so further changes to these objects will throw an error.
 
 Set Methods
 ^^^^^^^^^^^

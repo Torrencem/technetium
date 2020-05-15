@@ -119,7 +119,7 @@
 </div>
 <div class="section" id="list">
 <h2><a class="toc-backref" href="#id4">List</a><a class="headerlink" href="#list" title="Permalink to this headline">¶</a></h2>
-<p>Lists are created through square bracket <code class="docutils literal"><span class="pre">[]</span></code> literals. Lists can be iterated over through for loops:</p>
+<p>Lists are created through square bracket <code class="docutils literal"><span class="pre">[]</span></code> literals, or through the <code class="docutils literal"><span class="pre">list</span></code> conversion function. Lists can be iterated over through for loops:</p>
 <div class="highlight-technetium"><div class="highlight"><pre><span></span><span class="n">l</span> <span class="o">=</span> <span class="o">[</span><span class="s">&quot;alpha&quot;</span><span class="p">,</span> <span class="m">123</span><span class="p">,</span> <span class="m">3.14</span><span class="o">]</span>
 
 <span class="k">for</span> <span class="n">val</span> <span class="k">in</span> <span class="n">l</span> <span class="p">{</span>
@@ -182,7 +182,7 @@
 </div>
 <div class="section" id="set">
 <h2><a class="toc-backref" href="#id8">Set</a><a class="headerlink" href="#set" title="Permalink to this headline">¶</a></h2>
-<p>Sets are containers of hashable objects that ignore duplicates. Sets are constructed through bracket <code class="docutils literal"><span class="pre">{}</span></code> literals, similar to lists. Note that elements inside sets must be hashable and immutable. As all objects are essentially mutable, any objects added to the set will be “locked” immutable, so further changes to these objects will throw an error.</p>
+<p>Sets are containers of hashable objects that ignore duplicates. Sets are constructed through bracket <code class="docutils literal"><span class="pre">{}</span></code> literals, or through the <code class="docutils literal"><span class="pre">set</span></code> conversion function, similar to lists. Note that elements inside sets must be hashable and immutable. As all objects are essentially mutable, any objects added to the set will be “locked” immutable, so further changes to these objects will throw an error.</p>
 <div class="section" id="set-methods">
 <h3><a class="toc-backref" href="#id9">Set Methods</a><a class="headerlink" href="#set-methods" title="Permalink to this headline">¶</a></h3>
 <dl class="function">

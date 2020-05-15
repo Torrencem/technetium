@@ -7,13 +7,14 @@ use lexer::Lexer;
 use lexer::error::parse_error_to_diagnostic;
 use runtime::standard::STANDARD_CONTEXT_ID;
 use runtime::bytecode;
+use runtime;
 use std::collections::HashMap;
 use std::process::exit;
 use std::rc::Rc;
 use std::borrow::Cow;
 
 extern crate clap;
-use clap::{App, Arg, };
+use clap::{App, Arg, AppSettings};
 use std::io::{self, Read};
 
 use codespan::Files;
@@ -27,10 +28,10 @@ fn main() {
         .version(env!("CARGO_PKG_VERSION"))
         .author(env!("CARGO_PKG_AUTHORS"))
         .about(env!("CARGO_PKG_DESCRIPTION"))
+        .setting(AppSettings::TrailingVarArg)
         .arg(
             Arg::with_name("INPUT")
-                .help("Run file as a script (if not given, will read from stdin)")
-                .index(1),
+                .help("Run file as a script (if not given, will read from stdin). If INPUT is not given, and additional arguments must be passed to the script, use '--' before additional arguments")
         )
         .arg(
             Arg::with_name("verbose")
@@ -38,6 +39,18 @@ fn main() {
                 .long("verbose")
                 .help("Set logging verbosity level")
                 .multiple(true),
+        )
+        .arg(
+            Arg::with_name("args")
+                .help("Arguments to pass to script")
+                .multiple(true)
+        )
+        .arg(
+            Arg::with_name("more_args")
+                .help("Arguments to pass to script")
+                .multiple(true)
+                .last(true)
+                .hidden(true)
         )
         .get_matches();
 
@@ -48,6 +61,30 @@ fn main() {
         3 => Level::Debug,
         _ => Level::Trace,
     };
+
+    let mut extra_args = vec![];
+
+    extra_args.append(
+        &mut matches
+        .values_of("args")
+        .map(|val| 
+             val.map(|val| 
+                     val.to_owned()
+             )
+             .collect()
+        ).unwrap_or(vec![]));
+
+    extra_args.append(
+        &mut matches
+        .values_of("more_args")
+        .map(|val| 
+             val.map(|val| 
+                     val.to_owned()
+             )
+             .collect()
+        ).unwrap_or(vec![]));
+
+    runtime::PARSED_CLARGS.set(extra_args).unwrap();
 
     logging::init(log_level).expect("error initializing logging");
 

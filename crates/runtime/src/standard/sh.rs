@@ -1,5 +1,6 @@
 use crate::*;
 use crate::error::*;
+use crate::PARSED_CLARGS;
 
 use std::io::Write;
 use std::process::{Child, Command, Output, Stdio};
@@ -171,3 +172,10 @@ func_object!(LinuxDistro, (0..=0), args -> {
     Ok(StringObject::new(linux_os_release()?.name.unwrap_or("Unknown".to_string())))
 });
 
+func_object!(Args, (0..=0), args -> {
+    let mut res = vec![];
+    for val in PARSED_CLARGS.get().unwrap().iter() {
+        res.push(StringObject::new(val.clone()));
+    }
+    Ok(ObjectRef::new(List { contents: res }))
+});

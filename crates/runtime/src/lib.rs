@@ -31,10 +31,13 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::Hash;
 use std::hash::Hasher;
 use std::collections::HashSet;
+use once_cell::sync::OnceCell;
 
 use dtoa;
 
 use std::fmt;
+
+pub static PARSED_CLARGS: OnceCell<Vec<String>> = OnceCell::new();
 
 #[repr(transparent)]
 #[derive(Debug)]

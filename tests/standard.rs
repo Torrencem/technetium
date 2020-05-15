@@ -300,3 +300,27 @@ print(t.contains({20, "hi"}))
     
     Ok(())
 }
+
+#[test]
+fn test_args() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+print(args())
+"#,
+    );
+
+    cmd.assert().success().stdout(predicate::eq("[]\n"));
+    
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.args(&["--", "alpha", "beta", "gamma"]);
+    cmd.write_stdin(
+        r#"
+print(args())
+"#,
+    );
+
+    cmd.assert().success().stdout(predicate::eq("[alpha, beta, gamma]\n"));
+    
+    Ok(())
+}

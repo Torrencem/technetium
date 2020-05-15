@@ -840,6 +840,7 @@ dependencies = [
  "lazy_static",
  "mlrefcell",
  "num",
+ "once_cell",
  "parking_lot",
  "rental",
  "stable_deref_trait",

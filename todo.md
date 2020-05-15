@@ -1,7 +1,6 @@
 
 This is a rough todo list of features I need to add to the language:
 
-* dictionary documentation
 * add documentation for special_funcs (hash, lock, print, exit, etc.)
 * eval
 * lambdas

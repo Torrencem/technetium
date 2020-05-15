@@ -104,7 +104,7 @@ Set
 Sets are containers of hashable objects that ignore duplicates. Sets are constructed through bracket ``{}`` literals, similar to lists. Note that elements inside sets must be hashable and immutable. As all objects are essentially mutable, any objects added to the set will be "locked" immutable, so further changes to these objects will throw an error.
 
 Set Methods
-^^^^^^^^^^^^^
+^^^^^^^^^^^
 
 .. function:: [set].length()  [int]
 
@@ -116,11 +116,29 @@ Set Methods
 
 .. function:: [set].add([object])
 
-    Add an object to the set. Locks the given object as immutable. Will throw an error if the object is not hashable.
+    Add an object to the set. Locks the given object as immutable. Will throw an error if the object is not hashable
 
 .. function:: [set].remove([object])  [bool]
 
-    Remove an object from the set. Will throw an error if the object is not hashable. Returns whether or not anything was found and removed from the set.
+    Remove an object from the set. Will throw an error if the object is not hashable. Returns whether or not anything was found and removed from the set
+
+Dictionary
+----------
+
+Dictionaries are mappings from hashable and immutable key values to objects. Dictionaries are constructed through bracket literals. Dictionaries are primarily useful through the square indexing brackets ``[]``::
+
+        my_dict = {"name": "Matthew", "favorite number": 123}
+
+        print(my_dict["name"])
+
+Dictionaries throw an error if accessed with a key that either doesn't exist, or isn't hashable.
+
+Dictionary Methods
+^^^^^^^^^^^^^^^^^^
+
+.. function:: [dictionary].length()  [int]
+
+        Returns the number of key value pairs in the dictionary
 
 Numeric Types (float and int)
 -----------------------------

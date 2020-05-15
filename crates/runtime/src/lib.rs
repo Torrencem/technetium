@@ -231,7 +231,18 @@ where ObjectCell<T>: Object {
     }
 }
 
-pub trait Object: Any + ToAny + OpaqueClone + RawPointer {
+pub trait LockImmutable {
+    fn lock_immutable(&self);
+}
+
+impl<T> LockImmutable for ObjectCell<T>
+where ObjectCell<T>: Object {
+    fn lock_immutable(&self) {
+        self.lock();
+    }
+}
+
+pub trait Object: Any + ToAny + OpaqueClone + RawPointer + LockImmutable {
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::type_error(format!(
             "{} can not be cloned",
@@ -244,8 +255,6 @@ pub trait Object: Any + ToAny + OpaqueClone + RawPointer {
     }
 
     fn technetium_type_name(&self) -> String;
-
-    fn lock_immutable(&self);
 
     fn to_string(&self) -> RuntimeResult<String> {
         Ok(format!(
@@ -359,10 +368,6 @@ impl Object for ObjectCell<BoolObject> {
         "boolean".to_string()
     }
 
-    fn lock_immutable(&self) {
-        self.lock()
-    }
-
     fn to_string(&self) -> RuntimeResult<String> {
         let this = self.try_borrow()?;
         Ok(format!("{}", this.val))
@@ -413,10 +418,6 @@ impl Object for ObjectCell<IntObject> {
         "int".to_string()
     }
 
-    fn lock_immutable(&self) {
-        self.lock()
-    }
-    
     fn technetium_hash(&self) -> Option<u64> {
         let mut hasher = DefaultHasher::new();
         self.try_borrow().ok()?.hash(&mut hasher);
@@ -463,10 +464,6 @@ impl Object for ObjectCell<FloatObject> {
         "int".to_string()
     }
 
-    fn lock_immutable(&self) {
-        self.lock()
-    }
-    
     fn technetium_hash(&self) -> Option<u64> {
         let mut hasher = DefaultHasher::new();
         let val = self.try_borrow().ok()?.val;
@@ -516,10 +513,6 @@ impl Object for ObjectCell<CharObject> {
         "char".to_string()
     }
 
-    fn lock_immutable(&self) {
-        self.lock()
-    }
-
     fn technetium_hash(&self) -> Option<u64> {
         let mut hasher = DefaultHasher::new();
         self.try_borrow().ok()?.hash(&mut hasher);
@@ -565,10 +558,6 @@ impl Object for ObjectCell<StringObject> {
 
     fn technetium_type_name(&self) -> String {
         "string".to_string()
-    }
-
-    fn lock_immutable(&self) {
-        self.lock()
     }
 
     fn technetium_hash(&self) -> Option<u64> {
@@ -665,10 +654,6 @@ impl Object for ObjectCell<Function> {
         "function".to_string()
     }
 
-    fn lock_immutable(&self) {
-        self.lock()
-    }
-
     fn truthy(&self) -> bool {
         true
     }
@@ -727,10 +712,6 @@ impl Object for ObjectCell<List> {
 
     fn technetium_type_name(&self) -> String {
         "list".to_string()
-    }
-
-    fn lock_immutable(&self) {
-        self.lock()
     }
 
     fn technetium_hash(&self) -> Option<u64> {
@@ -849,10 +830,6 @@ impl Object for ObjectCell<ListIterator> {
         "iterator(list)".to_string()
     }
 
-    fn lock_immutable(&self) {
-        self.lock()
-    }
-
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
         let mut this = self.try_borrow_mut()?;
         let len = this.parent.try_borrow()?.contents.len();
@@ -888,10 +865,6 @@ impl Object for ObjectCell<Slice> {
 
     fn technetium_type_name(&self) -> String {
         "slice".to_string()
-    }
-
-    fn lock_immutable(&self) {
-        self.lock()
     }
 
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
@@ -968,10 +941,6 @@ impl Object for ObjectCell<SliceIterator> {
         "iterator(slice)".to_string()
     }
 
-    fn lock_immutable(&self) {
-        self.lock()
-    }
-
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
         let this = self.try_borrow()?;
         let mut curr_ = this.curr.write();
@@ -1007,10 +976,6 @@ impl Object for ObjectCell<Tuple> {
         "tuple".to_string()
     }
 
-    fn lock_immutable(&self) {
-        self.lock()
-    }
-    
     fn technetium_hash(&self) -> Option<u64> {
         let mut hasher = DefaultHasher::new();
         for val in self.try_borrow().ok()?.contents.iter() {
@@ -1073,10 +1038,6 @@ impl Object for ObjectCell<VoidObject> {
         "void".to_string()
     }
 
-    fn lock_immutable(&self) {
-        self.lock()
-    }
-
     fn to_string(&self) -> RuntimeResult<String> {
         Ok("void".to_string())
     }
@@ -1104,10 +1065,6 @@ impl Object for ObjectCell<Set> {
 
     fn technetium_type_name(&self) -> String {
         "set".to_string()
-    }
-
-    fn lock_immutable(&self) {
-        self.lock()
     }
 
     fn technetium_hash(&self) -> Option<u64> {

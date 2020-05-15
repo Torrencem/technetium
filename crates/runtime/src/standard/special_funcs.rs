@@ -65,10 +65,6 @@ impl Object for ObjectCell<Range> {
         "range".to_string()
     }
 
-    fn lock_immutable(&self) {
-        self.lock()
-    }
-
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         Ok(RangeIterator::new(this.clone()))
@@ -92,10 +88,6 @@ impl RangeIterator {
 impl Object for ObjectCell<RangeIterator> {
     fn technetium_type_name(&self) -> String {
         "iterator(range)".to_string()
-    }
-
-    fn lock_immutable(&self) {
-        self.lock()
     }
 
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {

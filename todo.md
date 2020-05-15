@@ -3,7 +3,6 @@ This is a rough todo list of features I need to add to the language:
 
 * dictionaries
 * add documentation for special_funcs (hash, lock, print, exit, etc.)
-* add lock_immutable trait, so boilerplate for implementing Object for ObjectCell isn't there
 * allow newlines after commas in list and tuple and set literals
 * eval
 * lambdas

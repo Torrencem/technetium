@@ -117,10 +117,6 @@ impl Object for ObjectCell<ShObject> {
         "sh".to_string()
     }
 
-    fn lock_immutable(&self) {
-        self.lock()
-    }
-
     fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
         let mut this = self.try_borrow_mut()?;
         if args.len() != 0 {

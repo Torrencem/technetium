@@ -82,10 +82,6 @@ macro_rules! func_object_void {
                 "builtin func".to_string()
             }
 
-            fn lock_immutable(&self) {
-                self.lock()
-            }
-
             fn call(&self, $args: &[ObjectRef], _locals: &mut crate::memory::MemoryManager) -> RuntimeResult<ObjectRef> {
                 if !$args_range.contains(&$args.len()) {
                     return Err(RuntimeError::type_error(format!("Incorrect number of arguments: expected {:?}, got {}", $args_range, $args.len())));
@@ -105,10 +101,6 @@ macro_rules! func_object {
         impl Object for ObjectCell<$id> {
             fn technetium_type_name(&self) -> String {
                 "builtin func".to_string()
-            }
-
-            fn lock_immutable(&self) {
-                self.lock()
             }
 
             fn call(

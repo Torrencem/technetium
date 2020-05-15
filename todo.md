@@ -1,7 +1,6 @@
 
 This is a rough todo list of features I need to add to the language:
 
-* turn debug descriptor generation in compile into a function which returns a new descriptor, and replace all of the times it's used with a call to the function
 * dictionaries
 * add documentation for special_funcs (hash, lock, print, exit, etc.)
 * figure out a way to make a macro for implementing Object for ObjectCell stuff, so the .lock_immutable() boilerplate isn't necessary

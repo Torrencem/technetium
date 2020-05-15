@@ -183,3 +183,10 @@ func_object!(Args, (0..=0), args -> {
     }
     Ok(ObjectRef::new(List { contents: res }))
 });
+
+func_object!(Which, (1..=1), args -> {
+    let result = which::which(args[0].to_string()?)
+        .map_err(|e| RuntimeError::child_process_error(e.to_string()))?;
+
+    Ok(StringObject::new(result.to_string_lossy().into_owned()))
+});

@@ -668,6 +668,8 @@ pub enum Statement {
     FuncDefinition(FuncDefinition),
     Assignment(Assignment),
     Expr(Expr),
+    /// A dummy value used for parser recovery
+    Error,
 }
 
 impl Statement {
@@ -682,6 +684,7 @@ impl Statement {
             Statement::FuncDefinition(f) => f.span,
             Statement::Assignment(a) => a.span,
             Statement::Expr(e) => e.span(),
+            Statement::Error => unreachable!(),
         }
     }
 }

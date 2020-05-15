@@ -680,6 +680,7 @@ impl CompileManager {
                 vals.push(Op::pop);
                 Ok(vals)
             }
+            Statement::Error => unreachable!(),
         }
     }
 

@@ -22,6 +22,10 @@ Command Line Utils
 
     This is because using the shell operator ($) spawns a subprocess, which does not affect the parent process.
 
+.. function:: args()  [list(string)]
+
+    Returns a list of the command line arguments passed to the script, excluding the executable name and script name, if applicable.
+
 .. function:: os()  [string]
 
     Returns "Linux" or "Darwin" depending on the operating system the script is running on.

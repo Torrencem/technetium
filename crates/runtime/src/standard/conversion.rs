@@ -119,3 +119,22 @@ pub fn to_char(val: ObjectRef) -> RuntimeResult<char> {
 func_object!(Char, (1..=1), args -> {
     Ok(CharObject::new(to_char(ObjectRef::clone(&args[0]))?))
 });
+
+func_object!(List_, (1..=1), args -> {
+    let mut res = vec![];
+    let iter = args[0].make_iter()?;
+    while let Some(val) = iter.take_iter()? {
+        res.push(ObjectRef::clone(&val));
+    }
+    Ok(ObjectRef::new(List { contents: res }))
+});
+
+func_object!(Set_, (1..=1), args -> {
+    let mut res = HashSet::new();
+    let iter = args[0].make_iter()?;
+    while let Some(val) = iter.take_iter()? {
+        let hashable = val.hashable().ok_or(RuntimeError::type_error(format!("Type {} used in set is not hashable", val.technetium_type_name())))?;
+        res.insert(hashable);
+    }
+    Ok(ObjectRef::new(Set { contents: res }))
+});

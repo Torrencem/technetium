@@ -1288,6 +1288,54 @@
 <span id="1288">1288</span>
 <span id="1289">1289</span>
 <span id="1290">1290</span>
+<span id="1291">1291</span>
+<span id="1292">1292</span>
+<span id="1293">1293</span>
+<span id="1294">1294</span>
+<span id="1295">1295</span>
+<span id="1296">1296</span>
+<span id="1297">1297</span>
+<span id="1298">1298</span>
+<span id="1299">1299</span>
+<span id="1300">1300</span>
+<span id="1301">1301</span>
+<span id="1302">1302</span>
+<span id="1303">1303</span>
+<span id="1304">1304</span>
+<span id="1305">1305</span>
+<span id="1306">1306</span>
+<span id="1307">1307</span>
+<span id="1308">1308</span>
+<span id="1309">1309</span>
+<span id="1310">1310</span>
+<span id="1311">1311</span>
+<span id="1312">1312</span>
+<span id="1313">1313</span>
+<span id="1314">1314</span>
+<span id="1315">1315</span>
+<span id="1316">1316</span>
+<span id="1317">1317</span>
+<span id="1318">1318</span>
+<span id="1319">1319</span>
+<span id="1320">1320</span>
+<span id="1321">1321</span>
+<span id="1322">1322</span>
+<span id="1323">1323</span>
+<span id="1324">1324</span>
+<span id="1325">1325</span>
+<span id="1326">1326</span>
+<span id="1327">1327</span>
+<span id="1328">1328</span>
+<span id="1329">1329</span>
+<span id="1330">1330</span>
+<span id="1331">1331</span>
+<span id="1332">1332</span>
+<span id="1333">1333</span>
+<span id="1334">1334</span>
+<span id="1335">1335</span>
+<span id="1336">1336</span>
+<span id="1337">1337</span>
+<span id="1338">1338</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">builtins</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">bytecode</span>;
@@ -1436,6 +1484,10 @@
     }
 }
 
+<span class="doccomment">/// The universal container object for implementers of the Object trait.</span>
+<span class="doccomment">/// Anything that implements Object should be of the form ObjectCell&lt;T&gt;.</span>
+<span class="doccomment">/// ObjectCell combines interior mutability and shared ownership, so it</span>
+<span class="doccomment">/// is the primary container used for objects in technetium</span>
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">transparent</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
@@ -1465,7 +1517,7 @@
             <span class="ident">inner</span>: <span class="ident">Rc</span>::<span class="ident">new</span>(<span class="ident">MLRefCell</span>::<span class="ident">new</span>(<span class="ident">val</span>)),
         }
     }
-    <span class="doccomment">/// Lock the `MLRefCell` inside the cell, effectively making the value immutable, giving a</span>
+    <span class="doccomment">/// Lock the ``MLRefCell`` inside the cell, effectively making the value immutable, giving a</span>
     <span class="doccomment">/// runtime error for any future mutation of the object. This is useful if the value will need</span>
     <span class="doccomment">/// to be used as the key in a HashMap, or in a HashSet</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lock</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) {
@@ -1554,74 +1606,117 @@
     }
 }
 
+<span class="doccomment">/// The primary trait for objects in technetium.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Types that implement ``Object``</span>
+<span class="doccomment">/// should be of the form ``ObjectCell&lt;T&gt;`` for some T. This will give all of the</span>
+<span class="doccomment">/// requirement subtraits for free.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Object</span>: <span class="ident">Any</span> <span class="op">+</span> <span class="ident">ToAny</span> <span class="op">+</span> <span class="ident">OpaqueClone</span> <span class="op">+</span> <span class="ident">RawPointer</span> <span class="op">+</span> <span class="ident">LockImmutable</span> {
+    <span class="doccomment">/// Create a deep clone of an object. This is primarily used in the ``clone``</span>
+    <span class="doccomment">/// function in technetium</span>
     <span class="kw">fn</span> <span class="ident">technetium_clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">type_error</span>(<span class="macro">format</span><span class="macro">!</span>(
             <span class="string">&quot;{} can not be cloned&quot;</span>,
             <span class="self">self</span>.<span class="ident">technetium_type_name</span>()
         )))
     }
-
+    
+    <span class="doccomment">/// Hash an object. This is not required, so the default implementation always</span>
+    <span class="doccomment">/// returns ``None``. </span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// In implementing a hash, it&#39;s important that ``x == y``</span>
+    <span class="doccomment">/// implies that ``x.technetium_hash() == y.technetium_hash()`` to avoid logic</span>
+    <span class="doccomment">/// errors.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Note that ObjectRef does not implement ``Hash`` in Rust, but HashableObjectRef</span>
+    <span class="doccomment">/// does. See the docs for [HashableObjectRef](struct.HashableObjectRef.html) for</span>
+    <span class="doccomment">/// more information</span>
     <span class="kw">fn</span> <span class="ident">technetium_hash</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> {
         <span class="prelude-val">None</span>
     }
-
+    
+    <span class="doccomment">/// A type name for an object.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Conventions are that type names are all lowercase, and use parentheses to denote</span>
+    <span class="doccomment">/// &quot;sub-types&quot; (for example: &quot;iterator(list)&quot;)</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This function should not fail, so should return a set value.</span>
     <span class="kw">fn</span> <span class="ident">technetium_type_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span>;
-
+    
+    <span class="doccomment">/// Convert an object to a String.</span>
     <span class="kw">fn</span> <span class="ident">to_string</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;&lt;{}&gt;&quot;</span>, <span class="self">self</span>.<span class="ident">technetium_type_name</span>()))
     }
-
+    
+    <span class="doccomment">/// Get an attribute of an object</span>
     <span class="kw">fn</span> <span class="ident">get_attr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_attr</span>: <span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">attribute_error</span>(<span class="macro">format</span><span class="macro">!</span>(
             <span class="string">&quot;{} has no attributes&quot;</span>,
             <span class="self">self</span>.<span class="ident">technetium_type_name</span>()
         )))
     }
-
+    
+    <span class="doccomment">/// Set an attribute of an object</span>
     <span class="kw">fn</span> <span class="ident">set_attr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_attr</span>: <span class="ident">String</span>, <span class="ident">_val</span>: <span class="ident">ObjectRef</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">attribute_error</span>(<span class="macro">format</span><span class="macro">!</span>(
             <span class="string">&quot;Cannot set attributes of {}&quot;</span>,
             <span class="self">self</span>.<span class="ident">technetium_type_name</span>()
         )))
     }
-
+    
+    <span class="doccomment">/// Call a given method of an object</span>
     <span class="kw">fn</span> <span class="ident">call_method</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_method</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">_args</span>: <span class="kw-2">&amp;</span>[<span class="ident">ObjectRef</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">attribute_error</span>(<span class="macro">format</span><span class="macro">!</span>(
             <span class="string">&quot;Cannot call method of {}&quot;</span>,
             <span class="self">self</span>.<span class="ident">technetium_type_name</span>()
         )))
     }
-
+    
+    <span class="doccomment">/// Call a given object as a function.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This takes a memory manager</span>
+    <span class="doccomment">/// primarily for the [Function](struct.Function.html) object,</span>
+    <span class="doccomment">/// which needs to be able to reference and change locals.</span>
     <span class="kw">fn</span> <span class="ident">call</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_args</span>: <span class="kw-2">&amp;</span>[<span class="ident">ObjectRef</span>], <span class="ident">_locals</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">MemoryManager</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">type_error</span>(<span class="macro">format</span><span class="macro">!</span>(
             <span class="string">&quot;Object of type {} is not callable&quot;</span>,
             <span class="self">self</span>.<span class="ident">technetium_type_name</span>()
         )))
     }
-
+    
+    <span class="doccomment">/// Create an iterator over an object. This is used for initializing</span>
+    <span class="doccomment">/// ``for`` loops.</span>
     <span class="kw">fn</span> <span class="ident">make_iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">type_error</span>(<span class="macro">format</span><span class="macro">!</span>(
             <span class="string">&quot;Object of type {} cannot be made into an iterator&quot;</span>,
             <span class="self">self</span>.<span class="ident">technetium_type_name</span>()
         )))
     }
-
+    
+    <span class="doccomment">/// Take from this object, assuming it is an iterator. This is used for</span>
+    <span class="doccomment">/// stepping through ``for`` loops.</span>
     <span class="kw">fn</span> <span class="ident">take_iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">type_error</span>(<span class="macro">format</span><span class="macro">!</span>(
             <span class="string">&quot;Object of type {} cannot be iterated&quot;</span>,
             <span class="self">self</span>.<span class="ident">technetium_type_name</span>()
         )))
     }
-
+    
+    <span class="doccomment">/// Determine whether an object is &quot;truthy&quot; (whether it should be treated</span>
+    <span class="doccomment">/// as true when used as a boolean)</span>
     <span class="kw">fn</span> <span class="ident">truthy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="bool-val">true</span>
     }
-
+    
+    <span class="doccomment">/// Equal-as-value (like == in Python, or .equals() in Java)</span>
     <span class="kw">fn</span> <span class="ident">technetium_eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_other</span>: <span class="ident">ObjectRef</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
         <span class="prelude-val">None</span>
     }
-
+    
+    <span class="doccomment">/// Equal-as-reference (like ``is`` in Python, or == in Java)</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This is treated as a fallback in the ``Eq`` implementation</span>
+    <span class="doccomment">/// for ``ObjectRef``, primarily for sets and dictionaries</span>
     <span class="kw">fn</span> <span class="ident">ref_eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="ident">ObjectRef</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">raw_pointer</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">other</span>.<span class="ident">raw_pointer</span>()
     }
@@ -1952,6 +2047,7 @@
     }
 }
 
+<span class="doccomment">/// A user defined function</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Function</span> {
     <span class="kw">pub</span> <span class="ident">nargs</span>: <span class="ident">usize</span>,
     <span class="kw">pub</span> <span class="ident">name</span>: <span class="ident">String</span>,

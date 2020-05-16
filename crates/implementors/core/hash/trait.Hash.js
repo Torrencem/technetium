@@ -1,9 +1,3 @@
 (function() {var implementors = {};
 implementors["runtime"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html\" title=\"trait core::hash::Hash\">Hash</a> for <a class=\"struct\" href=\"runtime/struct.HashableObjectRef.html\" title=\"struct runtime::HashableObjectRef\">HashableObjectRef</a>","synthetic":false,"types":["runtime::HashableObjectRef"]},{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html\" title=\"trait core::hash::Hash\">Hash</a> for <a class=\"struct\" href=\"runtime/struct.BoolObject.html\" title=\"struct runtime::BoolObject\">BoolObject</a>","synthetic":false,"types":["runtime::BoolObject"]},{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html\" title=\"trait core::hash::Hash\">Hash</a> for <a class=\"struct\" href=\"runtime/struct.IntObject.html\" title=\"struct runtime::IntObject\">IntObject</a>","synthetic":false,"types":["runtime::IntObject"]},{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html\" title=\"trait core::hash::Hash\">Hash</a> for <a class=\"struct\" href=\"runtime/struct.CharObject.html\" title=\"struct runtime::CharObject\">CharObject</a>","synthetic":false,"types":["runtime::CharObject"]},{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html\" title=\"trait core::hash::Hash\">Hash</a> for <a class=\"struct\" href=\"runtime/struct.StringObject.html\" title=\"struct runtime::StringObject\">StringObject</a>","synthetic":false,"types":["runtime::StringObject"]}];
-
-            if (window.register_implementors) {
-                window.register_implementors(implementors);
-            } else {
-                window.pending_implementors = implementors;
-            }
-        })()
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

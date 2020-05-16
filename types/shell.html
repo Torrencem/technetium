@@ -1,26 +1,17 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Shell Objects &#8212; technetium 0.1.0 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '0.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Math Functions" href="../standard/math.html" />
@@ -28,30 +19,32 @@
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
+  
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="shell-objects">
 <span id="shell"></span><h1>Shell Objects<a class="headerlink" href="#shell-objects" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
-<p class="topic-title first">Contents</p>
+<p class="topic-title">Contents</p>
 <ul class="simple">
-<li><a class="reference internal" href="#id1" id="id2">Shell Objects</a></li>
-<li><a class="reference internal" href="#shell-object-methods" id="id3">Shell Object Methods</a></li>
+<li><p><a class="reference internal" href="#id1" id="id2">Shell Objects</a></p></li>
+<li><p><a class="reference internal" href="#shell-object-methods" id="id3">Shell Object Methods</a></p></li>
 </ul>
 </div>
 <div class="section" id="id1">
 <h2><a class="toc-backref" href="#id2">Shell Objects</a><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
-<p>Shell objects are ready, spawned, or finished processes which are created using the <code class="docutils literal"><span class="pre">sh</span></code> function. Unlike using the shell operator $, shell objects are able to be spawned in the background, and you can read their output. For example:</p>
-<div class="highlight-technetium"><div class="highlight"><pre><span></span><span class="c"># Output files in the current directory to the screen:</span>
+<p>Shell objects are ready, spawned, or finished processes which are created using the <code class="docutils literal notranslate"><span class="pre">sh</span></code> function. Unlike using the shell operator $, shell objects are able to be spawned in the background, and you can read their output. For example:</p>
+<div class="highlight-technetium notranslate"><div class="highlight"><pre><span></span><span class="c"># Output files in the current directory to the screen:</span>
 <span class="o">$</span><span class="sa"> ls</span>
 
 <span class="c"># If I want to iterate through these files, I should use &#39;sh&#39;:</span>
@@ -63,9 +56,9 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>As you can see, shell objects have methods such as <code class="docutils literal"><span class="pre">join()</span></code> and <code class="docutils literal"><span class="pre">stdout()</span></code>, where the shell operator is forced to run synchronously in the foreground.</p>
-<p>It’s important to note that the shell operator also automatically formats any code inside <code class="docutils literal"><span class="pre">{}</span></code> into the command. To replicate this, use a formatted string with <code class="docutils literal"><span class="pre">~&quot;&quot;</span></code>:</p>
-<div class="highlight-technetium"><div class="highlight"><pre><span></span><span class="n">my_name</span> <span class="o">=</span> <span class="s">&quot;matt&quot;</span>
+<p>As you can see, shell objects have methods such as <code class="docutils literal notranslate"><span class="pre">join()</span></code> and <code class="docutils literal notranslate"><span class="pre">stdout()</span></code>, where the shell operator is forced to run synchronously in the foreground.</p>
+<p>It’s important to note that the shell operator also automatically formats any code inside <code class="docutils literal notranslate"><span class="pre">{}</span></code> into the command. To replicate this, use a formatted string with <code class="docutils literal notranslate"><span class="pre">~&quot;&quot;</span></code>:</p>
+<div class="highlight-technetium notranslate"><div class="highlight"><pre><span></span><span class="n">my_name</span> <span class="o">=</span> <span class="s">&quot;matt&quot;</span>
 
 <span class="n">sh</span><span class="p">(</span><span class="o">~</span><span class="s">&quot;echo {my_name}&quot;</span><span class="p">)</span>
 
@@ -76,39 +69,39 @@
 </div>
 <div class="section" id="shell-object-methods">
 <h2><a class="toc-backref" href="#id3">Shell Object Methods</a><a class="headerlink" href="#shell-object-methods" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[sh].spawn()  [void]</code></dt>
+<code class="sig-name descname">[sh].spawn()  [void]</code></dt>
 <dd><p>Spawn the shell object as a subprocess in the background.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[sh].join()  [void]</code></dt>
-<dd><p>Wait for the completion of the shell object as a subprocess. Calls <code class="docutils literal"><span class="pre">spawn</span></code> if the subprocess has not been created yet.</p>
+<code class="sig-name descname">[sh].join()  [void]</code></dt>
+<dd><p>Wait for the completion of the shell object as a subprocess. Calls <code class="docutils literal notranslate"><span class="pre">spawn</span></code> if the subprocess has not been created yet.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[sh].stdout()  [string]</code></dt>
+<code class="sig-name descname">[sh].stdout()  [string]</code></dt>
 <dd><p>Returns the output of the subprocess’s standard output as a string.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[sh].stderr()  [string]</code></dt>
+<code class="sig-name descname">[sh].stderr()  [string]</code></dt>
 <dd><p>Returns the output of the subprocess’s standard error as a string.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[sh].exit_code()  [int]</code></dt>
-<dd><p>Returns the exit code of a finished process. Throws an error if the process has not finished; use <code class="docutils literal"><span class="pre">.join()</span></code> to make sure the process is finished first.</p>
+<code class="sig-name descname">[sh].exit_code()  [int]</code></dt>
+<dd><p>Returns the exit code of a finished process. Throws an error if the process has not finished; use <code class="docutils literal notranslate"><span class="pre">.join()</span></code> to make sure the process is finished first.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[sh].kill()  [void]</code></dt>
+<code class="sig-name descname">[sh].kill()  [void]</code></dt>
 <dd><p>Sends a kill signal to a running proccess.</p>
 </dd></dl>
 
@@ -117,18 +110,36 @@
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="../index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Shell Objects</a><ul>
-<li><a class="reference internal" href="#id1">Shell Objects</a></li>
-<li><a class="reference internal" href="#shell-object-methods">Shell Object Methods</a></li>
+<h1 class="logo"><a href="../index.html">technetium</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction to Technetium</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">Core Types</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Shell Objects</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">Shell Objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#shell-object-methods">Shell Object Methods</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../standard/math.html">Math Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../standard/utilities.html">Utility Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../standard/special_funcs.html">Special Functions</a></li>
 </ul>
+
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
@@ -138,23 +149,24 @@
   </ul></li>
 </ul>
 </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/types/shell.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -163,8 +175,8 @@
       &copy;2020, Matt Torrence.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="../_sources/types/shell.rst.txt"

@@ -1,11 +1,16 @@
 
 rm -rf ./docs/
 
+git worktree prune
+
 cd docsource
 make html
 
 cd ..
-cp -r docsource/_build/html ./docs/
+
+git worktree add docs gh-pages
+
+cp -r docsource/_build/html/* ./docs/
 
 touch ./docs/.nojekyll
 

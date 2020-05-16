@@ -5,6 +5,12 @@ cd docsource
 make html
 
 cd ..
-mv docsource/_build/html ./docs/
+cp -r docsource/_build/html ./docs/
 
 touch ./docs/.nojekyll
+
+cargo doc --no-deps --workspace
+
+mkdir ./docs/crates
+
+cp -r ./target/doc/* ./docs/crates

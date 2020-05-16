@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["init","Initialize the logging of the application to a given log::Level"]],"struct":[["Logger","A very simple logger for the `log` crate"]]});

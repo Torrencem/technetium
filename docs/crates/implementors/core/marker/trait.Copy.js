@@ -1,0 +1,10 @@
+(function() {var implementors = {};
+implementors["mlrefcell"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html\" title=\"trait core::marker::Copy\">Copy</a> for <a class=\"enum\" href=\"mlrefcell/enum.BorrowMutError.html\" title=\"enum mlrefcell::BorrowMutError\">BorrowMutError</a>","synthetic":false,"types":["mlrefcell::BorrowMutError"]},{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html\" title=\"trait core::marker::Copy\">Copy</a> for <a class=\"struct\" href=\"mlrefcell/struct.AlreadyLockedError.html\" title=\"struct mlrefcell::AlreadyLockedError\">AlreadyLockedError</a>","synthetic":false,"types":["mlrefcell::AlreadyLockedError"]}];
+implementors["runtime"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html\" title=\"trait core::marker::Copy\">Copy</a> for <a class=\"struct\" href=\"runtime/bytecode/struct.DebugSymbol.html\" title=\"struct runtime::bytecode::DebugSymbol\">DebugSymbol</a>","synthetic":false,"types":["runtime::bytecode::DebugSymbol"]},{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html\" title=\"trait core::marker::Copy\">Copy</a> for <a class=\"enum\" href=\"runtime/bytecode/enum.Op.html\" title=\"enum runtime::bytecode::Op\">Op</a>","synthetic":false,"types":["runtime::bytecode::Op"]},{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html\" title=\"trait core::marker::Copy\">Copy</a> for <a class=\"enum\" href=\"runtime/error/enum.RuntimeErrorType.html\" title=\"enum runtime::error::RuntimeErrorType\">RuntimeErrorType</a>","synthetic":false,"types":["runtime::error::RuntimeErrorType"]}];
+
+            if (window.register_implementors) {
+                window.register_implementors(implementors);
+            } else {
+                window.pending_implementors = implementors;
+            }
+        })()

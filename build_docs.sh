@@ -16,6 +16,4 @@ touch ./docs/.nojekyll
 
 cargo doc --no-deps --workspace
 
-mkdir ./docs/crates
-
 cp -r ./target/doc/* ./docs/crates

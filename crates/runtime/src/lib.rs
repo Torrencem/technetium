@@ -38,6 +38,8 @@ use std::fmt;
 
 pub static PARSED_CLARGS: OnceCell<Vec<String>> = OnceCell::new();
 
+/// The main object reference type, which can be passed around to represent
+/// an object of any valid Object type
 #[repr(transparent)]
 #[derive(Debug)]
 pub struct ObjectRef {

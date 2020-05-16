@@ -9,7 +9,7 @@ Installation
     :local:
     :depth: 2
 
-Technetium is distributed as a single binary, ``tech``. Pre-built binaries aren't yet available, but will be at the first release.
+Technetium is distributed as a single binary, ``tech``. Pre-built binaries for MacOS and Linux are available untagged on each commit on `the github actions page <https://github.com/Torrencem/technetium/actions>`_ as artifacts, or versioned on `the release page <https://github.com/Torrencem/technetium/releases>`_.
 
 Building
 --------

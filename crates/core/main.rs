@@ -23,6 +23,7 @@ use codespan_reporting::term::termcolor::{ColorChoice, StandardStream};
 
 use log::Level;
 
+/// The main application entry point
 fn main() {
     let matches = App::new("technetium")
         .version(env!("CARGO_PKG_VERSION"))

@@ -1,9 +1,22 @@
+//! Abstract Syntax Tree types representing parsed Technetium programs
+
 use codespan::Span;
 
 use crate::script;
 use lexer::error::*;
 use lexer::Lexer;
 
+/// Common functionality for AST expression nodes
+pub trait AstExpr {
+    /// Increase the indices of the Spans in this AST node by a
+    /// given offset. This is useful when this AST node is part
+    /// of a format string, and the indices need to be offset to
+    /// be accurate for the entire file.
+    fn offset_spans(&mut self, offset: usize);
+}
+
+/// Any kind of literal written in code. Each variant represents
+/// a different kind of literal
 #[derive(Clone, Debug)]
 pub enum Literal {
     Integer(i64, Span),
@@ -36,8 +49,10 @@ impl Literal {
             Literal::FormatString(s) => &mut s.span,
         }
     }
+}
 
-    pub fn offset_spans(&mut self, offset: usize) {
+impl AstExpr for Literal {
+    fn offset_spans(&mut self, offset: usize) {
         if let Literal::FormatString(fs) = self {
             fs.offset_spans(offset);
         } else {
@@ -51,6 +66,8 @@ impl Literal {
     }
 }
 
+/// A list of expressions surrounded by square brackets
+/// in code: ``[1, 2, "hello"]``
 #[derive(Clone, Debug)]
 pub struct ListLiteral {
     pub span: Span,
@@ -64,8 +81,10 @@ impl ListLiteral {
             values,
         }
     }
+}
 
-    pub fn offset_spans(&mut self, offset: usize) {
+impl AstExpr for ListLiteral {
+    fn offset_spans(&mut self, offset: usize) {
         let l = self.span.start();
         let r = self.span.end();
         self.span = Span::new(
@@ -78,6 +97,8 @@ impl ListLiteral {
     }
 }
 
+/// A list of expressions surrounded by parenthesis
+/// in code: ``(1, 2, "hello")``
 #[derive(Clone, Debug)]
 pub struct TupleLiteral {
     pub span: Span,
@@ -91,8 +112,10 @@ impl TupleLiteral {
             values,
         }
     }
+}
 
-    pub fn offset_spans(&mut self, offset: usize) {
+impl AstExpr for TupleLiteral {
+    fn offset_spans(&mut self, offset: usize) {
         let l = self.span.start();
         let r = self.span.end();
         self.span = Span::new(
@@ -105,6 +128,8 @@ impl TupleLiteral {
     }
 }
 
+/// A list of expressions surrounded by brackets
+/// in code: ``{1, 2, "hello"}``
 #[derive(Clone, Debug)]
 pub struct SetLiteral {
     pub span: Span,
@@ -118,8 +143,10 @@ impl SetLiteral {
             values,
         }
     }
+}
 
-    pub fn offset_spans(&mut self, offset: usize) {
+impl AstExpr for SetLiteral {
+    fn offset_spans(&mut self, offset: usize) {
         let l = self.span.start();
         let r = self.span.end();
         self.span = Span::new(
@@ -132,6 +159,7 @@ impl SetLiteral {
     }
 }
 
+/// A literal dictionary given in code: ``{"a": true, "b": 123}``
 #[derive(Clone, Debug)]
 pub struct DictLiteral {
     pub span: Span,
@@ -145,8 +173,10 @@ impl DictLiteral {
             values,
         }
     }
+}
 
-    pub fn offset_spans(&mut self, offset: usize) {
+impl AstExpr for DictLiteral {
+    fn offset_spans(&mut self, offset: usize) {
         let l = self.span.start();
         let r = self.span.end();
         self.span = Span::new(
@@ -160,6 +190,8 @@ impl DictLiteral {
     }
 }
 
+/// A function call, not attached to a particular parent
+/// (i.e., not a method call): ``print("123")``
 #[derive(Clone, Debug)]
 pub struct FuncCall {
     pub span: Span,
@@ -175,8 +207,10 @@ impl FuncCall {
             arguments,
         }
     }
+}
 
-    pub fn offset_spans(&mut self, offset: usize) {
+impl AstExpr for FuncCall {
+    fn offset_spans(&mut self, offset: usize) {
         let l = self.span.start();
         let r = self.span.end();
         self.span = Span::new(
@@ -190,6 +224,8 @@ impl FuncCall {
     }
 }
 
+/// An attribute expression without a function call
+/// (i.e., not a method call): ``person.name``
 #[derive(Clone, Debug)]
 pub struct AttrLookup {
     pub span: Span,
@@ -205,8 +241,10 @@ impl AttrLookup {
             attribute,
         }
     }
+}
 
-    pub fn offset_spans(&mut self, offset: usize) {
+impl AstExpr for AttrLookup {
+    fn offset_spans(&mut self, offset: usize) {
         let l = self.span.start();
         let r = self.span.end();
         self.span = Span::new(
@@ -218,6 +256,7 @@ impl AttrLookup {
     }
 }
 
+/// A method call on an expression: ``[1, 2].length()``
 #[derive(Clone, Debug)]
 pub struct MethodCall {
     pub span: Span,
@@ -235,8 +274,10 @@ impl MethodCall {
             arguments,
         }
     }
+}
 
-    pub fn offset_spans(&mut self, offset: usize) {
+impl AstExpr for MethodCall {
+    fn offset_spans(&mut self, offset: usize) {
         let l = self.span.start();
         let r = self.span.end();
         self.span = Span::new(
@@ -251,6 +292,8 @@ impl MethodCall {
     }
 }
 
+/// An expression indexed with square brackets:
+/// ``my_list[i + 2]``
 #[derive(Clone, Debug)]
 pub struct IndexedExpr {
     pub span: Span,
@@ -266,8 +309,10 @@ impl IndexedExpr {
             index: Box::new(index),
         }
     }
+}
 
-    pub fn offset_spans(&mut self, offset: usize) {
+impl AstExpr for IndexedExpr {
+    fn offset_spans(&mut self, offset: usize) {
         let l = self.span.start();
         let r = self.span.end();
         self.span = Span::new(
@@ -279,6 +324,8 @@ impl IndexedExpr {
     }
 }
 
+/// An expression with a slice attached to it:
+/// ``hello[1:3]`` or ``hello[10::-1]``
 #[derive(Clone, Debug)]
 pub struct SlicedExpr {
     pub span: Span,
@@ -305,8 +352,10 @@ impl SlicedExpr {
             step: step.map(|val| Box::new(val)),
         }
     }
+}
 
-    pub fn offset_spans(&mut self, offset: usize) {
+impl AstExpr for SlicedExpr {
+    fn offset_spans(&mut self, offset: usize) {
         let l = self.span.start();
         let r = self.span.end();
         self.span = Span::new(
@@ -340,7 +389,7 @@ pub enum Expr {
     IndexedExpr(IndexedExpr),
     SlicedExpr(SlicedExpr),
     PostPreOp(PostPreOp),
-    /// An unreachable expression state, used to finish attempting to parse an AST (similar to
+    /// An unreachable expression state, used to finish attempting to parse an AST (read
     /// http://lalrpop.github.io/lalrpop/tutorial/008_error_recovery.html)
     Error,
 }
@@ -363,8 +412,10 @@ impl Expr {
             Expr::Error => unreachable!(),
         }
     }
+}
 
-    pub fn offset_spans(&mut self, offset: usize) {
+impl AstExpr for Expr {
+    fn offset_spans(&mut self, offset: usize) {
         match self {
             Expr::Variable(i) => i.offset_spans(offset),
             Expr::Literal(l) => l.offset_spans(offset),
@@ -391,6 +442,8 @@ pub enum PPOVariant {
     PreDecrement,
 }
 
+/// Some kind of post/pre-increment/decrement attached
+/// to a expr: ``x++`` or ``--a[0]``
 #[derive(Clone, Debug)]
 pub struct PostPreOp {
     pub span: Span,
@@ -430,8 +483,10 @@ impl PostPreOp {
             val,
         }
     }
+}
 
-    pub fn offset_spans(&mut self, offset: usize) {
+impl AstExpr for PostPreOp {
+    fn offset_spans(&mut self, offset: usize) {
         let l = self.span.start();
         let r = self.span.end();
         self.span = Span::new(
@@ -485,6 +540,7 @@ pub struct IfStatement {
     pub tail: Option<IfTail>,
 }
 
+/// A possible additional clause on an if statement
 #[derive(Clone, Debug)]
 pub enum IfTail {
     ElseIf(Box<IfStatement>),
@@ -565,12 +621,14 @@ impl ReturnStatement {
     }
 }
 
+/// A line beginning in ``$`` to make a shell statement
 #[derive(Clone, Debug)]
 pub struct ShStatement {
     pub span: Span,
     pub inner: FormatString,
 }
 
+/// A string preceded by ``~``, used to substitute variables into a string
 #[derive(Clone, Debug)]
 pub struct FormatString {
     pub span: Span,
@@ -607,8 +665,10 @@ impl FormatString {
             substitutions: subs,
         })
     }
+}
 
-    pub fn offset_spans(&mut self, offset: usize) {
+impl AstExpr for FormatString {
+    fn offset_spans(&mut self, offset: usize) {
         let l = self.span.start();
         let r = self.span.end();
         self.span = Span::new(
@@ -621,6 +681,8 @@ impl FormatString {
     }
 }
 
+/// A type of expression that can be on the left of an assignment:
+/// either a variable, an identifier, or an indexed expr
 #[derive(Debug, Clone)]
 pub enum AssignmentLHS {
     Identifier(Identifier),
@@ -711,6 +773,7 @@ impl StatementList {
     }
 }
 
+/// A name given as part of an expression: ``print``
 #[derive(Clone, Debug)]
 pub struct Identifier {
     pub span: Span,
@@ -724,8 +787,10 @@ impl Identifier {
             name,
         }
     }
+}
 
-    pub fn offset_spans(&mut self, offset: usize) {
+impl AstExpr for Identifier {
+    fn offset_spans(&mut self, offset: usize) {
         let l = self.span.start();
         let r = self.span.end();
         self.span = Span::new(

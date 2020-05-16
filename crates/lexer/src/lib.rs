@@ -8,6 +8,7 @@ use error::*;
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
 
+/// A valid token for a technetium program
 #[derive(Clone, Debug)]
 pub enum Tok {
     Newline,
@@ -64,6 +65,8 @@ pub enum Tok {
     Return,
 }
 
+/// A list of keywords, which should be treated as seperate tokens
+/// than identifiers
 pub fn get_keywords() -> HashMap<String, Tok> {
     let mut res = HashMap::new();
 
@@ -89,6 +92,8 @@ enum ParsedNum {
     Float(f64),
 }
 
+/// The main lexer responsible for turning a program source into
+/// a stream of ``Tok``'s
 pub struct Lexer<'input> {
     chars: std::iter::Peekable<CharIndices<'input>>,
     #[allow(unused)]

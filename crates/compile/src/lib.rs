@@ -30,6 +30,7 @@ fn is_exact_float(val: f64) -> bool {
     ((val as f32) as f64) == val
 }
 
+/// A context attached to a specific function (or script)
 pub struct CompileContext {
     file_id: FileId,
     context_id: ContextId,
@@ -50,13 +51,17 @@ impl CompileContext {
             debug_symbol_descriptors: HashMap::new(),
         }
     }
-
+    
+    /// Generate a new, unused GlobalConstantDescriptor for
+    /// this context
     pub fn gcd_gen(&mut self) -> GlobalConstantDescriptor {
         let old = self.gcd_last;
         self.gcd_last += 1;
         (self.context_id, old)
     }
 
+    /// Generate a new, unused DebugSpanDescriptor for
+    /// this context
     pub fn dsd_gen(&mut self) -> DebugSpanDescriptor {
         let old = self.dcd_last;
         self.dcd_last += 1;
@@ -64,6 +69,9 @@ impl CompileContext {
     }
 }
 
+/// An index of functions which are generated from the parser
+/// in place of common operations, and should be compiled to
+/// a special Op in bytecode.
 fn builtin_functions() -> HashMap<String, Op> {
     let mut res = HashMap::new();
     res.insert("<add>".to_string(), Op::add);
@@ -85,19 +93,27 @@ fn builtin_functions() -> HashMap<String, Op> {
     res
 }
 
+/// The manager in charge of converting any AST into valid bytecode.
 pub struct CompileManager {
+    /// A stack of contexts (corresponding to the stack of frame definitions)
     pub context_stack: Vec<CompileContext>,
     local_index_last: LocalName,
+    /// The index of variables in a given context and their corresponding LocalName's
     pub local_index: HashMap<(ContextId, String), LocalName>,
     context_id_last: ContextId,
     default_namespace_descriptors: HashMap<String, GlobalConstantDescriptor>,
     pub memory_manager: MemoryManager,
 }
 
+/// The result of a variable lookup in a CompileManager
 pub enum NameLookupResult {
+    /// The variable looked up is a local variable in the current context
     MyLocal(LocalName),
+    /// The variable looked up is a local variable in another parent context
     ExternLocal(NonLocalUnmappedName),
+    /// The variable looked up is a special global variable
     Global(GlobalConstantDescriptor),
+    /// The variable does not exist
     NotFound,
 }
 
@@ -115,13 +131,16 @@ impl CompileManager {
             memory_manager: mem_manager,
         }
     }
-
+    
+    /// Create a new unused ContextId
     pub fn context_id_gen(&mut self) -> ContextId {
         let old = self.context_id_last;
         self.context_id_last += 1;
         old
     }
-
+    
+    /// Create a DebugSpanDescriptor, and attach a Span in the current context's
+    /// debug_symbol_descriptors
     pub fn create_debug_descriptor(&mut self, span: Span) -> DebugSpanDescriptor {
         let debug_descr = self.context().dsd_gen();
         let file_id = self.context().file_id;
@@ -136,7 +155,8 @@ impl CompileManager {
         self.context().constant_descriptors.insert(const_descr, obj);
         const_descr
     }
-
+    
+    /// Get the current context at the top of the stack
     pub fn context(&mut self) -> &mut CompileContext {
         self.context_stack.last_mut().unwrap()
     }

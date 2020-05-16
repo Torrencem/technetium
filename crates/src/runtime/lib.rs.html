@@ -1286,6 +1286,8 @@
 <span id="1286">1286</span>
 <span id="1287">1287</span>
 <span id="1288">1288</span>
+<span id="1289">1289</span>
+<span id="1290">1290</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">builtins</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">bytecode</span>;
@@ -1327,6 +1329,8 @@
 
 <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">PARSED_CLARGS</span>: <span class="ident">OnceCell</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">OnceCell</span>::<span class="ident">new</span>();
 
+<span class="doccomment">/// The main object reference type, which can be passed around to represent</span>
+<span class="doccomment">/// an object of any valid Object type</span>
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">transparent</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ObjectRef</span> {

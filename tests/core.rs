@@ -428,7 +428,7 @@ print(my_set)
     cmd.assert()
         .failure()
         .stderr(predicate::str::contains("not hashable"))
-        .stderr(predicate::str::contains("builtin func"))
+        .stderr(predicate::str::contains("builtin-func"))
         .stderr(predicate::str::contains("my_set"));
 
     let mut cmd = Command::cargo_bin("tech")?;

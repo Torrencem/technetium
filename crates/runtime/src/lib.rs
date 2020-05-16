@@ -145,6 +145,10 @@ impl Clone for ObjectRef {
     }
 }
 
+/// The universal container object for implementers of the Object trait.
+/// Anything that implements Object should be of the form ObjectCell<T>.
+/// ObjectCell combines interior mutability and shared ownership, so it
+/// is the primary container used for objects in technetium
 #[repr(transparent)]
 #[derive(Debug)]
 pub struct ObjectCell<T>
@@ -174,7 +178,7 @@ where
             inner: Rc::new(MLRefCell::new(val)),
         }
     }
-    /// Lock the `MLRefCell` inside the cell, effectively making the value immutable, giving a
+    /// Lock the ``MLRefCell`` inside the cell, effectively making the value immutable, giving a
     /// runtime error for any future mutation of the object. This is useful if the value will need
     /// to be used as the key in a HashMap, or in a HashSet
     pub fn lock(&self) {
@@ -263,74 +267,117 @@ where
     }
 }
 
+/// The primary trait for objects in technetium.
+///
+/// Types that implement ``Object``
+/// should be of the form ``ObjectCell<T>`` for some T. This will give all of the
+/// requirement subtraits for free.
 pub trait Object: Any + ToAny + OpaqueClone + RawPointer + LockImmutable {
+    /// Create a deep clone of an object. This is primarily used in the ``clone``
+    /// function in technetium
     fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::type_error(format!(
             "{} can not be cloned",
             self.technetium_type_name()
         )))
     }
-
+    
+    /// Hash an object. This is not required, so the default implementation always
+    /// returns ``None``. 
+    ///
+    /// In implementing a hash, it's important that ``x == y``
+    /// implies that ``x.technetium_hash() == y.technetium_hash()`` to avoid logic
+    /// errors.
+    ///
+    /// Note that ObjectRef does not implement ``Hash`` in Rust, but HashableObjectRef
+    /// does. See the docs for [HashableObjectRef](struct.HashableObjectRef.html) for
+    /// more information
     fn technetium_hash(&self) -> Option<u64> {
         None
     }
-
+    
+    /// A type name for an object.
+    ///
+    /// Conventions are that type names are all lowercase, and use parentheses to denote
+    /// "sub-types" (for example: "iterator(list)")
+    ///
+    /// This function should not fail, so should return a set value.
     fn technetium_type_name(&self) -> String;
-
+    
+    /// Convert an object to a String.
     fn to_string(&self) -> RuntimeResult<String> {
         Ok(format!("<{}>", self.technetium_type_name()))
     }
-
+    
+    /// Get an attribute of an object
     fn get_attr(&self, _attr: String) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::attribute_error(format!(
             "{} has no attributes",
             self.technetium_type_name()
         )))
     }
-
+    
+    /// Set an attribute of an object
     fn set_attr(&self, _attr: String, _val: ObjectRef) -> RuntimeResult<()> {
         Err(RuntimeError::attribute_error(format!(
             "Cannot set attributes of {}",
             self.technetium_type_name()
         )))
     }
-
+    
+    /// Call a given method of an object
     fn call_method(&self, _method: &str, _args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::attribute_error(format!(
             "Cannot call method of {}",
             self.technetium_type_name()
         )))
     }
-
+    
+    /// Call a given object as a function.
+    ///
+    /// This takes a memory manager
+    /// primarily for the [Function](struct.Function.html) object,
+    /// which needs to be able to reference and change locals.
     fn call(&self, _args: &[ObjectRef], _locals: &mut MemoryManager) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::type_error(format!(
             "Object of type {} is not callable",
             self.technetium_type_name()
         )))
     }
-
+    
+    /// Create an iterator over an object. This is used for initializing
+    /// ``for`` loops.
     fn make_iter(&self) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::type_error(format!(
             "Object of type {} cannot be made into an iterator",
             self.technetium_type_name()
         )))
     }
-
+    
+    /// Take from this object, assuming it is an iterator. This is used for
+    /// stepping through ``for`` loops.
     fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
         Err(RuntimeError::type_error(format!(
             "Object of type {} cannot be iterated",
             self.technetium_type_name()
         )))
     }
-
+    
+    /// Determine whether an object is "truthy" (whether it should be treated
+    /// as true when used as a boolean)
     fn truthy(&self) -> bool {
         true
     }
-
+    
+    /// Equal-as-value (like == in Python, or .equals() in Java)
     fn technetium_eq(&self, _other: ObjectRef) -> Option<bool> {
         None
     }
-
+    
+    /// Equal-as-reference (like ``is`` in Python, or == in Java)
+    ///
+    /// This is treated as a fallback in the ``Eq`` implementation
+    /// for ``ObjectRef``, primarily for sets and dictionaries
     fn ref_eq(&self, other: ObjectRef) -> bool {
         self.raw_pointer() == other.raw_pointer()
     }
@@ -661,6 +708,7 @@ impl Object for ObjectCell<StringObject> {
     }
 }
 
+/// A user defined function
 pub struct Function {
     pub nargs: usize,
     pub name: String,

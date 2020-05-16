@@ -1,6 +1,8 @@
 
 This is a rough todo list of features I need to add to the language:
 
+* split up runtime into several smaller modules, and add a prelude module for all the parts that use runtime::\*.
+* check out GitHub Projects for organization of todo's
 * lambdas
 * generators
 * comprehensions

@@ -1,1 +1,0 @@
-initSidebarItems({"enum":[["BorrowMutError","Returned from `borrow_mut`"]],"struct":[["AlreadyLockedError","Returned when attempting to lock an already locked MLRefCell"],["MLRefCell","A RefCell which can be \"locked\" to prevent future mutable borrows"]],"type":[["BorrowError",""]]});

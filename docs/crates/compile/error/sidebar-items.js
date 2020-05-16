@@ -1,1 +1,0 @@
-initSidebarItems({"enum":[["CompileErrorType",""]],"struct":[["CompileError","An error that has occured when translating code from the AST to bytecode"]]});

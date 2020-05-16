@@ -1,1 +1,0 @@
-initSidebarItems({"enum":[["RuntimeErrorType",""]],"struct":[["RuntimeError","An error from a computation on the technetium runtime"]],"type":[["RuntimeResult","The result of a computation on the technetium runtime"]]});

@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["Chars",""],["CharsIterator",""],["Lines",""],["LinesIterator",""]]});

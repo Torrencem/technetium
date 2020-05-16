@@ -44,6 +44,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: tech_amd64
+          path: target/release/tech_amd64
+
   build-mac:
     runs-on: macos-latest
 
@@ -70,3 +76,9 @@ jobs:
             target/release/tech_darwin
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: tech_darwin
+          path: target/release/tech_darwin

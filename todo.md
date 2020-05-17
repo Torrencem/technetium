@@ -1,6 +1,7 @@
 
 This is a rough todo list of features I need to add to the language:
 
+* add some functions relating to https://github.com/xdg-rs/dirs
 * lambdas
 * generators
 * comprehensions

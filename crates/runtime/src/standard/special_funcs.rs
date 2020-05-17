@@ -1,5 +1,5 @@
 use crate::error::*;
-use crate::*;
+use crate::prelude::*;
 
 use crate::{func_object, func_object_void};
 

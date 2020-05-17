@@ -5,7 +5,7 @@ pub mod special_funcs;
 pub mod string;
 
 use crate::bytecode::{ContextId, GlobalConstantDescriptor};
-use crate::*;
+use crate::prelude::*;
 use std::collections::HashMap;
 
 pub static STANDARD_CONTEXT_ID: ContextId = 0;

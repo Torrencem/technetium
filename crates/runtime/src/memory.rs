@@ -1,6 +1,6 @@
 use crate::bytecode::*;
 use crate::error::*;
-use crate::*;
+use crate::prelude::*;
 use std::collections::HashSet;
 
 pub trait BackingIndex {

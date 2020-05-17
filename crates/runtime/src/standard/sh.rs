@@ -1,6 +1,6 @@
 use crate::error::*;
 use crate::PARSED_CLARGS;
-use crate::*;
+use crate::prelude::*;
 
 use std::env;
 use std::io::Write;

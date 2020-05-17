@@ -1,5 +1,5 @@
 use crate::error::*;
-use crate::*;
+use crate::prelude::*;
 
 use std::f64;
 

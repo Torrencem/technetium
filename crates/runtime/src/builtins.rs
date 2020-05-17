@@ -1,5 +1,5 @@
 use crate::error::*;
-use crate::*;
+use crate::prelude::*;
 use num::bigint::BigInt;
 use num::traits::identities::One;
 use num::traits::identities::Zero;

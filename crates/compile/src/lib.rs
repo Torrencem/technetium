@@ -12,7 +12,7 @@ use runtime::bytecode::*;
 use runtime::memory::*;
 use runtime::standard::get_default_namespace_descriptors;
 use runtime::standard::STANDARD_CONTEXT_ID;
-use runtime::*;
+use runtime::prelude::*;
 
 use codespan::FileId;
 use codespan::Span;

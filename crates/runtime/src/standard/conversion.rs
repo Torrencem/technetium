@@ -1,5 +1,5 @@
 use crate::error::*;
-use crate::*;
+use crate::prelude::*;
 use std::any::TypeId;
 use std::char;
 use std::u32;

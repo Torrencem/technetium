@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::error::*;
-use crate::*;
+use crate::prelude::*;
 
 use std::clone::Clone as RustClone;
 use std::io::Write;

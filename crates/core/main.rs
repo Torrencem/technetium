@@ -104,6 +104,9 @@ fn main() {
         Cow::from(&input),
     );
 
+    let err_writer = StandardStream::stderr(ColorChoice::Always);
+    let err_config = codespan_reporting::term::Config::default();
+
     let lexer = Lexer::new(input.as_ref());
 
     trace!("Beginning parsing stage");
@@ -113,11 +116,9 @@ fn main() {
     let ast = script::ProgramParser::new()
         .parse(&mut recoveries, lexer)
         .unwrap_or_else(|e| {
-            let writer = StandardStream::stderr(ColorChoice::Always);
-            let config = codespan_reporting::term::Config::default();
             let diagnostic = parse_error_to_diagnostic(&e, file_id);
 
-            term::emit(&mut writer.lock(), &config, &files, &diagnostic)
+            term::emit(&mut err_writer.lock(), &err_config, &files, &diagnostic)
                 .expect("Error writing error message");
 
             eprintln!("The above error could not be recovered from, and parsing stopped.");
@@ -126,13 +127,10 @@ fn main() {
         });
 
     if recoveries.len() != 0 {
-        let writer = StandardStream::stderr(ColorChoice::Always);
-        let config = codespan_reporting::term::Config::default();
-
         for recovery in recoveries.iter() {
             let diagnostic = parse_error_to_diagnostic(&recovery.error, file_id);
 
-            term::emit(&mut writer.lock(), &config, &files, &diagnostic)
+            term::emit(&mut err_writer.lock(), &err_config, &files, &diagnostic)
                 .expect("Error writing error message");
         }
 
@@ -156,12 +154,9 @@ fn main() {
     let compile_context = manager.context_stack.pop().unwrap();
 
     let code = code.unwrap_or_else(|e| {
-        let writer = StandardStream::stderr(ColorChoice::Always);
-        let config = codespan_reporting::term::Config::default();
-
         let diagnostic = e.as_diagnostic(file_id);
 
-        term::emit(&mut writer.lock(), &config, &files, &diagnostic)
+        term::emit(&mut err_writer.lock(), &err_config, &files, &diagnostic)
             .expect("Error writing error message");
         exit(1)
     });
@@ -194,18 +189,16 @@ fn main() {
     let computation = frame.run();
 
     let computation = computation.unwrap_or_else(|e| {
-        let writer = StandardStream::stderr(ColorChoice::Always);
-        let primary_config = codespan_reporting::term::Config::default();
-
         let primary_diagnostic = e.as_diagnostic();
 
         term::emit(
-            &mut writer.lock(),
-            &primary_config,
+            &mut err_writer.lock(),
+            &err_config,
             &files,
             &primary_diagnostic,
         )
         .expect("Error writing error message");
+
         println!("Stack trace:");
         let secondary_diagnostics = e.stack_trace(&files);
         for secondary in secondary_diagnostics.iter() {

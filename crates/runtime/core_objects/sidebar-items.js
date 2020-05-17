@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["BoolObject",""],["CharObject",""],["Dictionary",""],["FloatObject",""],["Function","A user defined function"],["IntObject",""],["List",""],["ListIterator",""],["Set",""],["Slice",""],["SliceIterator",""],["StringObject",""],["Tuple",""],["VoidObject",""]]});

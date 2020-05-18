@@ -1,4 +1,4 @@
-//! Core objects such as integers, booleans and strings for technetium
+//! Core objects such as integers, booleans and strings
 
 use crate::*;
 use builtins::index_get;

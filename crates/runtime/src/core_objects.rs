@@ -1,3 +1,5 @@
+//! Core objects such as integers, booleans and strings for technetium
+
 use crate::*;
 use builtins::index_get;
 use bytecode::Op;

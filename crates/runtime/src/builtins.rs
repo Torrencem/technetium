@@ -1,3 +1,7 @@
+//! Builtin functions. These are usually specially generated in the parse stage,
+//! and compiled into special op codes. These operations are hard coded for the
+//! builtin types.
+
 use crate::error::*;
 use crate::prelude::*;
 use num::bigint::BigInt;

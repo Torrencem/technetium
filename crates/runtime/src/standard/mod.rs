@@ -1,3 +1,6 @@
+//! The standard library. This module contains definitions for function objects
+//! which are in scope throughout all technetium programs
+
 pub mod conversion;
 pub mod math;
 pub mod sh;

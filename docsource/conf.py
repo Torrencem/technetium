@@ -67,7 +67,7 @@ class TechnetiumLexer(RegexLexer):
         'root': [
             (r'false|true|if|else|elif|for|in|while|case|of|func|return|unit', Keyword),
             (r'\d+\.?\d*', Number),
-            (r'\=\>|\<\=|\>\=|\!\=|\=\=|\|\||\&\&|\+\=|\-\=|\*\=|\/\=|\%\=|\*|\/|\+|\-|\%|\:\|\>|\<|\=|\~|\[|\]|\:|\-\>|\\', Operator),
+            (r'\-\>|\=\>|\<\=|\>\=|\!\=|\=\=|\|\||\&\&|\+\=|\-\=|\*\=|\/\=|\%\=|\*|\/|\+|\-|\%|\:\|\>|\<|\=|\~|\[|\]|\:|\\', Operator),
             (r'\{|\}|\(|\)|\.|,', Punctuation),
             (r'\s+', Text),
             (r'#.*?$', Comment),

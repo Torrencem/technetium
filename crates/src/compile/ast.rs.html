@@ -833,6 +833,13 @@
 <span id="833">833</span>
 <span id="834">834</span>
 <span id="835">835</span>
+<span id="836">836</span>
+<span id="837">837</span>
+<span id="838">838</span>
+<span id="839">839</span>
+<span id="840">840</span>
+<span id="841">841</span>
+<span id="842">842</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Abstract Syntax Tree types representing parsed Technetium programs</span>
 
@@ -1034,15 +1041,15 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">FuncCall</span> {
     <span class="kw">pub</span> <span class="ident">span</span>: <span class="ident">Span</span>,
-    <span class="kw">pub</span> <span class="ident">fname</span>: <span class="ident">Identifier</span>,
+    <span class="kw">pub</span> <span class="ident">func</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Expr</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">arguments</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Expr</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">FuncCall</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">fname</span>: <span class="ident">Identifier</span>, <span class="ident">arguments</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Expr</span><span class="op">&gt;</span>, <span class="ident">l</span>: <span class="ident">usize</span>, <span class="ident">r</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">func</span>: <span class="ident">Expr</span>, <span class="ident">arguments</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Expr</span><span class="op">&gt;</span>, <span class="ident">l</span>: <span class="ident">usize</span>, <span class="ident">r</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">FuncCall</span> {
             <span class="ident">span</span>: <span class="ident">Span</span>::<span class="ident">new</span>(<span class="ident">l</span> <span class="kw">as</span> <span class="ident">u32</span>, <span class="ident">r</span> <span class="kw">as</span> <span class="ident">u32</span>),
-            <span class="ident">fname</span>,
+            <span class="ident">func</span>: <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">func</span>),
             <span class="ident">arguments</span>,
         }
     }
@@ -1056,7 +1063,7 @@
             <span class="ident">u32</span>::<span class="ident">from</span>(<span class="ident">l</span>) <span class="op">+</span> (<span class="ident">offset</span> <span class="kw">as</span> <span class="ident">u32</span>),
             <span class="ident">u32</span>::<span class="ident">from</span>(<span class="ident">r</span>) <span class="op">+</span> (<span class="ident">offset</span> <span class="kw">as</span> <span class="ident">u32</span>),
         );
-        <span class="self">self</span>.<span class="ident">fname</span>.<span class="ident">offset_spans</span>(<span class="ident">offset</span>);
+        <span class="self">self</span>.<span class="ident">func</span>.<span class="ident">offset_spans</span>(<span class="ident">offset</span>);
         <span class="kw">for</span> <span class="ident">arg</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">arguments</span>.<span class="ident">iter_mut</span>() {
             <span class="ident">arg</span>.<span class="ident">offset_spans</span>(<span class="ident">offset</span>);
         }
@@ -1656,6 +1663,13 @@
             <span class="ident">span</span>: <span class="ident">Span</span>::<span class="ident">new</span>(<span class="ident">l</span> <span class="kw">as</span> <span class="ident">u32</span>, <span class="ident">r</span> <span class="kw">as</span> <span class="ident">u32</span>),
             <span class="ident">name</span>,
         }
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_expr</span>(<span class="ident">name</span>: <span class="ident">String</span>, <span class="ident">l</span>: <span class="ident">usize</span>, <span class="ident">r</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Expr</span> {
+        <span class="ident">Expr</span>::<span class="ident">Variable</span>(<span class="ident">Identifier</span> {
+            <span class="ident">span</span>: <span class="ident">Span</span>::<span class="ident">new</span>(<span class="ident">l</span> <span class="kw">as</span> <span class="ident">u32</span>, <span class="ident">r</span> <span class="kw">as</span> <span class="ident">u32</span>),
+            <span class="ident">name</span>,
+        })
     }
 }
 

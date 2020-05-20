@@ -202,3 +202,12 @@ Anonymous functions are written as a backslash followed by either the name of a 
 
     f = make_adder(100)
     print(f(25))
+
+To create an anonymous function with no arguments, use an empty list of arguments::
+
+    counter = 1
+
+    f = \() -> counter++
+
+    print(f())  # 1
+    print(f())  # 2

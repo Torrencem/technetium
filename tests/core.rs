@@ -565,7 +565,22 @@ print(f(25))
     cmd.assert()
         .success()
         .stdout(predicate::eq("15\n15\n125\n125\n"));
+    
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+counter = 1
+
+g = \() -> counter++
+
+print(g())
+print(g())
+"#,
+    );
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("1\n2\n"));
 
     Ok(())
 }
-

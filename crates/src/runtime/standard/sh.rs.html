@@ -333,7 +333,7 @@
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">type_error</span>(<span class="string">&quot;Unknown method&quot;</span>)),
         }
 
-        <span class="prelude-val">Ok</span>(<span class="ident">VoidObject</span>::<span class="ident">new</span>())
+        <span class="prelude-val">Ok</span>(<span class="ident">UnitObject</span>::<span class="ident">new</span>())
     }
 }
 
@@ -355,7 +355,7 @@
         <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">str_obj</span>.<span class="ident">val</span>;
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">Path</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">val</span>);
         <span class="ident">env</span>::<span class="ident">set_current_dir</span>(<span class="ident">path</span>)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="ident">VoidObject</span>::<span class="ident">new</span>())
+        <span class="prelude-val">Ok</span>(<span class="ident">UnitObject</span>::<span class="ident">new</span>())
     } <span class="kw">else</span> {
         <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">type_error</span>(<span class="string">&quot;Expected string as argument to cd&quot;</span>))
     }

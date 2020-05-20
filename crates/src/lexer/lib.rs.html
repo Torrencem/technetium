@@ -621,6 +621,8 @@
 <span id="621">621</span>
 <span id="622">622</span>
 <span id="623">623</span>
+<span id="624">624</span>
+<span id="625">625</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">CharIndices</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">FromStr</span>;
@@ -669,6 +671,7 @@
     <span class="ident">DoublePlus</span>,
     <span class="ident">DoubleMinus</span>,
     <span class="ident">Identifier</span>(<span class="ident">String</span>),
+    <span class="ident">Unit</span>,
     <span class="ident">Int</span>(<span class="ident">i64</span>),
     <span class="ident">Float</span>(<span class="ident">f64</span>),
     <span class="ident">Bool</span>(<span class="ident">bool</span>),
@@ -707,6 +710,7 @@
     <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;of&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">Tok</span>::<span class="ident">Of</span>);
     <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;func&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">Tok</span>::<span class="ident">Func</span>);
     <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;return&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">Tok</span>::<span class="ident">Return</span>);
+    <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;unit&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">Tok</span>::<span class="ident">Unit</span>);
 
     <span class="ident">res</span>
 }

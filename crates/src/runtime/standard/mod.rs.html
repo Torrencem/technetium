@@ -280,7 +280,7 @@
                     <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">type_error</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Incorrect number of arguments: expected {:?}, got {}&quot;</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">args_range</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">args</span>.<span class="ident">len</span>())));
                 }
                 <span class="macro-nonterminal">$</span><span class="macro-nonterminal">call</span>
-                <span class="prelude-val">Ok</span>(<span class="ident">VoidObject</span>::<span class="ident">new</span>())
+                <span class="prelude-val">Ok</span>(<span class="ident">UnitObject</span>::<span class="ident">new</span>())
             }
         }
     };

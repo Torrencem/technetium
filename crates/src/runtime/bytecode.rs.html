@@ -1215,7 +1215,7 @@
     <span class="doccomment">/// Push a constant built in object / default (see: standard)</span>
     <span class="ident">push_global_default</span>(<span class="ident">GlobalConstantDescriptor</span>),
 
-    <span class="ident">push_void</span>,
+    <span class="ident">push_unit</span>,
 
     <span class="doccomment">/// Jump to a relative offset in the instructions</span>
     <span class="ident">jmp</span>(<span class="ident">i16</span>),
@@ -1286,7 +1286,7 @@
             <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">index_get</span>
             <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">index_set</span>
             <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">make_slice</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">push_void</span>
+            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">push_unit</span>
             <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">ret</span>
             <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">make_iter</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="self">self</span>).<span class="ident">as_ref</span>()),
         }
@@ -1375,7 +1375,7 @@
             }
             <span class="kw">let</span> <span class="ident">instr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">code</span>.<span class="ident">get</span>(<span class="self">self</span>.<span class="ident">curr_instruction</span>);
             <span class="kw">if</span> <span class="ident">instr</span>.<span class="ident">is_none</span>() {
-                <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">VoidObject</span>::<span class="ident">new</span>());
+                <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">UnitObject</span>::<span class="ident">new</span>());
             }
             <span class="kw">let</span> <span class="ident">instr</span> <span class="op">=</span> <span class="ident">instr</span>.<span class="ident">unwrap</span>();
             <span class="kw">match</span> <span class="ident">instr</span> {
@@ -1781,7 +1781,7 @@
                         ));
                     }
                     <span class="kw">let</span> <span class="ident">step</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
-                    <span class="kw">let</span> <span class="ident">step</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">step</span>.<span class="ident">as_any</span>().<span class="ident">type_id</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">TypeId</span>::<span class="ident">of</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">VoidObject</span><span class="op">&gt;</span><span class="op">&gt;</span>()
+                    <span class="kw">let</span> <span class="ident">step</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">step</span>.<span class="ident">as_any</span>().<span class="ident">type_id</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">TypeId</span>::<span class="ident">of</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">UnitObject</span><span class="op">&gt;</span><span class="op">&gt;</span>()
                     {
                         <span class="number">1</span>
                     } <span class="kw">else</span> {
@@ -1796,7 +1796,7 @@
                     };
                     <span class="kw">let</span> <span class="ident">stop</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stop</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">stop</span>.<span class="ident">as_any</span>().<span class="ident">type_id</span>()
-                        <span class="op">=</span><span class="op">=</span> <span class="ident">TypeId</span>::<span class="ident">of</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">VoidObject</span><span class="op">&gt;</span><span class="op">&gt;</span>()
+                        <span class="op">=</span><span class="op">=</span> <span class="ident">TypeId</span>::<span class="ident">of</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">UnitObject</span><span class="op">&gt;</span><span class="op">&gt;</span>()
                     {
                         <span class="prelude-val">None</span>
                     } <span class="kw">else</span> {
@@ -1811,7 +1811,7 @@
                     };
                     <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">start</span> <span class="op">=</span>
-                        <span class="kw">if</span> <span class="ident">start</span>.<span class="ident">as_any</span>().<span class="ident">type_id</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">TypeId</span>::<span class="ident">of</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">VoidObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
+                        <span class="kw">if</span> <span class="ident">start</span>.<span class="ident">as_any</span>().<span class="ident">type_id</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">TypeId</span>::<span class="ident">of</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">UnitObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
                             <span class="kw">if</span> <span class="ident">step</span> <span class="op">&lt;</span> <span class="number">0</span> {
                                 <span class="op">-</span><span class="number">1</span>
                             } <span class="kw">else</span> {
@@ -1985,7 +1985,7 @@
                         ));
                     }
                 }
-                <span class="ident">Op</span>::<span class="ident">push_void</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">VoidObject</span>::<span class="ident">new</span>()),
+                <span class="ident">Op</span>::<span class="ident">push_unit</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">UnitObject</span>::<span class="ident">new</span>()),
                 <span class="ident">Op</span>::<span class="ident">jmp</span>(<span class="ident">offset</span>) <span class="op">=</span><span class="op">&gt;</span> {
                     <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">offset</span> <span class="op">&gt;</span> <span class="number">0</span> {
                         <span class="kw">let</span> <span class="ident">offset</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">offset</span> <span class="kw">as</span> <span class="ident">u16</span> <span class="kw">as</span> <span class="ident">usize</span>;

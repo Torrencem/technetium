@@ -799,6 +799,9 @@
 <span id="799">799</span>
 <span id="800">800</span>
 <span id="801">801</span>
+<span id="802">802</span>
+<span id="803">803</span>
+<span id="804">804</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Abstract Syntax Tree types representing parsed Technetium programs</span>
 
@@ -821,6 +824,7 @@
 <span class="doccomment">/// a different kind of literal</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Literal</span> {
+    <span class="ident">Unit</span>(<span class="ident">Span</span>),
     <span class="ident">Integer</span>(<span class="ident">i64</span>, <span class="ident">Span</span>),
     <span class="ident">Float</span>(<span class="ident">f64</span>, <span class="ident">Span</span>),
     <span class="ident">Str</span>(<span class="ident">String</span>, <span class="ident">Span</span>),
@@ -832,6 +836,7 @@
 <span class="kw">impl</span> <span class="ident">Literal</span> {
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">span</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Span</span> {
         <span class="kw">match</span> <span class="self">self</span> {
+            <span class="ident">Literal</span>::<span class="ident">Unit</span>(<span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">s</span>,
             <span class="ident">Literal</span>::<span class="ident">Integer</span>(<span class="kw">_</span>, <span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">s</span>,
             <span class="ident">Literal</span>::<span class="ident">Float</span>(<span class="kw">_</span>, <span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">s</span>,
             <span class="ident">Literal</span>::<span class="ident">Str</span>(<span class="kw">_</span>, <span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">s</span>,
@@ -843,6 +848,7 @@
 
     <span class="kw">fn</span> <span class="ident">span_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Span</span> {
         <span class="kw">match</span> <span class="self">self</span> {
+            <span class="ident">Literal</span>::<span class="ident">Unit</span>(<span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">s</span>,
             <span class="ident">Literal</span>::<span class="ident">Integer</span>(<span class="kw">_</span>, <span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">s</span>,
             <span class="ident">Literal</span>::<span class="ident">Float</span>(<span class="kw">_</span>, <span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">s</span>,
             <span class="ident">Literal</span>::<span class="ident">Str</span>(<span class="kw">_</span>, <span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">s</span>,

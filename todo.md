@@ -1,11 +1,12 @@
 
 This is a rough todo list of features I need to add to the language:
 
-* add some functions relating to https://github.com/xdg-rs/dirs
+* void keyword
 * lambdas
 * generators
 * comprehensions
 * defer block
+* add some functions relating to https://github.com/xdg-rs/dirs
 * interactive mode (a la python)
 * tertiery expressions (if blah then blah else blah)
 * pass Files from main around in compile context, to prepare for multi-file programs

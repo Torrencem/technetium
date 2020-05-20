@@ -172,3 +172,25 @@ Slices are references to sections in a list or string. Slices can be constructed
     a_slice = my_phrase[:6]
     my_phrase[0] = 'I'
     print(a_slice)
+
+
+Anonymous Functions
+-------------------
+
+Anonymous functions, also sometimes known as "lambda functions", are unnamed function objects that have condensed definition syntax::
+
+    add_a = \(x, y) -> x + y
+    add_b = \(x, y) -> {
+        return x + y
+    }
+    print(add_a(10, 5))
+    print(add_b(10, 5))
+
+Anonymous functions are written as a backslash followed by either the name of a single argument, or a parenthesized list of arguments, followed by an arrow, then either a function block or a single expression. They also can capture their environment::
+
+    func make_adder(c) {
+        return \x -> x + c
+    }
+
+    f = make_adder(100)
+    print(f(25))

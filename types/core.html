@@ -67,6 +67,7 @@
 <li><p><a class="reference internal" href="#boolean" id="id13">Boolean</a></p></li>
 <li><p><a class="reference internal" href="#char" id="id14">Char</a></p></li>
 <li><p><a class="reference internal" href="#slice" id="id15">Slice</a></p></li>
+<li><p><a class="reference internal" href="#anonymous-functions" id="id16">Anonymous Functions</a></p></li>
 </ul>
 </div>
 <div class="section" id="string">
@@ -256,6 +257,27 @@
 </pre></div>
 </div>
 </div>
+<div class="section" id="anonymous-functions">
+<h2><a class="toc-backref" href="#id16">Anonymous Functions</a><a class="headerlink" href="#anonymous-functions" title="Permalink to this headline">¶</a></h2>
+<p>Anonymous functions, also sometimes known as “lambda functions”, are unnamed function objects that have condensed definition syntax:</p>
+<div class="highlight-technetium notranslate"><div class="highlight"><pre><span></span><span class="n">add_a</span> <span class="o">=</span> <span class="err">\</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="o">-</span><span class="err">&gt;</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+<span class="n">add_b</span> <span class="o">=</span> <span class="err">\</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="o">-</span><span class="err">&gt;</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+<span class="p">}</span>
+<span class="n">print</span><span class="p">(</span><span class="n">add_a</span><span class="p">(</span><span class="m">10</span><span class="p">,</span> <span class="m">5</span><span class="p">))</span>
+<span class="n">print</span><span class="p">(</span><span class="n">add_b</span><span class="p">(</span><span class="m">10</span><span class="p">,</span> <span class="m">5</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Anonymous functions are written as a backslash followed by either the name of a single argument, or a parenthesized list of arguments, followed by an arrow, then either a function block or a single expression. They also can capture their environment:</p>
+<div class="highlight-technetium notranslate"><div class="highlight"><pre><span></span><span class="k">func</span> <span class="n">make_adder</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="err">\</span><span class="n">x</span> <span class="o">-</span><span class="err">&gt;</span> <span class="n">x</span> <span class="o">+</span> <span class="n">c</span>
+<span class="p">}</span>
+
+<span class="n">f</span> <span class="o">=</span> <span class="n">make_adder</span><span class="p">(</span><span class="m">100</span><span class="p">)</span>
+<span class="n">print</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="m">25</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
 </div>
 
 
@@ -289,6 +311,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#boolean">Boolean</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#char">Char</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#slice">Slice</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#anonymous-functions">Anonymous Functions</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="shell.html">Shell Objects</a></li>

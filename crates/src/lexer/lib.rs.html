@@ -623,6 +623,13 @@
 <span id="623">623</span>
 <span id="624">624</span>
 <span id="625">625</span>
+<span id="626">626</span>
+<span id="627">627</span>
+<span id="628">628</span>
+<span id="629">629</span>
+<span id="630">630</span>
+<span id="631">631</span>
+<span id="632">632</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">CharIndices</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">FromStr</span>;
@@ -644,9 +651,11 @@
     <span class="ident">CloseBrace</span>,
     <span class="ident">OpenParen</span>,
     <span class="ident">CloseParen</span>,
+    <span class="ident">BackSlash</span>,
     <span class="ident">Comma</span>,
     <span class="ident">Dot</span>,
     <span class="ident">SingleEq</span>,
+    <span class="ident">SRarrow</span>,
     <span class="ident">Rarrow</span>,
     <span class="ident">Mult</span>,
     <span class="ident">Divide</span>,
@@ -1022,6 +1031,7 @@
                 <span class="prelude-val">Some</span>((<span class="ident">i</span>, <span class="string">&#39;]&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>((<span class="ident">i</span>, <span class="ident">Tok</span>::<span class="ident">CloseBracket</span>, <span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>))),
                 <span class="prelude-val">Some</span>((<span class="ident">i</span>, <span class="string">&#39;{&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>((<span class="ident">i</span>, <span class="ident">Tok</span>::<span class="ident">OpenBrace</span>, <span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>))),
                 <span class="prelude-val">Some</span>((<span class="ident">i</span>, <span class="string">&#39;}&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>((<span class="ident">i</span>, <span class="ident">Tok</span>::<span class="ident">CloseBrace</span>, <span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>))),
+                <span class="prelude-val">Some</span>((<span class="ident">i</span>, <span class="string">&#39;\\&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>((<span class="ident">i</span>, <span class="ident">Tok</span>::<span class="ident">BackSlash</span>, <span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>))),
                 <span class="prelude-val">Some</span>((<span class="ident">i</span>, <span class="string">&#39;,&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>((<span class="ident">i</span>, <span class="ident">Tok</span>::<span class="ident">Comma</span>, <span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>))),
                 <span class="prelude-val">Some</span>((<span class="ident">i</span>, <span class="string">&#39;.&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>((<span class="ident">i</span>, <span class="ident">Tok</span>::<span class="ident">Dot</span>, <span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>))),
                 <span class="prelude-val">Some</span>((<span class="ident">i</span>, <span class="string">&#39;:&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>((<span class="ident">i</span>, <span class="ident">Tok</span>::<span class="ident">Colon</span>, <span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>))),
@@ -1046,6 +1056,10 @@
                     <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="string">&#39;-&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> {
                         <span class="self">self</span>.<span class="ident">chars</span>.<span class="ident">next</span>();
                         <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>((<span class="ident">i</span>, <span class="ident">Tok</span>::<span class="ident">DoubleMinus</span>, <span class="ident">i</span> <span class="op">+</span> <span class="number">2</span>)));
+                    }
+                    <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="string">&#39;&gt;&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="self">self</span>.<span class="ident">chars</span>.<span class="ident">next</span>();
+                        <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>((<span class="ident">i</span>, <span class="ident">Tok</span>::<span class="ident">SRarrow</span>, <span class="ident">i</span> <span class="op">+</span> <span class="number">2</span>)));
                     }
                     <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
                         <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>((<span class="ident">i</span>, <span class="ident">Tok</span>::<span class="ident">Minus</span>, <span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>)));

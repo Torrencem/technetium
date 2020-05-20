@@ -598,12 +598,14 @@ print(val)
 l = [\x -> x + 1, \x -> x + 2, \x -> x + 3]
 
 print(l[1](10))
+
+print((\() -> (\x -> x + 2)((\() -> 2)()))())
 "#,
     );
 
     cmd.assert()
         .success()
-        .stdout(predicate::eq("4\n12\n"));
+        .stdout(predicate::eq("4\n12\n4\n"));
 
     Ok(())
 }

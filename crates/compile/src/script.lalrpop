@@ -78,7 +78,7 @@ Assignment: Assignment = {
 	<l: @L> <n: AssignmentLHS> "+=" <e: Expr> <r:@R> => Assignment::new(
 		n.clone(),
 		Expr::FuncCall(FuncCall::new(
-			Identifier::new("<add>".to_string(), l, r),
+			Identifier::new_expr("<add>".to_string(), l, r),
 			vec![n.as_expr(), e],
 			l, r
 		)),
@@ -87,7 +87,7 @@ Assignment: Assignment = {
 	<l: @L> <n: AssignmentLHS> "-=" <e: Expr> <r:@R> => Assignment::new(
 		n.clone(),
 		Expr::FuncCall(FuncCall::new(
-			Identifier::new("<sub>".to_string(), l, r),
+			Identifier::new_expr("<sub>".to_string(), l, r),
 			vec![n.as_expr(), e],
 			l, r
 		)),
@@ -96,7 +96,7 @@ Assignment: Assignment = {
 	<l: @L> <n: AssignmentLHS> "*=" <e: Expr> <r:@R> => Assignment::new(
 		n.clone(),
 		Expr::FuncCall(FuncCall::new(
-			Identifier::new("<mul>".to_string(), l, r),
+			Identifier::new_expr("<mul>".to_string(), l, r),
 			vec![n.as_expr(), e],
 			l, r
 		)),
@@ -105,7 +105,7 @@ Assignment: Assignment = {
 	<l: @L> <n: AssignmentLHS> "/=" <e: Expr> <r:@R> => Assignment::new(
 		n.clone(),
 		Expr::FuncCall(FuncCall::new(
-			Identifier::new("<div>".to_string(), l, r),
+			Identifier::new_expr("<div>".to_string(), l, r),
 			vec![n.as_expr(), e],
 			l, r
 		)),
@@ -114,7 +114,7 @@ Assignment: Assignment = {
 	<l: @L> <n: AssignmentLHS> "%=" <e: Expr> <r:@R> => Assignment::new(
 		n.clone(),
 		Expr::FuncCall(FuncCall::new(
-			Identifier::new("<mod>".to_string(), l, r),
+			Identifier::new_expr("<mod>".to_string(), l, r),
 			vec![n.as_expr(), e],
 			l, r
 		)),
@@ -179,17 +179,17 @@ pub Expr: Expr = {
 LogicalExpr: Expr = {
 	<b: Comparison> => b,
 	<l:@L> "!" <s1: Comparison> <r:@R> => Expr::FuncCall(FuncCall::new(
-		Identifier::new("<not>".to_string(), l, r),
+		Identifier::new_expr("<not>".to_string(), l, r),
 		vec![s1],
 		l, r,
 	)),
 	<l:@L> <s1: Comparison> "||" <s2: LogicalExpr> <r:@R> => Expr::FuncCall(FuncCall::new(
-		Identifier::new("<or>".to_string(), l, r),
+		Identifier::new_expr("<or>".to_string(), l, r),
 		vec![s1, s2],
 		l, r,
 	)),
 	<l:@L> <s1: Comparison> "&&" <s2: LogicalExpr> <r:@R> => Expr::FuncCall(FuncCall::new(
-		Identifier::new("<and>".to_string(), l, r),
+		Identifier::new_expr("<and>".to_string(), l, r),
 		vec![s1, s2],
 		l, r,
 	)),
@@ -198,32 +198,32 @@ LogicalExpr: Expr = {
 Comparison: Expr = {
 	<b: Sum> => b,
 	<l:@L> <s1: Sum> "<=" <s2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
-		Identifier::new("<leq>".to_string(), l, r),
+		Identifier::new_expr("<leq>".to_string(), l, r),
 		vec![s1, s2],
 		l, r,
 	)),
 	<l:@L> <s1: Sum> ">=" <s2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
-		Identifier::new("<geq>".to_string(), l, r),
+		Identifier::new_expr("<geq>".to_string(), l, r),
 		vec![s1, s2],
 		l, r,
 	)),
 	<l:@L> <s1: Sum> "<" <s2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
-		Identifier::new("<lt>".to_string(), l, r),
+		Identifier::new_expr("<lt>".to_string(), l, r),
 		vec![s1, s2],
 		l, r,
 	)),
 	<l:@L> <s1: Sum> ">" <s2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
-		Identifier::new("<gt>".to_string(), l, r),
+		Identifier::new_expr("<gt>".to_string(), l, r),
 		vec![s1, s2],
 		l, r,
 	)),
 	<l:@L> <s1: Sum> "==" <s2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
-		Identifier::new("<eq>".to_string(), l, r),
+		Identifier::new_expr("<eq>".to_string(), l, r),
 		vec![s1, s2],
 		l, r,
 	)),
 	<l:@L> <s1: Sum> "!=" <s2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
-		Identifier::new("<neq>".to_string(), l, r),
+		Identifier::new_expr("<neq>".to_string(), l, r),
 		vec![s1, s2],
 		l, r,
 	)),
@@ -232,12 +232,12 @@ Comparison: Expr = {
 Sum: Expr = {
 	<b: Term> => b,
 	<l:@L> <t1: Term> "+" <t2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
-		Identifier::new("<add>".to_string(), l, r),
+		Identifier::new_expr("<add>".to_string(), l, r),
 		vec![t1, t2],
 		l, r,
 	)),
 	<l:@L> <t1: Term> "-" <t2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
-		Identifier::new("<sub>".to_string(), l, r),
+		Identifier::new_expr("<sub>".to_string(), l, r),
 		vec![t1, t2],
 		l, r,
 	)),
@@ -246,17 +246,17 @@ Sum: Expr = {
 Term: Expr = {
 	<b: BaseExpr> => b,
 	<l:@L> <f1: BaseExpr> "*" <f2: Term> <r:@R> => Expr::FuncCall(FuncCall::new(
-		Identifier::new("<mul>".to_string(), l, r),
+		Identifier::new_expr("<mul>".to_string(), l, r),
 		vec![f1, f2],
 		l, r,
 	)),
 	<l:@L> <f1: BaseExpr> "%" <f2: Term> <r:@R> => Expr::FuncCall(FuncCall::new(
-		Identifier::new("<mod>".to_string(), l, r),
+		Identifier::new_expr("<mod>".to_string(), l, r),
 		vec![f1, f2],
 		l, r,
 	)),
 	<l:@L> <f1: BaseExpr> "/" <f2: Term> <r:@R> => Expr::FuncCall(FuncCall::new(
-		Identifier::new("<div>".to_string(), l, r),
+		Identifier::new_expr("<div>".to_string(), l, r),
 		vec![f1, f2],
 		l, r,
 	)),
@@ -266,26 +266,30 @@ BaseExpr: Expr = {
 	<a: AttrableExpr> => a,
 	<p: PreOp> => Expr::PostPreOp(p),
 	<l:@L> "-" <t: AttrableExpr> <r:@R> => Expr::FuncCall(FuncCall::new(
-		Identifier::new("<neg>".to_string(), l, r),
+		Identifier::new_expr("<neg>".to_string(), l, r),
 		vec![t],
 		l, r,
 	)),
 };
 
 AttrableExpr: Expr = {
-	"(" <e:Expr> ")" => e,
+	<c: CallableExpr> => c,
+	<m: MethodCall> => Expr::MethodCall(m),
+	<a: AttrLookup> => Expr::AttrLookup(a),
+	<p: PostOp> => Expr::PostPreOp(p),
+};
+
+CallableExpr: Expr = {
+	"(" <e: Expr> ")" => e,
 	<s: Identifier> => Expr::Variable(s),
 	<l: Literal> => Expr::Literal(l),
 	<l: ListLiteral> => Expr::ListLiteral(l),
 	<t: TupleLiteral> => Expr::TupleLiteral(t),
 	<s: SetLiteral> => Expr::SetLiteral(s),
 	<d: DictLiteral> => Expr::DictLiteral(d),
-	<m: MethodCall> => Expr::MethodCall(m),
 	<f: FuncCall> => Expr::FuncCall(f),
-	<a: AttrLookup> => Expr::AttrLookup(a),
-	<i: IndexedExpr> => Expr::IndexedExpr(i),
 	<s: SlicedExpr> => Expr::SlicedExpr(s),
-	<p: PostOp> => Expr::PostPreOp(p),
+	<i: IndexedExpr> => Expr::IndexedExpr(i),
 };
 
 PostOp: PostPreOp = {
@@ -337,7 +341,7 @@ Identifier: Identifier = <l:@L> <s:ident> <r:@R> => Identifier::new(s.to_owned()
 
 MethodCall: MethodCall = <l:@L> <e: AttrableExpr> "." <i: Identifier> "(" <args: Comma<Expr>> ")" <r:@R> => MethodCall::new(e, i, args, l, r);
 
-FuncCall: FuncCall = <l:@L> <i: Identifier> "(" <args: Comma<Expr>> ")" <r:@R> => FuncCall::new(i, args, l, r);
+FuncCall: FuncCall = <l:@L> <i: CallableExpr> "(" <args: Comma<Expr>> ")" <r:@R> => FuncCall::new(i, args, l, r);
 
 AttrLookup: AttrLookup = <l:@L> <e: AttrableExpr>  "." <i: Identifier> <r:@R> => AttrLookup::new(e, i, l, r);
 

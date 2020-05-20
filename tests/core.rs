@@ -584,3 +584,26 @@ print(g())
 
     Ok(())
 }
+
+#[test]
+fn test_call_expr_funcs() -> Result<(), TestError> {
+    
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+val = (\x -> x + 2)(2)
+
+print(val)
+
+l = [\x -> x + 1, \x -> x + 2, \x -> x + 3]
+
+print(l[1](10))
+"#,
+    );
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("4\n12\n"));
+
+    Ok(())
+}

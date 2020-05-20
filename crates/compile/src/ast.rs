@@ -198,15 +198,15 @@ impl AstExpr for DictLiteral {
 #[derive(Clone, Debug)]
 pub struct FuncCall {
     pub span: Span,
-    pub fname: Identifier,
+    pub func: Box<Expr>,
     pub arguments: Vec<Expr>,
 }
 
 impl FuncCall {
-    pub fn new(fname: Identifier, arguments: Vec<Expr>, l: usize, r: usize) -> Self {
+    pub fn new(func: Expr, arguments: Vec<Expr>, l: usize, r: usize) -> Self {
         FuncCall {
             span: Span::new(l as u32, r as u32),
-            fname,
+            func: Box::new(func),
             arguments,
         }
     }
@@ -220,7 +220,7 @@ impl AstExpr for FuncCall {
             u32::from(l) + (offset as u32),
             u32::from(r) + (offset as u32),
         );
-        self.fname.offset_spans(offset);
+        self.func.offset_spans(offset);
         for arg in self.arguments.iter_mut() {
             arg.offset_spans(offset);
         }
@@ -820,6 +820,13 @@ impl Identifier {
             span: Span::new(l as u32, r as u32),
             name,
         }
+    }
+
+    pub fn new_expr(name: String, l: usize, r: usize) -> Expr {
+        Expr::Variable(Identifier {
+            span: Span::new(l as u32, r as u32),
+            name,
+        })
     }
 }
 

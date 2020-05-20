@@ -269,52 +269,56 @@ impl CompileManager {
     pub fn compile_func_call(&mut self, ast: &FuncCall) -> CompileResult {
         let mut res = vec![];
         let builtins = builtin_functions();
-        if let Some(op) = builtins.get(&ast.fname.name) {
-            // Special case <and> and <or> for short-circuiting
-            if &ast.fname.name == "<and>" {
-                assert!(ast.arguments.len() == 2);
-                res.append(&mut self.compile_expr(&ast.arguments[0])?);
-                let mut short_arg_2 = self.compile_expr(&ast.arguments[1])?;
-                res.push(Op::push_bool(false));
-                res.push(Op::swap);
-                res.push(Op::not);
-                res.push(Op::cond_jmp(short_arg_2.len() as u16 as i16 + 2));
-                res.push(Op::pop);
-                res.append(&mut short_arg_2);
+        if let Expr::Variable(name) = &*ast.func {
+            if let Some(op) = builtins.get(&name.name) {
+                // Special case <and> and <or> for short-circuiting
+                if &name.name == "<and>" {
+                    assert!(ast.arguments.len() == 2);
+                    res.append(&mut self.compile_expr(&ast.arguments[0])?);
+                    let mut short_arg_2 = self.compile_expr(&ast.arguments[1])?;
+                    res.push(Op::push_bool(false));
+                    res.push(Op::swap);
+                    res.push(Op::not);
+                    res.push(Op::cond_jmp(short_arg_2.len() as u16 as i16 + 2));
+                    res.push(Op::pop);
+                    res.append(&mut short_arg_2);
+                    return Ok(res);
+                } else if &name.name == "<or>" {
+                    assert!(ast.arguments.len() == 2);
+                    res.append(&mut self.compile_expr(&ast.arguments[0])?);
+                    let mut short_arg_2 = self.compile_expr(&ast.arguments[1])?;
+                    res.push(Op::push_bool(true));
+                    res.push(Op::swap);
+                    res.push(Op::cond_jmp(short_arg_2.len() as u16 as i16 + 2));
+                    res.push(Op::pop);
+                    res.append(&mut short_arg_2);
+                    return Ok(res);
+                }
+                for arg in ast.arguments.iter() {
+                    res.append(&mut self.compile_expr(arg)?);
+                }
+                res.push(*op);
                 return Ok(res);
-            } else if &ast.fname.name == "<or>" {
-                assert!(ast.arguments.len() == 2);
-                res.append(&mut self.compile_expr(&ast.arguments[0])?);
-                let mut short_arg_2 = self.compile_expr(&ast.arguments[1])?;
-                res.push(Op::push_bool(true));
-                res.push(Op::swap);
-                res.push(Op::cond_jmp(short_arg_2.len() as u16 as i16 + 2));
-                res.push(Op::pop);
-                res.append(&mut short_arg_2);
-                return Ok(res);
             }
-            for arg in ast.arguments.iter() {
-                res.append(&mut self.compile_expr(arg)?);
+            match self.name_lookup(&name.name) {
+                NameLookupResult::MyLocal(name) => {
+                    res.push(Op::load(name));
+                }
+                NameLookupResult::ExternLocal(name) => {
+                    res.push(Op::load_non_local(name));
+                }
+                NameLookupResult::Global(name) => {
+                    res.push(Op::push_global_default(name));
+                }
+                NameLookupResult::NotFound => {
+                    return Err(CompileError::new(
+                        CompileErrorType::UndefinedVariable(ast.func.span()),
+                        format!("Undefined function: {}", name.name),
+                    ));
+                }
             }
-            res.push(*op);
-            return Ok(res);
-        }
-        match self.name_lookup(&ast.fname.name) {
-            NameLookupResult::MyLocal(name) => {
-                res.push(Op::load(name));
-            }
-            NameLookupResult::ExternLocal(name) => {
-                res.push(Op::load_non_local(name));
-            }
-            NameLookupResult::Global(name) => {
-                res.push(Op::push_global_default(name));
-            }
-            NameLookupResult::NotFound => {
-                return Err(CompileError::new(
-                    CompileErrorType::UndefinedVariable(ast.fname.span),
-                    format!("Undefined function: {}", ast.fname.name),
-                ));
-            }
+        } else {
+            res.append(&mut self.compile_expr(&*ast.func)?);
         }
         for arg in ast.arguments.iter() {
             res.append(&mut self.compile_expr(arg)?);

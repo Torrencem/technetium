@@ -4,6 +4,7 @@ This is a rough todo list of features I need to add to the language:
 * generators
 * comprehensions
 * defer block
+* way to get reference to self in a lambda expression (a la this in javascript)
 * add some functions relating to https://github.com/xdg-rs/dirs
 * interactive mode (a la python)
 * tertiery expressions (if blah then blah else blah)

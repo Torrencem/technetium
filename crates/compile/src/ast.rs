@@ -19,6 +19,7 @@ pub trait AstExpr {
 /// a different kind of literal
 #[derive(Clone, Debug)]
 pub enum Literal {
+    Unit(Span),
     Integer(i64, Span),
     Float(f64, Span),
     Str(String, Span),
@@ -30,6 +31,7 @@ pub enum Literal {
 impl Literal {
     pub fn span(&self) -> Span {
         match self {
+            Literal::Unit(s) => *s,
             Literal::Integer(_, s) => *s,
             Literal::Float(_, s) => *s,
             Literal::Str(_, s) => *s,
@@ -41,6 +43,7 @@ impl Literal {
 
     fn span_mut(&mut self) -> &mut Span {
         match self {
+            Literal::Unit(s) => s,
             Literal::Integer(_, s) => s,
             Literal::Float(_, s) => s,
             Literal::Str(_, s) => s,

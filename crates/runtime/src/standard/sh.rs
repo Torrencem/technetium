@@ -140,7 +140,7 @@ impl Object for ObjectCell<ShObject> {
             _ => return Err(RuntimeError::type_error("Unknown method")),
         }
 
-        Ok(VoidObject::new())
+        Ok(UnitObject::new())
     }
 }
 
@@ -162,7 +162,7 @@ func_object!(Cd, (1..=1), args -> {
         let val = &str_obj.val;
         let path = Path::new(&*val);
         env::set_current_dir(path)?;
-        Ok(VoidObject::new())
+        Ok(UnitObject::new())
     } else {
         Err(RuntimeError::type_error("Expected string as argument to cd"))
     }

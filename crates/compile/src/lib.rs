@@ -198,6 +198,9 @@ impl CompileManager {
     pub fn compile_literal(&mut self, ast: &Literal) -> CompileResult {
         let descr = self.context().gcd_gen();
         let constant: ObjectRef = match ast {
+            Literal::Unit(_) => {
+                return Ok(vec![Op::push_unit]);
+            }
             Literal::Integer(val, _) => {
                 if *val < i32::MAX as i64 && *val > i32::MIN as i64 {
                     return Ok(vec![Op::push_int(*val as i32)]);
@@ -441,7 +444,7 @@ impl CompileManager {
                 res.append(&mut self.compile_expr(&*start_expr)?);
             }
             None => {
-                res.push(Op::push_void);
+                res.push(Op::push_unit);
             }
         }
         match &ast.end {
@@ -449,7 +452,7 @@ impl CompileManager {
                 res.append(&mut self.compile_expr(&*end_expr)?);
             }
             None => {
-                res.push(Op::push_void);
+                res.push(Op::push_unit);
             }
         }
         match &ast.step {
@@ -457,7 +460,7 @@ impl CompileManager {
                 res.append(&mut self.compile_expr(&*step_expr)?);
             }
             None => {
-                res.push(Op::push_void);
+                res.push(Op::push_unit);
             }
         }
         res.push(Op::make_slice);

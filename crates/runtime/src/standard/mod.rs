@@ -122,7 +122,7 @@ macro_rules! func_object_void {
                     return Err(RuntimeError::type_error(format!("Incorrect number of arguments: expected {:?}, got {}", $args_range, $args.len())));
                 }
                 $call
-                Ok(VoidObject::new())
+                Ok(UnitObject::new())
             }
         }
     };

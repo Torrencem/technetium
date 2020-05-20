@@ -172,7 +172,7 @@ pub enum Op {
     /// Push a constant built in object / default (see: standard)
     push_global_default(GlobalConstantDescriptor),
 
-    push_void,
+    push_unit,
 
     /// Jump to a relative offset in the instructions
     jmp(i16),
@@ -243,7 +243,7 @@ impl fmt::Display for Op {
             | Op::index_get
             | Op::index_set
             | Op::make_slice
-            | Op::push_void
+            | Op::push_unit
             | Op::ret
             | Op::make_iter => f.write_str(format!("{:?}", self).as_ref()),
         }
@@ -332,7 +332,7 @@ impl<'code> Frame<'code> {
             }
             let instr = self.code.get(self.curr_instruction);
             if instr.is_none() {
-                return Ok(VoidObject::new());
+                return Ok(UnitObject::new());
             }
             let instr = instr.unwrap();
             match instr {
@@ -738,7 +738,7 @@ impl<'code> Frame<'code> {
                         ));
                     }
                     let step = self.stack.pop().unwrap();
-                    let step = if step.as_any().type_id() == TypeId::of::<ObjectCell<VoidObject>>()
+                    let step = if step.as_any().type_id() == TypeId::of::<ObjectCell<UnitObject>>()
                     {
                         1
                     } else {
@@ -753,7 +753,7 @@ impl<'code> Frame<'code> {
                     };
                     let stop = self.stack.pop().unwrap();
                     let mut stop = if stop.as_any().type_id()
-                        == TypeId::of::<ObjectCell<VoidObject>>()
+                        == TypeId::of::<ObjectCell<UnitObject>>()
                     {
                         None
                     } else {
@@ -768,7 +768,7 @@ impl<'code> Frame<'code> {
                     };
                     let start = self.stack.pop().unwrap();
                     let mut start =
-                        if start.as_any().type_id() == TypeId::of::<ObjectCell<VoidObject>>() {
+                        if start.as_any().type_id() == TypeId::of::<ObjectCell<UnitObject>>() {
                             if step < 0 {
                                 -1
                             } else {
@@ -942,7 +942,7 @@ impl<'code> Frame<'code> {
                         ));
                     }
                 }
-                Op::push_void => self.stack.push(VoidObject::new()),
+                Op::push_unit => self.stack.push(UnitObject::new()),
                 Op::jmp(offset) => {
                     if *offset > 0 {
                         let offset: usize = *offset as u16 as usize;

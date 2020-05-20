@@ -514,3 +514,20 @@ print(s.contains('h'))
 
     Ok(())
 }
+
+#[test]
+fn test_unit() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+print(print(5) == unit)
+print((5 + 2) == unit)
+"#,
+    );
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("5\ntrue\nfalse\n"));
+
+    Ok(())
+}

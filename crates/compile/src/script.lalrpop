@@ -274,6 +274,7 @@ SlicedExpr: SlicedExpr = {
 };
 
 Literal: Literal = {
+	<l:@L> "unit" <r:@R> => Literal::Unit(Span::new(l as u32, r as u32)),
 	<l:@L> <n:int_lit> <r:@R> => Literal::Integer(n, Span::new(l as u32, r as u32)),
 	<l:@L> <f:float_lit> <r:@R> => Literal::Float(f, Span::new(l as u32, r as u32)),
 	<l:@L> <s:string_lit> <r:@R> => Literal::Str(s, Span::new(l as u32, r as u32)),
@@ -399,5 +400,6 @@ extern {
 		"of" => Tok::Of,
 		"func" => Tok::Func,
 		"return" => Tok::Return,
+		"unit" => Tok::Unit,
 	}
 }

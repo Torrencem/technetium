@@ -45,6 +45,7 @@ pub enum Tok {
     DoublePlus,
     DoubleMinus,
     Identifier(String),
+    Unit,
     Int(i64),
     Float(f64),
     Bool(bool),
@@ -83,6 +84,7 @@ pub fn get_keywords() -> HashMap<String, Tok> {
     res.insert("of".to_string(), Tok::Of);
     res.insert("func".to_string(), Tok::Func);
     res.insert("return".to_string(), Tok::Return);
+    res.insert("unit".to_string(), Tok::Unit);
 
     res
 }

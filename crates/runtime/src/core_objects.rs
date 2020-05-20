@@ -467,7 +467,7 @@ impl Object for ObjectCell<List> {
                     Err(RuntimeError::type_error("push expects 1 arg"))
                 } else {
                     this.contents.push(ObjectRef::clone(&args[0]));
-                    Ok(VoidObject::new())
+                    Ok(UnitObject::new())
                 }
             }
             "append" => {
@@ -481,7 +481,7 @@ impl Object for ObjectCell<List> {
                     while let Some(val) = iter.take_iter()? {
                         contents.push(val);
                     }
-                    Ok(VoidObject::new())
+                    Ok(UnitObject::new())
                 }
             }
             _ => Err(RuntimeError::type_error(format!(
@@ -735,25 +735,33 @@ impl Object for ObjectCell<Tuple> {
     }
 }
 
-pub struct VoidObject;
+pub struct UnitObject;
 
-impl VoidObject {
+impl UnitObject {
     pub fn new() -> ObjectRef {
-        ObjectRef::new(VoidObject)
+        ObjectRef::new(UnitObject)
     }
 }
 
-impl Object for ObjectCell<VoidObject> {
+impl Object for ObjectCell<UnitObject> {
     fn technetium_type_name(&self) -> String {
-        "void".to_string()
+        "unit".to_string()
     }
 
     fn to_string(&self) -> RuntimeResult<String> {
-        Ok("void".to_string())
+        Ok("unit".to_string())
     }
 
     fn truthy(&self) -> bool {
         false
+    }
+    
+    fn technetium_eq(&self, other: ObjectRef) -> Option<bool> {
+        if other.as_any().downcast_ref::<Self>().is_some() {
+            Some(true)
+        } else {
+            None
+        }
     }
 }
 
@@ -837,7 +845,7 @@ impl Object for ObjectCell<Set> {
                         RuntimeError::type_error("value must be hashable to be added to a set")
                     })?);
                     args[0].lock_immutable();
-                    Ok(VoidObject::new())
+                    Ok(UnitObject::new())
                 }
             }
             "remove" => {

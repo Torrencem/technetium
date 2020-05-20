@@ -152,6 +152,14 @@ Boolean
 Everything in technetium is either truthy or falsey, in addition to the boolean type. Booleans can either be created through the ``true`` and ``false`` literals, or through the conversion function ``bool``. The conversion function returns ``true`` when it's argument is truthy, and false otherwise.
 
 
+Unit
+----
+
+The unit type has only one member, ``unit``. This type is implicitly returned from all functions which don't return anything else, and is useful as a generic ``None`` object::
+
+    print(print(5) == unit)  # Prints 5, then true
+
+
 Char
 ----
 

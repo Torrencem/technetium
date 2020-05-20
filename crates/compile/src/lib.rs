@@ -382,6 +382,7 @@ impl CompileManager {
             Expr::IndexedExpr(i) => self.compile_indexed_expr(i),
             Expr::SlicedExpr(s) => self.compile_sliced_expr(s),
             Expr::PostPreOp(o) => self.compile_post_pre_op(o),
+            Expr::AnonFuncDefinition(a) => self.compile_anon_func_definition(a),
             Expr::Error => unreachable!(),
         }
     }
@@ -610,6 +611,50 @@ impl CompileManager {
         res.push(Op::push_const_clone(my_descr));
         res.push(Op::attach_ancestors);
         res.push(Op::store(my_local));
+        Ok(res)
+    }
+    
+    pub fn compile_anon_func_definition(&mut self, ast: &AnonFuncDefinition) -> CompileResult {
+        let new_cid = self.context_id_gen();
+        self.memory_manager.register_context(new_cid);
+        let sub_context = CompileContext::new(new_cid, self.context().file_id);
+        for arg in ast.args.iter() {
+            let name = self.local_name_gen();
+            self.local_index
+                .insert((sub_context.context_id, arg.name.clone()), name);
+        }
+
+        let sub_context_id = sub_context.context_id;
+        self.context_stack.push(sub_context);
+
+        let mut func_code = vec![];
+        for arg in ast.args.iter() {
+            func_code.push(Op::store(
+                *self
+                    .local_index
+                    .get(&(sub_context_id, arg.name.clone()))
+                    .unwrap(),
+            ));
+        }
+
+        func_code.append(&mut self.compile_statement_list(&ast.body)?);
+        let finished_context = self.context_stack.pop().unwrap();
+        let sub_context = GlobalContext {
+            constant_descriptors: finished_context.constant_descriptors,
+            debug_descriptors: finished_context.debug_symbol_descriptors,
+        };
+        let function_obj = Function {
+            nargs: ast.args.len(),
+            name: "<anonymous>".to_string(),
+            context: Rc::new(sub_context),
+            context_id: finished_context.context_id,
+            least_ancestors: RwLock::new(None),
+            code: func_code,
+        };
+        let my_descr = self.create_constant_descriptor(ObjectRef::new(function_obj));
+        let mut res = vec![];
+        res.push(Op::push_const_clone(my_descr));
+        res.push(Op::attach_ancestors);
         Ok(res)
     }
 

@@ -392,6 +392,7 @@ pub enum Expr {
     IndexedExpr(IndexedExpr),
     SlicedExpr(SlicedExpr),
     PostPreOp(PostPreOp),
+    AnonFuncDefinition(AnonFuncDefinition),
     /// An unreachable expression state, used to finish attempting to parse an AST (read
     /// http://lalrpop.github.io/lalrpop/tutorial/008_error_recovery.html)
     Error,
@@ -412,6 +413,7 @@ impl Expr {
             Expr::IndexedExpr(e) => e.span,
             Expr::SlicedExpr(e) => e.span,
             Expr::PostPreOp(e) => e.span,
+            Expr::AnonFuncDefinition(e) => e.span,
             Expr::Error => unreachable!(),
         }
     }
@@ -432,6 +434,7 @@ impl AstExpr for Expr {
             Expr::IndexedExpr(e) => e.offset_spans(offset),
             Expr::SlicedExpr(e) => e.offset_spans(offset),
             Expr::PostPreOp(e) => e.offset_spans(offset),
+            Expr::AnonFuncDefinition(e) => e.offset_spans(offset),
             Expr::Error => unreachable!(),
         }
     }
@@ -489,6 +492,34 @@ impl PostPreOp {
 }
 
 impl AstExpr for PostPreOp {
+    fn offset_spans(&mut self, offset: usize) {
+        let l = self.span.start();
+        let r = self.span.end();
+        self.span = Span::new(
+            u32::from(l) + (offset as u32),
+            u32::from(r) + (offset as u32),
+        );
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct AnonFuncDefinition {
+    pub span: Span,
+    pub args: Vec<Identifier>,
+    pub body: StatementList,
+}
+
+impl AnonFuncDefinition {
+    pub fn new(args: Vec<Identifier>, body: StatementList, l: usize, r: usize) -> Self {
+        AnonFuncDefinition {
+            span: Span::new(l as u32, r as u32),
+            args,
+            body,
+        }
+    }
+}
+
+impl AstExpr for AnonFuncDefinition {
     fn offset_spans(&mut self, offset: usize) {
         let l = self.span.start();
         let r = self.span.end();

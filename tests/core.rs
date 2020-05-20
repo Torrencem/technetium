@@ -531,3 +531,41 @@ print((5 + 2) == unit)
 
     Ok(())
 }
+
+#[test]
+fn test_anon_funcs() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+add_a = \(x, y) -> x + y
+add_b = \(x, y) -> {
+	return x + y
+}
+print(add_a(10, 5))
+print(add_b(10, 5))
+    
+func make_adder1(c) {
+	return \x -> x + c
+}
+
+f = make_adder1(100)
+print(f(25))
+
+func make_adder2(c) {
+	return \x -> {
+        return x + c
+    }
+}
+
+f = make_adder2(100)
+print(f(25))
+"#,
+    );
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("15\n15\n125\n125\n"));
+
+    Ok(())
+}
+

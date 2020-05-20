@@ -20,6 +20,45 @@ Statement: Statement = {
 	<e: Expr>  => Statement::Expr(e),
 };
 
+AnonFuncDefinition: AnonFuncDefinition = {
+	<l:@L> "\\" <id: Identifier> "->" <e: Expr> <r:@R> => AnonFuncDefinition::new(
+		vec![id],
+		StatementList {
+			span: e.span(),
+			statements: vec![Statement::ReturnStatement(ReturnStatement {
+				span: e.span(),
+				ret: e,
+			})],
+		},
+		l,
+		r,
+	),
+	<l:@L> "\\" <id: Identifier> "->" "\n"? "{" "\n" <body: StatementList> "}" <r:@R> => AnonFuncDefinition::new(
+		vec![id],
+		body,
+		l,
+		r,
+	),
+	<l:@L> "\\" "(" <args: Comma<Identifier>> ")" "->" <e: Expr> <r:@R> => AnonFuncDefinition::new(
+		args,
+		StatementList {
+			span: e.span(),
+			statements: vec![Statement::ReturnStatement(ReturnStatement {
+				span: e.span(),
+				ret: e,
+			})],
+		},
+		l,
+		r,
+	),
+	<l:@L> "\\" "(" <args: Comma<Identifier>> ")" "->" "\n"? "{" "\n" <body: StatementList> "}" <r:@R> => AnonFuncDefinition::new(
+		args,
+		body,
+		l,
+		r,
+	),
+};
+
 FuncDefinition: FuncDefinition = <l:@L> "func" <id: Identifier> "(" <args: Comma<Identifier>> ")" "\n"? "{" "\n" <body: StatementList> "}" <r:@R> => FuncDefinition::new(
 	id,
 	args,
@@ -133,6 +172,7 @@ ElifTail: IfStatement = {
 
 pub Expr: Expr = {
 	<e: LogicalExpr> => e,
+	<f: AnonFuncDefinition> => Expr::AnonFuncDefinition(f),
 	! => { errors.push(<>); Expr::Error },
 };
 
@@ -355,9 +395,11 @@ extern {
 		"}" => Tok::CloseBrace,
 		"(" => Tok::OpenParen,
 		")" => Tok::CloseParen,
+		"\\" => Tok::BackSlash,
 		"," => Tok::Comma,
 		"." => Tok::Dot,
 		"=" => Tok::SingleEq,
+		"->" => Tok::SRarrow,
 		"=>" => Tok::Rarrow,
 		"*" => Tok::Mult,
 		"/" => Tok::Divide,

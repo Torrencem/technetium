@@ -18,9 +18,11 @@ pub enum Tok {
     CloseBrace,
     OpenParen,
     CloseParen,
+    BackSlash,
     Comma,
     Dot,
     SingleEq,
+    SRarrow,
     Rarrow,
     Mult,
     Divide,
@@ -396,6 +398,7 @@ impl<'input> Iterator for Lexer<'input> {
                 Some((i, ']')) => return Some(Ok((i, Tok::CloseBracket, i + 1))),
                 Some((i, '{')) => return Some(Ok((i, Tok::OpenBrace, i + 1))),
                 Some((i, '}')) => return Some(Ok((i, Tok::CloseBrace, i + 1))),
+                Some((i, '\\')) => return Some(Ok((i, Tok::BackSlash, i + 1))),
                 Some((i, ',')) => return Some(Ok((i, Tok::Comma, i + 1))),
                 Some((i, '.')) => return Some(Ok((i, Tok::Dot, i + 1))),
                 Some((i, ':')) => return Some(Ok((i, Tok::Colon, i + 1))),
@@ -420,6 +423,10 @@ impl<'input> Iterator for Lexer<'input> {
                     Some((_, '-')) => {
                         self.chars.next();
                         return Some(Ok((i, Tok::DoubleMinus, i + 2)));
+                    }
+                    Some((_, '>')) => {
+                        self.chars.next();
+                        return Some(Ok((i, Tok::SRarrow, i + 2)));
                     }
                     _ => {
                         return Some(Ok((i, Tok::Minus, i + 1)));

@@ -626,8 +626,6 @@
 <span id="626">626</span>
 <span id="627">627</span>
 <span id="628">628</span>
-<span id="629">629</span>
-<span id="630">630</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">CharIndices</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">FromStr</span>;
@@ -690,7 +688,6 @@
     <span class="ident">FormatStringLit</span>(<span class="ident">String</span>, <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">String</span>)<span class="op">&gt;</span>),
     <span class="ident">ShStatement</span>(<span class="ident">String</span>, <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">String</span>)<span class="op">&gt;</span>),
     <span class="ident">If</span>,
-    <span class="ident">Then</span>,
     <span class="ident">Else</span>,
     <span class="ident">Elif</span>,
     <span class="ident">For</span>,
@@ -710,7 +707,6 @@
     <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;false&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">Tok</span>::<span class="ident">Bool</span>(<span class="bool-val">false</span>));
     <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;true&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">Tok</span>::<span class="ident">Bool</span>(<span class="bool-val">true</span>));
     <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;if&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">Tok</span>::<span class="ident">If</span>);
-    <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;then&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">Tok</span>::<span class="ident">Then</span>);
     <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;else&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">Tok</span>::<span class="ident">Else</span>);
     <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;elif&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">Tok</span>::<span class="ident">Elif</span>);
     <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;for&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">Tok</span>::<span class="ident">For</span>);

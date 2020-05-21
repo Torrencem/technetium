@@ -485,6 +485,87 @@ pub fn or(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     })
 }
 
+pub fn bitand(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
+    let a_any = a.as_any();
+    let b_any = b.as_any();
+    match (a_any.type_id(), b_any.type_id()) {
+        (a, b)
+            if a == TypeId::of::<ObjectCell<IntObject>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let res = IntObject::new_big(&val_a.val & &val_b.val);
+            Ok(res)
+        }
+        _ => Err(RuntimeError::type_error(format!(
+            "Cannot bitand type {} by type {}",
+            a.technetium_type_name(),
+            b.technetium_type_name()
+        ))),
+    }
+}
+
+pub fn bitor(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
+    let a_any = a.as_any();
+    let b_any = b.as_any();
+    match (a_any.type_id(), b_any.type_id()) {
+        (a, b)
+            if a == TypeId::of::<ObjectCell<IntObject>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let res = IntObject::new_big(&val_a.val | &val_b.val);
+            Ok(res)
+        }
+        _ => Err(RuntimeError::type_error(format!(
+            "Cannot bitor type {} by type {}",
+            a.technetium_type_name(),
+            b.technetium_type_name()
+        ))),
+    }
+}
+
+pub fn bitxor(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
+    let a_any = a.as_any();
+    let b_any = b.as_any();
+    match (a_any.type_id(), b_any.type_id()) {
+        (a, b)
+            if a == TypeId::of::<ObjectCell<IntObject>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?;
+            let res = IntObject::new_big(&val_a.val ^ &val_b.val);
+            Ok(res)
+        }
+        _ => Err(RuntimeError::type_error(format!(
+            "Cannot bitxor type {} by type {}",
+            a.technetium_type_name(),
+            b.technetium_type_name()
+        ))),
+    }
+}
+
 pub fn and(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     Ok(if a.truthy() && b.truthy() {
         BoolObject::new(true)

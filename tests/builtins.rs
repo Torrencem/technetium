@@ -106,3 +106,22 @@ print([1, 2, [3, [4]]] == [1, 2, [3, [4]]])
 
     Ok(())
 }
+
+#[test]
+fn test_bitwise_operators() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+print(123 & 321)
+print(123 | 321)
+print(123 ^ 321)
+"#,
+    );
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("65\n379\n314\n"));
+
+    Ok(())
+}
+

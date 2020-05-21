@@ -129,6 +129,9 @@ pub enum Op {
     neg,
     or,
     and,
+    bitor,
+    bitand,
+    bitxor,
     cmp_lt,
     cmp_gt,
     cmp_eq,
@@ -234,6 +237,9 @@ impl fmt::Display for Op {
             | Op::neg
             | Op::or
             | Op::and
+            | Op::bitor
+            | Op::bitand
+            | Op::bitxor
             | Op::cmp_lt
             | Op::cmp_gt
             | Op::cmp_eq
@@ -624,7 +630,7 @@ impl<'code> Frame<'code> {
                 Op::or => {
                     if self.stack.len() < 2 {
                         return Err(RuntimeError::internal_error(
-                            "Tried to div less than 2 things!",
+                            "Tried to or less than 2 things!",
                         ));
                     }
                     let a = self.stack.pop().unwrap();
@@ -635,13 +641,46 @@ impl<'code> Frame<'code> {
                 Op::and => {
                     if self.stack.len() < 2 {
                         return Err(RuntimeError::internal_error(
-                            "Tried to div less than 2 things!",
+                            "Tried to and less than 2 things!",
                         ));
                     }
                     let a = self.stack.pop().unwrap();
                     let b = self.stack.pop().unwrap();
                     self.stack
                         .push(try_debug!(self, ds, dsw, builtins::and(b, a)))
+                }
+                Op::bitor => {
+                    if self.stack.len() < 2 {
+                        return Err(RuntimeError::internal_error(
+                            "Tried to bitor less than 2 things!",
+                        ));
+                    }
+                    let a = self.stack.pop().unwrap();
+                    let b = self.stack.pop().unwrap();
+                    self.stack
+                        .push(try_debug!(self, ds, dsw, builtins::bitor(b, a)))
+                }
+                Op::bitand => {
+                    if self.stack.len() < 2 {
+                        return Err(RuntimeError::internal_error(
+                            "Tried to bitand less than 2 things!",
+                        ));
+                    }
+                    let a = self.stack.pop().unwrap();
+                    let b = self.stack.pop().unwrap();
+                    self.stack
+                        .push(try_debug!(self, ds, dsw, builtins::bitand(b, a)))
+                }
+                Op::bitxor => {
+                    if self.stack.len() < 2 {
+                        return Err(RuntimeError::internal_error(
+                            "Tried to bitxor less than 2 things!",
+                        ));
+                    }
+                    let a = self.stack.pop().unwrap();
+                    let b = self.stack.pop().unwrap();
+                    self.stack
+                        .push(try_debug!(self, ds, dsw, builtins::bitxor(b, a)))
                 }
                 Op::cmp_lt => {
                     if self.stack.len() < 2 {

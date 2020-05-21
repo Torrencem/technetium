@@ -196,34 +196,53 @@ LogicalExpr: Expr = {
 };
 
 Comparison: Expr = {
-	<b: Sum> => b,
-	<l:@L> <s1: Sum> "<=" <s2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
+	<b: BitExpr> => b,
+	<l:@L> <s1: BitExpr> "<=" <s2: BitExpr> <r:@R> => Expr::FuncCall(FuncCall::new(
 		Identifier::new_expr("<leq>".to_string(), l, r),
 		vec![s1, s2],
 		l, r,
 	)),
-	<l:@L> <s1: Sum> ">=" <s2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
+	<l:@L> <s1: BitExpr> ">=" <s2: BitExpr> <r:@R> => Expr::FuncCall(FuncCall::new(
 		Identifier::new_expr("<geq>".to_string(), l, r),
 		vec![s1, s2],
 		l, r,
 	)),
-	<l:@L> <s1: Sum> "<" <s2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
+	<l:@L> <s1: BitExpr> "<" <s2: BitExpr> <r:@R> => Expr::FuncCall(FuncCall::new(
 		Identifier::new_expr("<lt>".to_string(), l, r),
 		vec![s1, s2],
 		l, r,
 	)),
-	<l:@L> <s1: Sum> ">" <s2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
+	<l:@L> <s1: BitExpr> ">" <s2: BitExpr> <r:@R> => Expr::FuncCall(FuncCall::new(
 		Identifier::new_expr("<gt>".to_string(), l, r),
 		vec![s1, s2],
 		l, r,
 	)),
-	<l:@L> <s1: Sum> "==" <s2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
+	<l:@L> <s1: BitExpr> "==" <s2: BitExpr> <r:@R> => Expr::FuncCall(FuncCall::new(
 		Identifier::new_expr("<eq>".to_string(), l, r),
 		vec![s1, s2],
 		l, r,
 	)),
-	<l:@L> <s1: Sum> "!=" <s2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
+	<l:@L> <s1: BitExpr> "!=" <s2: BitExpr> <r:@R> => Expr::FuncCall(FuncCall::new(
 		Identifier::new_expr("<neq>".to_string(), l, r),
+		vec![s1, s2],
+		l, r,
+	)),
+};
+
+BitExpr: Expr = {
+	<b: Sum> => b,
+	<l:@L> <s1: Sum> "&" <s2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
+		Identifier::new_expr("<bitand>".to_string(), l, r),
+		vec![s1, s2],
+		l, r,
+	)),
+	<l:@L> <s1: Sum> "|" <s2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
+		Identifier::new_expr("<bitor>".to_string(), l, r),
+		vec![s1, s2],
+		l, r,
+	)),
+	<l:@L> <s1: Sum> "^" <s2: Sum> <r:@R> => Expr::FuncCall(FuncCall::new(
+		Identifier::new_expr("<bitxor>".to_string(), l, r),
 		vec![s1, s2],
 		l, r,
 	)),
@@ -410,6 +429,9 @@ extern {
 		"+" => Tok::Plus,
 		"-" => Tok::Minus,
 		"%" => Tok::Mod,
+		"&" => Tok::BitAnd,
+		"|" => Tok::BitOr,
+		"^" => Tok::BitXor,
 		":" => Tok::Colon,
 		">" => Tok::Greater,
 		"<" => Tok::Lesser,

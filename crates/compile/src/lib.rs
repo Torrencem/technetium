@@ -87,6 +87,9 @@ fn builtin_functions() -> HashMap<String, Op> {
     res.insert("<leq>".to_string(), Op::cmp_leq);
     res.insert("<and>".to_string(), Op::and);
     res.insert("<or>".to_string(), Op::or);
+    res.insert("<bitand>".to_string(), Op::bitand);
+    res.insert("<bitor>".to_string(), Op::bitor);
+    res.insert("<bitxor>".to_string(), Op::bitxor);
     res.insert("<not>".to_string(), Op::not);
     res.insert("<neg>".to_string(), Op::neg);
     res.insert("<index>".to_string(), Op::index_get);

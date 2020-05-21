@@ -39,6 +39,9 @@ pub enum Tok {
     Not,
     Or,
     And,
+    BitOr,
+    BitAnd,
+    BitXor,
     AddAssign,
     SubAssign,
     MulAssign,
@@ -402,6 +405,7 @@ impl<'input> Iterator for Lexer<'input> {
                 Some((i, ',')) => return Some(Ok((i, Tok::Comma, i + 1))),
                 Some((i, '.')) => return Some(Ok((i, Tok::Dot, i + 1))),
                 Some((i, ':')) => return Some(Ok((i, Tok::Colon, i + 1))),
+                Some((i, '^')) => return Some(Ok((i, Tok::BitXor, i + 1))),
                 Some((i, '+')) => match self.chars.peek() {
                     Some((_, '=')) => {
                         self.chars.next();
@@ -503,10 +507,7 @@ impl<'input> Iterator for Lexer<'input> {
                         return Some(Ok((i, Tok::Or, i + 2)));
                     }
                     Some((i, _)) => {
-                        return Some(Err(MiscParseError::lex(
-                            "Unexpected lone |; expected ||",
-                            Some(*i),
-                        )));
+                        return Some(Ok((*i, Tok::BitOr, *i + 1)));
                     }
                     None => {
                         return Some(Err(MiscParseError::lex(
@@ -521,10 +522,7 @@ impl<'input> Iterator for Lexer<'input> {
                         return Some(Ok((i, Tok::And, i + 2)));
                     }
                     Some((i, _)) => {
-                        return Some(Err(MiscParseError::lex(
-                            "Unexpected lone &; expected &&",
-                            Some(*i),
-                        )));
+                        return Some(Ok((*i, Tok::BitAnd, *i + 1)));
                     }
                     None => {
                         return Some(Err(MiscParseError::lex(

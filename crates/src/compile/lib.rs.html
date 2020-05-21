@@ -771,6 +771,9 @@
 <span id="771">771</span>
 <span id="772">772</span>
 <span id="773">773</span>
+<span id="774">774</span>
+<span id="775">775</span>
+<span id="776">776</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">lalrpop_util</span>;
@@ -861,6 +864,9 @@
     <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;&lt;leq&gt;&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">Op</span>::<span class="ident">cmp_leq</span>);
     <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;&lt;and&gt;&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">Op</span>::<span class="ident">and</span>);
     <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;&lt;or&gt;&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">Op</span>::<span class="ident">or</span>);
+    <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;&lt;bitand&gt;&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">Op</span>::<span class="ident">bitand</span>);
+    <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;&lt;bitor&gt;&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">Op</span>::<span class="ident">bitor</span>);
+    <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;&lt;bitxor&gt;&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">Op</span>::<span class="ident">bitxor</span>);
     <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;&lt;not&gt;&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">Op</span>::<span class="ident">not</span>);
     <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;&lt;neg&gt;&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">Op</span>::<span class="ident">neg</span>);
     <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;&lt;index&gt;&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">Op</span>::<span class="ident">index_get</span>);

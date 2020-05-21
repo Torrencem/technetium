@@ -59,7 +59,6 @@ pub enum Tok {
     FormatStringLit(String, Vec<(usize, String)>),
     ShStatement(String, Vec<(usize, String)>),
     If,
-    Then,
     Else,
     Elif,
     For,
@@ -79,7 +78,6 @@ pub fn get_keywords() -> HashMap<String, Tok> {
     res.insert("false".to_string(), Tok::Bool(false));
     res.insert("true".to_string(), Tok::Bool(true));
     res.insert("if".to_string(), Tok::If);
-    res.insert("then".to_string(), Tok::Then);
     res.insert("else".to_string(), Tok::Else);
     res.insert("elif".to_string(), Tok::Elif);
     res.insert("for".to_string(), Tok::For);

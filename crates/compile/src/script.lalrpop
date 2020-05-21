@@ -458,7 +458,6 @@ extern {
 		format_string_lit => Tok::FormatStringLit(<String>, <Vec<(usize, String)>>),
 		sh_statement => Tok::ShStatement(<String>, <Vec<(usize, String)>>),
 		"if" => Tok::If,
-		"then" => Tok::Then,
 		"else" => Tok::Else,
 		"elif" => Tok::Elif,
 		"for" => Tok::For,

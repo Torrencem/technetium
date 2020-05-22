@@ -21,3 +21,4 @@ This is the home of the language documentation. You can find the source code doc
    standard/math
    standard/utilities
    standard/special_funcs
+   standard/functional

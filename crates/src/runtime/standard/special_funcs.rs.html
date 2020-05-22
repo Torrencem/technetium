@@ -165,7 +165,7 @@
 
 <span class="kw">use</span> <span class="ident">num</span>::<span class="ident">bigint</span>::<span class="ident">ToBigInt</span>;
 
-<span class="macro">func_object_void</span><span class="macro">!</span>(<span class="ident">Print</span>, (<span class="number">0</span>..), <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+<span class="macro">func_object_void</span><span class="macro">!</span>(<span class="ident">Print</span>, (<span class="number">0</span>..), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">first</span> <span class="op">=</span> <span class="bool-val">true</span>;
     <span class="kw">for</span> <span class="ident">arg</span> <span class="kw">in</span> <span class="ident">args</span>.<span class="ident">iter</span>() {
         <span class="kw">if</span> <span class="op">!</span><span class="ident">first</span> {
@@ -178,7 +178,7 @@
     <span class="macro">println</span><span class="macro">!</span>();
 });
 
-<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Exit</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Exit</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">arg_any</span> <span class="op">=</span> <span class="ident">args</span>[<span class="number">0</span>].<span class="ident">as_any</span>();
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">int_obj</span>) <span class="op">=</span> <span class="ident">arg_any</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">IntObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
         <span class="kw">let</span> <span class="ident">int_obj</span> <span class="op">=</span> <span class="ident">int_obj</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;
@@ -188,22 +188,22 @@
     }
 });
 
-<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Type</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Type</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
     <span class="prelude-val">Ok</span>(<span class="ident">StringObject</span>::<span class="ident">new</span>(<span class="ident">args</span>[<span class="number">0</span>].<span class="ident">technetium_type_name</span>()))
 });
 
-<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Hash</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Hash</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">hash</span> <span class="op">=</span> <span class="ident">args</span>[<span class="number">0</span>].<span class="ident">technetium_hash</span>().<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">RuntimeError</span>::<span class="ident">type_error</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Unhashable type: {}&quot;</span>, <span class="ident">args</span>[<span class="number">0</span>].<span class="ident">technetium_type_name</span>())))<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">hash</span> <span class="op">=</span> <span class="ident">hash</span>.<span class="ident">to_bigint</span>().<span class="ident">unwrap</span>();
     <span class="prelude-val">Ok</span>(<span class="ident">IntObject</span>::<span class="ident">new_big</span>(<span class="ident">hash</span>))
 });
 
-<span class="macro">func_object_void</span><span class="macro">!</span>(<span class="ident">Lock</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+<span class="macro">func_object_void</span><span class="macro">!</span>(<span class="ident">Lock</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
     <span class="ident">args</span>[<span class="number">0</span>].<span class="ident">lock_immutable</span>()
 });
 
-<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Clone_</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
-    <span class="prelude-val">Ok</span>(<span class="ident">args</span>[<span class="number">0</span>].<span class="ident">technetium_clone</span>()<span class="question-mark">?</span>)
+<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Clone_</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">context</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+    <span class="prelude-val">Ok</span>(<span class="ident">args</span>[<span class="number">0</span>].<span class="ident">technetium_clone</span>(<span class="ident">context</span>)<span class="question-mark">?</span>)
 });
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
@@ -214,7 +214,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Object</span> <span class="kw">for</span> <span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">Range</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">technetium_clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">technetium_clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_context</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RuntimeContext</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">this</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">this</span>.<span class="ident">clone</span>()))
     }
@@ -223,7 +223,7 @@
         <span class="string">&quot;range&quot;</span>.<span class="ident">to_string</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">make_iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">make_iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_context</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RuntimeContext</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">this</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="ident">RangeIterator</span>::<span class="ident">new</span>(<span class="ident">this</span>.<span class="ident">clone</span>()))
     }
@@ -248,7 +248,7 @@
         <span class="string">&quot;iterator(range)&quot;</span>.<span class="ident">to_string</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">take_iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">take_iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_context</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RuntimeContext</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">this</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">try_borrow_mut</span>()<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">step</span> <span class="op">=</span> <span class="ident">this</span>.<span class="ident">inner</span>.<span class="ident">step</span>;
         <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="ident">this</span>.<span class="ident">inner</span>.<span class="ident">end</span>;
@@ -262,7 +262,7 @@
     }
 }
 
-<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">RangeFunc</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">3</span>), <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">RangeFunc</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">3</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="ident">args</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">1</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">int_obj</span>) <span class="op">=</span> <span class="ident">args</span>[<span class="number">0</span>].<span class="ident">as_any</span>().<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">IntObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
             <span class="kw">let</span> <span class="ident">int_obj</span> <span class="op">=</span> <span class="ident">int_obj</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;

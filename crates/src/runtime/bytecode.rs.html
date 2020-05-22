@@ -1079,8 +1079,20 @@
 <span id="1079">1079</span>
 <span id="1080">1080</span>
 <span id="1081">1081</span>
+<span id="1082">1082</span>
+<span id="1083">1083</span>
+<span id="1084">1084</span>
+<span id="1085">1085</span>
+<span id="1086">1086</span>
+<span id="1087">1087</span>
+<span id="1088">1088</span>
+<span id="1089">1089</span>
+<span id="1090">1090</span>
+<span id="1091">1091</span>
+<span id="1092">1092</span>
+<span id="1093">1093</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="doccomment">//! Definitions for the technetium bytecode, which all programs will</span>
+
 <span class="doccomment">//! get compiled into to be run.</span>
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
@@ -1406,6 +1418,12 @@
         }
     }
 
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">rt_context</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeContext</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+        <span class="ident">RuntimeContext</span> {
+            <span class="ident">memory</span>: <span class="self">self</span>.<span class="ident">locals</span>
+        }
+    }
+
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">default_namespace</span> <span class="op">=</span> <span class="ident">get_default_namespace</span>();
 
@@ -1518,7 +1536,7 @@
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">method_name</span>) <span class="op">=</span> <span class="ident">name</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">StringObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
                         <span class="kw">let</span> <span class="ident">method_name</span> <span class="op">=</span> <span class="ident">method_name</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;
                         <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">method_name</span>.<span class="ident">val</span>;
-                        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">obj</span>.<span class="ident">call_method</span>(<span class="ident">val</span>.<span class="ident">as_ref</span>(), <span class="kw-2">&amp;</span><span class="ident">args</span>));
+                        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">obj</span>.<span class="ident">call_method</span>(<span class="ident">val</span>.<span class="ident">as_ref</span>(), <span class="kw-2">&amp;</span><span class="ident">args</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">rt_context</span>()));
                         <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">res</span>);
                     } <span class="kw">else</span> {
                         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(<span class="string">&quot;Method name not a string!&quot;</span>));
@@ -1534,7 +1552,7 @@
                     <span class="kw">let</span> <span class="ident">args</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> <span class="op">=</span>
                         <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">drain</span>((<span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="ident">nargs</span>)..).<span class="ident">collect</span>();
                     <span class="kw">let</span> <span class="ident">func</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
-                    <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">func</span>.<span class="ident">call</span>(<span class="kw-2">&amp;</span><span class="ident">args</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">locals</span>));
+                    <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">func</span>.<span class="ident">call</span>(<span class="kw-2">&amp;</span><span class="ident">args</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">rt_context</span>()));
                     <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">res</span>);
                 }
                 <span class="ident">Op</span>::<span class="ident">get_attr</span> <span class="op">=</span><span class="op">&gt;</span> {
@@ -1550,7 +1568,7 @@
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">attr_name</span>) <span class="op">=</span> <span class="ident">attr</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">StringObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
                         <span class="kw">let</span> <span class="ident">attr_name</span> <span class="op">=</span> <span class="ident">attr_name</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;
                         <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">attr_name</span>.<span class="ident">val</span>;
-                        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">obj</span>.<span class="ident">get_attr</span>(<span class="ident">val</span>.<span class="ident">clone</span>()));
+                        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">obj</span>.<span class="ident">get_attr</span>(<span class="ident">val</span>.<span class="ident">clone</span>(), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">rt_context</span>()));
                         <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">res</span>);
                     } <span class="kw">else</span> {
                         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(<span class="string">&quot;Attribute name not a string!&quot;</span>));
@@ -1570,7 +1588,7 @@
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">attr_name</span>) <span class="op">=</span> <span class="ident">attr</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">StringObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
                         <span class="kw">let</span> <span class="ident">attr_name</span> <span class="op">=</span> <span class="ident">attr_name</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;
                         <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">attr_name</span>.<span class="ident">val</span>;
-                        <span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">obj</span>.<span class="ident">set_attr</span>(<span class="ident">val</span>.<span class="ident">clone</span>(), <span class="ident">toset</span>));
+                        <span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">obj</span>.<span class="ident">set_attr</span>(<span class="ident">val</span>.<span class="ident">clone</span>(), <span class="ident">toset</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">rt_context</span>()));
                     } <span class="kw">else</span> {
                         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(<span class="string">&quot;Attribute name not a string!&quot;</span>));
                     }
@@ -1907,7 +1925,7 @@
                             }
                         };
                     <span class="kw">let</span> <span class="ident">parent</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
-                    <span class="kw">let</span> <span class="ident">length</span> <span class="op">=</span> <span class="ident">conversion</span>::<span class="ident">to_int</span>(<span class="ident">parent</span>.<span class="ident">call_method</span>(<span class="string">&quot;length&quot;</span>, <span class="kw-2">&amp;</span>[])<span class="question-mark">?</span>)<span class="question-mark">?</span>
+                    <span class="kw">let</span> <span class="ident">length</span> <span class="op">=</span> <span class="ident">conversion</span>::<span class="ident">to_int</span>(<span class="ident">parent</span>.<span class="ident">call_method</span>(<span class="string">&quot;length&quot;</span>, <span class="kw-2">&amp;</span>[], <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">rt_context</span>())<span class="question-mark">?</span>)<span class="question-mark">?</span>
                         .<span class="ident">to_i64</span>()
                         .<span class="ident">unwrap</span>();
                     <span class="comment">// Make slices like val[1:-1] work</span>
@@ -1933,7 +1951,9 @@
                 <span class="ident">Op</span>::<span class="ident">make_iter</span> <span class="op">=</span><span class="op">&gt;</span> {
                     <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>();
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=</span> <span class="ident">val</span> {
-                        <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">val</span>.<span class="ident">make_iter</span>()));
+                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">context</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">rt_context</span>();
+                        <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">val</span>.<span class="ident">make_iter</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">context</span>));
+                        <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">val</span>);
                     } <span class="kw">else</span> {
                         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
                             <span class="string">&quot;Tried to call make_iter on nothing!&quot;</span>,
@@ -1943,7 +1963,7 @@
                 <span class="ident">Op</span>::<span class="ident">take_iter</span>(<span class="ident">offset</span>) <span class="op">=</span><span class="op">&gt;</span> {
                     <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>();
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=</span> <span class="ident">val</span> {
-                        <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">val</span>.<span class="ident">take_iter</span>());
+                        <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">val</span>.<span class="ident">take_iter</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">rt_context</span>()));
                         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=</span> <span class="ident">val</span> {
                             <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">val</span>);
                         } <span class="kw">else</span> {
@@ -2045,13 +2065,17 @@
                 }
                 <span class="ident">Op</span>::<span class="ident">push_const_clone</span>(<span class="ident">const_descr</span>) <span class="op">=</span><span class="op">&gt;</span> {
                     <span class="kw">let</span> <span class="ident">obj</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">global_context</span>.<span class="ident">constant_descriptors</span>.<span class="ident">get</span>(<span class="ident">const_descr</span>);
+                    <span class="kw">let</span> <span class="ident">obj_ref</span>: <span class="ident">ObjectRef</span>;
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">obj</span>) <span class="op">=</span> <span class="ident">obj</span> {
-                        <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">obj</span>.<span class="ident">technetium_clone</span>()<span class="question-mark">?</span>);
+                        <span class="ident">obj_ref</span> <span class="op">=</span> <span class="ident">ObjectRef</span>::<span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="ident">obj</span>);
                     } <span class="kw">else</span> {
                         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
                             <span class="string">&quot;Reference to constant that doesn&#39;t exist!&quot;</span>,
                         ));
                     }
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">context</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">rt_context</span>();
+                    <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="ident">obj_ref</span>.<span class="ident">technetium_clone</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">context</span>)<span class="question-mark">?</span>;
+                    <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">val</span>);
                 }
                 <span class="ident">Op</span>::<span class="ident">push_global_default</span>(<span class="ident">const_descr</span>) <span class="op">=</span><span class="op">&gt;</span> {
                     <span class="kw">let</span> <span class="ident">obj</span> <span class="op">=</span> <span class="ident">default_namespace</span>.<span class="ident">get</span>(<span class="ident">const_descr</span>);

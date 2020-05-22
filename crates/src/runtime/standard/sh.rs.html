@@ -260,30 +260,31 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stdout</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stdout</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">output</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">output</span> {
             <span class="kw">let</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">output</span>.<span class="ident">stdout</span>;
             <span class="prelude-val">Ok</span>(<span class="ident">StringObject</span>::<span class="ident">new</span>(
                 <span class="ident">String</span>::<span class="ident">from_utf8_lossy</span>(<span class="ident">bytes</span>).<span class="ident">into_owned</span>(),
             ))
         } <span class="kw">else</span> {
-            <span class="comment">// TODO: Should this be like this?</span>
-            <span class="prelude-val">Ok</span>(<span class="ident">StringObject</span>::<span class="ident">new</span>(<span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>()))
+            <span class="self">self</span>.<span class="ident">join</span>()<span class="question-mark">?</span>;
+            <span class="self">self</span>.<span class="ident">stdout</span>()
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stderr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stderr</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">output</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">output</span> {
             <span class="kw">let</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">output</span>.<span class="ident">stderr</span>;
             <span class="prelude-val">Ok</span>(<span class="ident">StringObject</span>::<span class="ident">new</span>(
                 <span class="ident">String</span>::<span class="ident">from_utf8_lossy</span>(<span class="ident">bytes</span>).<span class="ident">into_owned</span>(),
             ))
         } <span class="kw">else</span> {
-            <span class="prelude-val">Ok</span>(<span class="ident">StringObject</span>::<span class="ident">new</span>(<span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>()))
+            <span class="self">self</span>.<span class="ident">join</span>()<span class="question-mark">?</span>;
+            <span class="self">self</span>.<span class="ident">stderr</span>()
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">exit_code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">exit_code</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">output</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">output</span> {
             <span class="kw">let</span> <span class="ident">status</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">output</span>.<span class="ident">status</span>;
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=</span> <span class="ident">status</span>.<span class="ident">code</span>() {
@@ -292,9 +293,8 @@
                 <span class="prelude-val">Ok</span>(<span class="ident">BoolObject</span>::<span class="ident">new</span>(<span class="ident">status</span>.<span class="ident">success</span>()))
             }
         } <span class="kw">else</span> {
-            <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">type_error</span>(
-                <span class="string">&quot;Called exit_code() before process exited!&quot;</span>,
-            ))
+            <span class="self">self</span>.<span class="ident">join</span>()<span class="question-mark">?</span>;
+            <span class="self">self</span>.<span class="ident">exit_code</span>()
         }
     }
 
@@ -315,7 +315,7 @@
         <span class="string">&quot;sh&quot;</span>.<span class="ident">to_string</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">call_method</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">method</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">args</span>: <span class="kw-2">&amp;</span>[<span class="ident">ObjectRef</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">call_method</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">method</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">args</span>: <span class="kw-2">&amp;</span>[<span class="ident">ObjectRef</span>], <span class="ident">_context</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RuntimeContext</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">this</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">try_borrow_mut</span>()<span class="question-mark">?</span>;
         <span class="kw">if</span> <span class="op">!</span><span class="ident">args</span>.<span class="ident">is_empty</span>() {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">type_error</span>(
@@ -337,7 +337,7 @@
     }
 }
 
-<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Sh</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Sh</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">arg_any</span> <span class="op">=</span> <span class="ident">args</span>[<span class="number">0</span>].<span class="ident">as_any</span>();
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">str_obj</span>) <span class="op">=</span> <span class="ident">arg_any</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">StringObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
         <span class="kw">let</span> <span class="ident">str_obj</span> <span class="op">=</span> <span class="ident">str_obj</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;
@@ -348,7 +348,7 @@
     }
 });
 
-<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Cd</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Cd</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">arg_any</span> <span class="op">=</span> <span class="ident">args</span>[<span class="number">0</span>].<span class="ident">as_any</span>();
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">str_obj</span>) <span class="op">=</span> <span class="ident">arg_any</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">StringObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
         <span class="kw">let</span> <span class="ident">str_obj</span> <span class="op">=</span> <span class="ident">str_obj</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;
@@ -361,15 +361,15 @@
     }
 });
 
-<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Os</span>, (<span class="number">0</span>..<span class="op">=</span><span class="number">0</span>), <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Os</span>, (<span class="number">0</span>..<span class="op">=</span><span class="number">0</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
     <span class="prelude-val">Ok</span>(<span class="ident">StringObject</span>::<span class="ident">new</span>(<span class="ident">os_type</span>()<span class="question-mark">?</span>))
 });
 
-<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">LinuxDistro</span>, (<span class="number">0</span>..<span class="op">=</span><span class="number">0</span>), <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">LinuxDistro</span>, (<span class="number">0</span>..<span class="op">=</span><span class="number">0</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
     <span class="prelude-val">Ok</span>(<span class="ident">StringObject</span>::<span class="ident">new</span>(<span class="ident">linux_os_release</span>()<span class="question-mark">?</span>.<span class="ident">name</span>.<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;Unknown&quot;</span>.<span class="ident">to_string</span>())))
 });
 
-<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Args</span>, (<span class="number">0</span>..<span class="op">=</span><span class="number">0</span>), <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Args</span>, (<span class="number">0</span>..<span class="op">=</span><span class="number">0</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
     <span class="kw">for</span> <span class="ident">val</span> <span class="kw">in</span> <span class="ident">PARSED_CLARGS</span>.<span class="ident">get</span>().<span class="ident">unwrap</span>().<span class="ident">iter</span>() {
         <span class="ident">res</span>.<span class="ident">push</span>(<span class="ident">StringObject</span>::<span class="ident">new</span>(<span class="ident">val</span>.<span class="ident">clone</span>()));
@@ -377,7 +377,7 @@
     <span class="prelude-val">Ok</span>(<span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">List</span> { <span class="ident">contents</span>: <span class="ident">res</span> }))
 });
 
-<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Which</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Which</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">which</span>::<span class="ident">which</span>(<span class="ident">args</span>[<span class="number">0</span>].<span class="ident">to_string</span>()<span class="question-mark">?</span>)
         .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">RuntimeError</span>::<span class="ident">child_process_error</span>(<span class="ident">e</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>;
 

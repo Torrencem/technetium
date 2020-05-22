@@ -395,6 +395,10 @@
 <span id="395">395</span>
 <span id="396">396</span>
 <span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">builtins</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">bytecode</span>;
@@ -656,6 +660,10 @@
     }
 }
 
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RuntimeContext</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="ident">memory</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">MemoryManager</span>,
+}
+
 <span class="doccomment">/// The primary trait for objects in technetium.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Types that implement ``Object``</span>
@@ -664,7 +672,7 @@
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Object</span>: <span class="ident">Any</span> <span class="op">+</span> <span class="ident">ToAny</span> <span class="op">+</span> <span class="ident">OpaqueClone</span> <span class="op">+</span> <span class="ident">RawPointer</span> <span class="op">+</span> <span class="ident">LockImmutable</span> {
     <span class="doccomment">/// Create a deep clone of an object. This is primarily used in the ``clone``</span>
     <span class="doccomment">/// function in technetium</span>
-    <span class="kw">fn</span> <span class="ident">technetium_clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">technetium_clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_context</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RuntimeContext</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">type_error</span>(<span class="macro">format</span><span class="macro">!</span>(
             <span class="string">&quot;{} can not be cloned&quot;</span>,
             <span class="self">self</span>.<span class="ident">technetium_type_name</span>()
@@ -699,7 +707,7 @@
     }
     
     <span class="doccomment">/// Get an attribute of an object</span>
-    <span class="kw">fn</span> <span class="ident">get_attr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_attr</span>: <span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_attr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_attr</span>: <span class="ident">String</span>, <span class="ident">_context</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RuntimeContext</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">attribute_error</span>(<span class="macro">format</span><span class="macro">!</span>(
             <span class="string">&quot;{} has no attributes&quot;</span>,
             <span class="self">self</span>.<span class="ident">technetium_type_name</span>()
@@ -707,7 +715,7 @@
     }
     
     <span class="doccomment">/// Set an attribute of an object</span>
-    <span class="kw">fn</span> <span class="ident">set_attr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_attr</span>: <span class="ident">String</span>, <span class="ident">_val</span>: <span class="ident">ObjectRef</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">set_attr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_attr</span>: <span class="ident">String</span>, <span class="ident">_val</span>: <span class="ident">ObjectRef</span>, <span class="ident">_context</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RuntimeContext</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">attribute_error</span>(<span class="macro">format</span><span class="macro">!</span>(
             <span class="string">&quot;Cannot set attributes of {}&quot;</span>,
             <span class="self">self</span>.<span class="ident">technetium_type_name</span>()
@@ -715,7 +723,7 @@
     }
     
     <span class="doccomment">/// Call a given method of an object</span>
-    <span class="kw">fn</span> <span class="ident">call_method</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_method</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">_args</span>: <span class="kw-2">&amp;</span>[<span class="ident">ObjectRef</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">call_method</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_method</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">_args</span>: <span class="kw-2">&amp;</span>[<span class="ident">ObjectRef</span>], <span class="ident">_context</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RuntimeContext</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">attribute_error</span>(<span class="macro">format</span><span class="macro">!</span>(
             <span class="string">&quot;Cannot call method of {}&quot;</span>,
             <span class="self">self</span>.<span class="ident">technetium_type_name</span>()
@@ -727,7 +735,7 @@
     <span class="doccomment">/// This takes a memory manager</span>
     <span class="doccomment">/// primarily for the [Function](struct.Function.html) object,</span>
     <span class="doccomment">/// which needs to be able to reference and change locals.</span>
-    <span class="kw">fn</span> <span class="ident">call</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_args</span>: <span class="kw-2">&amp;</span>[<span class="ident">ObjectRef</span>], <span class="ident">_locals</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">MemoryManager</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">call</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_args</span>: <span class="kw-2">&amp;</span>[<span class="ident">ObjectRef</span>], <span class="ident">_context</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RuntimeContext</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">type_error</span>(<span class="macro">format</span><span class="macro">!</span>(
             <span class="string">&quot;Object of type {} is not callable&quot;</span>,
             <span class="self">self</span>.<span class="ident">technetium_type_name</span>()
@@ -736,7 +744,7 @@
     
     <span class="doccomment">/// Create an iterator over an object. This is used for initializing</span>
     <span class="doccomment">/// ``for`` loops.</span>
-    <span class="kw">fn</span> <span class="ident">make_iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">make_iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_context</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RuntimeContext</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">type_error</span>(<span class="macro">format</span><span class="macro">!</span>(
             <span class="string">&quot;Object of type {} cannot be made into an iterator&quot;</span>,
             <span class="self">self</span>.<span class="ident">technetium_type_name</span>()
@@ -745,7 +753,7 @@
     
     <span class="doccomment">/// Take from this object, assuming it is an iterator. This is used for</span>
     <span class="doccomment">/// stepping through ``for`` loops.</span>
-    <span class="kw">fn</span> <span class="ident">take_iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">take_iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_context</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RuntimeContext</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">type_error</span>(<span class="macro">format</span><span class="macro">!</span>(
             <span class="string">&quot;Object of type {} cannot be iterated&quot;</span>,
             <span class="self">self</span>.<span class="ident">technetium_type_name</span>()

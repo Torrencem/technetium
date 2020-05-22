@@ -1,15 +1,16 @@
 
 This is a rough todo list of features I need to add to the language:
 
-* add reduce
-* generators
-* comprehensions
-* defer block
-* way to get reference to self in a lambda expression (a la this in javascript)
 * Update function doc style according to https://pythonhosted.org/an_example_pypi_project/sphinx.html#function-definitions
+* Add a bunch of examples to documentation, especially for map filter
 * add some functions relating to https://github.com/xdg-rs/dirs
+* add reduce
+* way to get reference to self in a lambda expression (a la this in javascript)
+* defer
 * interactive mode (a la python)
 * tertiery expressions (if blah then blah else blah)
+* generators
+* comprehensions
 * pass Files from main around in compile context, to prepare for multi-file programs
 * multi-file programs (import from another file) using "module" objects
 * add multiple error reporting for format strings

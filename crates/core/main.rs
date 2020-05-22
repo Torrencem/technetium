@@ -23,6 +23,13 @@ use codespan_reporting::term::termcolor::{ColorChoice, StandardStream};
 
 use log::Level;
 
+use std::fmt::Display;
+
+fn fail<D: Display, S: Display>(message: S, e: D) -> ! {
+    eprintln!("{}: {}", message, e);
+    exit(1)
+}
+
 /// The main application entry point
 fn main() {
     let matches = App::new("technetium")
@@ -81,12 +88,12 @@ fn main() {
 
     runtime::PARSED_CLARGS.set(extra_args).unwrap();
 
-    logging::init(log_level).expect("error initializing logging");
+    logging::init(log_level).expect("Error initializing logging");
 
     let mut files: Files<Cow<'_, str>> = Files::new();
 
     let input: String = match matches.value_of("INPUT") {
-        Some(file_name) => std::fs::read_to_string(file_name).expect("Error reading file"),
+        Some(file_name) => std::fs::read_to_string(file_name).unwrap_or_else(|e| fail(format!("Error reading file '{}'", file_name), e)),
         None => {
             let mut buffer = String::new();
             io::stdin()

@@ -16,7 +16,6 @@ pub static STANDARD_CONTEXT_ID: ContextId = 0;
 
 pub fn get_default_namespace_descriptors() -> HashMap<String, GlobalConstantDescriptor> {
     let mut res: HashMap<String, GlobalConstantDescriptor> = HashMap::new();
-    res.insert("print".to_string(), (STANDARD_CONTEXT_ID, 0));
     res.insert("exit".to_string(), (STANDARD_CONTEXT_ID, 1));
     res.insert("range".to_string(), (STANDARD_CONTEXT_ID, 2));
     res.insert("sh".to_string(), (STANDARD_CONTEXT_ID, 3));
@@ -48,15 +47,17 @@ pub fn get_default_namespace_descriptors() -> HashMap<String, GlobalConstantDesc
     res.insert("which".to_string(), (STANDARD_CONTEXT_ID, 29));
     res.insert("map".to_string(), (STANDARD_CONTEXT_ID, 30));
     res.insert("filter".to_string(), (STANDARD_CONTEXT_ID, 31));
+    res.insert("print".to_string(), (STANDARD_CONTEXT_ID, 32));
+    res.insert("printr".to_string(), (STANDARD_CONTEXT_ID, 33));
+    res.insert("println".to_string(), (STANDARD_CONTEXT_ID, 34));
+    res.insert("eprint".to_string(), (STANDARD_CONTEXT_ID, 35));
+    res.insert("eprintr".to_string(), (STANDARD_CONTEXT_ID, 36));
+    res.insert("eprintln".to_string(), (STANDARD_CONTEXT_ID, 37));
     res
 }
 
 pub fn get_default_namespace() -> HashMap<GlobalConstantDescriptor, ObjectRef> {
     let mut res: HashMap<GlobalConstantDescriptor, ObjectRef> = HashMap::new();
-    res.insert(
-        (STANDARD_CONTEXT_ID, 0),
-        ObjectRef::new(special_funcs::Print),
-    );
     res.insert(
         (STANDARD_CONTEXT_ID, 1),
         ObjectRef::new(special_funcs::Exit),
@@ -109,6 +110,12 @@ pub fn get_default_namespace() -> HashMap<GlobalConstantDescriptor, ObjectRef> {
     res.insert((STANDARD_CONTEXT_ID, 29), ObjectRef::new(sh::Which));
     res.insert((STANDARD_CONTEXT_ID, 30), ObjectRef::new(functional::MapFunc));
     res.insert((STANDARD_CONTEXT_ID, 31), ObjectRef::new(functional::FilterFunc));
+    res.insert((STANDARD_CONTEXT_ID, 32), ObjectRef::new(special_funcs::Print));
+    res.insert((STANDARD_CONTEXT_ID, 33), ObjectRef::new(special_funcs::Printr));
+    res.insert((STANDARD_CONTEXT_ID, 34), ObjectRef::new(special_funcs::Println));
+    res.insert((STANDARD_CONTEXT_ID, 35), ObjectRef::new(special_funcs::Eprint));
+    res.insert((STANDARD_CONTEXT_ID, 36), ObjectRef::new(special_funcs::Eprintr));
+    res.insert((STANDARD_CONTEXT_ID, 37), ObjectRef::new(special_funcs::Eprintln));
     res
 }
 

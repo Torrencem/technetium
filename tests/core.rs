@@ -17,11 +17,11 @@ func create_counter() {
 }
 
 c1 = create_counter()
-print(c1())
+println(c1())
 c2 = create_counter()
-print(c1())
-print(c2())
-print(c1())
+println(c1())
+println(c2())
+println(c1())
 "#,
     );
 
@@ -37,12 +37,12 @@ fn loops() -> Result<(), TestError> {
         r#"
 x = 10
 while x > 1 {
-    print(x)
+    println(x)
     x -= 2
 }
 
 for val in [123, 123.456, "world"] {
-    print("Hello " + val)
+    println("Hello " + val)
 }
 "#,
     );
@@ -67,9 +67,9 @@ func fib(n) {
     }
 }
 
-print(fib(5))
-print(fib(10))
-print(fib(15))
+println(fib(5))
+println(fib(10))
+println(fib(15))
 "#,
     );
 
@@ -83,8 +83,8 @@ fn method_simple() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
-print([1, 2, 3, "hello"].length())
-print(["we", 123.01, 999].length())
+println([1, 2, 3, "hello"].length())
+println(["we", 123.01, 999].length())
 "#,
     );
 
@@ -98,8 +98,8 @@ fn comments() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
-print("Hello world!")  # To the world
-print("Hi again!")          # To whom?
+println("Hello world!")  # To the world
+println("Hi again!")          # To whom?
 "#,
     );
 
@@ -111,10 +111,10 @@ print("Hi again!")          # To whom?
     cmd.write_stdin(
         r#"
 # blank here
-print("Hello world!")  # To the world
+println("Hello world!")  # To the world
 # Fully blank line
 
-print("Hi again!")          # To whom?
+println("Hi again!")          # To whom?
 "#,
     );
 
@@ -132,8 +132,8 @@ fn test_substitution() -> Result<(), TestError> {
         r#"
 x = 10
 s = ~"I can say x isn't {x + 2}"
-print(s)
-print(~"S was: {s}")
+println(s)
+println(~"S was: {s}")
 "#,
     );
 
@@ -149,7 +149,7 @@ my_num = 10
 if my_num > 50 {
 	$ cat /dev/urandom | head -c {my_num * 3}
 } else {
-	print(~"Number too small! The number is {my_num}")
+	println(~"Number too small! The number is {my_num}")
 }
 "#,
     );
@@ -169,15 +169,15 @@ fn test_case_of() -> Result<(), TestError> {
 my_num = 1000
 
 case my_num + 20 of {
-	10 => print("no"),
+	10 => println("no"),
 	100 => {
-		print("no!")
+		println("no!")
 	},
 	1000 => {
-		print("no")
+		println("no")
 	},
 	1020 => {
-		print("yes!")
+		println("yes!")
 	},
 }
 
@@ -192,11 +192,11 @@ case my_num + 20 of {
 my_val = "Hello there!"
 
 case my_val of {
-    "not really" => print("no"),
+    "not really" => println("no"),
 	"Hello thar!" => {
-		print("no!")
+		println("no!")
 	},
-    "Hello there!" => print("yes!"),
+    "Hello there!" => println("yes!"),
 }
 "#,
     );
@@ -211,7 +211,7 @@ fn test_short_circuiting() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
-print(true || exit(1))
+println(true || exit(1))
 "#,
     );
 
@@ -220,7 +220,7 @@ print(true || exit(1))
     let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
-print(false || exit(0))
+println(false || exit(0))
 "#,
     );
 
@@ -229,7 +229,7 @@ print(false || exit(0))
     let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
-print(true && exit(0))
+println(true && exit(0))
 "#,
     );
 
@@ -238,7 +238,7 @@ print(true && exit(0))
     let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
-print(false && exit(1))
+println(false && exit(1))
 "#,
     );
 
@@ -271,7 +271,7 @@ my_num = 10
 if my_num > 50 {
 	$ cat /dev/urandom | head -c {my_num * 3}
 } else {
-	print(~"Number too small! The number is {my_num}")
+	println(~"Number too small! The number is {my_num}")
 }
 "#,
     );
@@ -295,7 +295,7 @@ program = sh(~"echo {my_num}")
 
 program.join()
 
-print(~"program output was: {program.stdout()}")
+println(~"program output was: {program.stdout()}")
 "#,
     );
 
@@ -312,13 +312,13 @@ fn test_post_pre_ops() -> Result<(), TestError> {
         r#"
 l = [0, 0, 0, 0]
 
-print(l[1]++)  # 0
-print(l[1])  # 1
+println(l[1]++)  # 0
+println(l[1])  # 1
 
-print(++l[0])  # 1
-print(l[0])  # 1
-print(--l[0])  # 0
-print(l[0])  # 0
+println(++l[0])  # 1
+println(l[0])  # 1
+println(--l[0])  # 0
+println(l[0])  # 0
 "#,
     );
 
@@ -335,15 +335,15 @@ fn test_negative_indexing() -> Result<(), TestError> {
         r#"
 l = [0, 1, 2, 3, 4, 5]
 
-print(l[::-1])
-print(l[-2])
-print(l[-6])
+println(l[::-1])
+println(l[-2])
+println(l[-6])
 l[-1] = 100
-print(l[5])
+println(l[5])
 
 s = "Hello!"
 s[-1] = '?'
-print(s)
+println(s)
 "#,
     );
 
@@ -360,9 +360,9 @@ fn test_negative_slicing() -> Result<(), TestError> {
         r#"
 l = [0, 1, 2, 3, 4]
 
-print(l[:-1])
-print(l[1:-1])
-print(l[-2:])
+println(l[:-1])
+println(l[1:-1])
+println(l[-2:])
 "#,
     );
 
@@ -380,9 +380,9 @@ fn test_push_pop() -> Result<(), TestError> {
 l = [0, 1, 2]
 
 l.push(100)
-print(l)
+println(l)
 l.pop()
-print(l)
+println(l)
 "#,
     );
 
@@ -403,7 +403,7 @@ lock(a)
 
 a.push(4)
 
-print(a)
+println(a)
 "#,
     );
 
@@ -421,7 +421,7 @@ fn test_set_literals() -> Result<(), TestError> {
         r#"
 my_set = {1, 2, "hello!", 1, print}
 
-print(my_set)
+println(my_set)
 "#,
     );
 
@@ -436,7 +436,7 @@ print(my_set)
         r#"
 my_set = {1, 2, "hello!", 1}
 
-print(my_set)
+println(my_set)
 "#,
     );
 
@@ -456,16 +456,16 @@ fn test_dict_literals() -> Result<(), TestError> {
         r#"
 d = {"Hello": true}
 
-print(d["Hello"])
+println(d["Hello"])
 
 d = {(2, 3): "right", (4, 5): "wrong"}
 
-print(d[(2, 3)])
-print(d[(4, 5)])
+println(d[(2, 3)])
+println(d[(4, 5)])
 
 d2 = clone(d)
 
-print(d == d2)
+println(d == d2)
 "#,
     );
 
@@ -483,7 +483,7 @@ fn test_list_conversion() -> Result<(), TestError> {
         r#"
 s = "Hello!"
 
-print(list(s.chars()))
+println(list(s.chars()))
 "#,
     );
 
@@ -503,8 +503,8 @@ s = "Hello!"
 
 s = set(s.chars())
 
-print(s.contains('!'))
-print(s.contains('h'))
+println(s.contains('!'))
+println(s.contains('h'))
 "#,
     );
 
@@ -520,8 +520,8 @@ fn test_unit() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
-print(print(5) == unit)
-print((5 + 2) == unit)
+println(println(5) == unit)
+println((5 + 2) == unit)
 "#,
     );
 
@@ -541,15 +541,15 @@ add_a = \(x, y) -> x + y
 add_b = \(x, y) -> {
 	return x + y
 }
-print(add_a(10, 5))
-print(add_b(10, 5))
+println(add_a(10, 5))
+println(add_b(10, 5))
     
 func make_adder1(c) {
 	return \x -> x + c
 }
 
 f = make_adder1(100)
-print(f(25))
+println(f(25))
 
 func make_adder2(c) {
 	return \x -> {
@@ -558,7 +558,7 @@ func make_adder2(c) {
 }
 
 f = make_adder2(100)
-print(f(25))
+println(f(25))
 "#,
     );
 
@@ -573,8 +573,8 @@ counter = 1
 
 g = \() -> counter++
 
-print(g())
-print(g())
+println(g())
+println(g())
 "#,
     );
 
@@ -593,13 +593,13 @@ fn test_call_expr_funcs() -> Result<(), TestError> {
         r#"
 val = (\x -> x + 2)(2)
 
-print(val)
+println(val)
 
 l = [\x -> x + 1, \x -> x + 2, \x -> x + 3]
 
-print(l[1](10))
+println(l[1](10))
 
-print((\() -> (\x -> x + 2)((\() -> 2)()))())
+println((\() -> (\x -> x + 2)((\() -> 2)()))())
 "#,
     );
 

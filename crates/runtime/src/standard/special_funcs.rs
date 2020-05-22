@@ -7,6 +7,8 @@ use std::process::exit;
 
 use num::bigint::ToBigInt;
 
+use std::io::{self, Write};
+
 func_object_void!(Print, (0..), _c, args -> {
     let mut first = true;
     for arg in args.iter() {
@@ -17,7 +19,74 @@ func_object_void!(Print, (0..), _c, args -> {
         }
         print!("{}", arg.to_string()?);
     }
+    io::stdout().flush()?;
+});
+
+func_object_void!(Printr, (0..), _c, args -> {
+    let mut first = true;
+    for arg in args.iter() {
+        if !first {
+            print!("\t");
+        } else {
+            first = false;
+        }
+        print!("{}", arg.to_string()?);
+    }
+    print!("\r");
+    io::stdout().flush()?;
+});
+
+func_object_void!(Println, (0..), _c, args -> {
+    let mut first = true;
+    for arg in args.iter() {
+        if !first {
+            print!("\t");
+        } else {
+            first = false;
+        }
+        print!("{}", arg.to_string()?);
+    }
     println!();
+});
+
+func_object_void!(Eprint, (0..), _c, args -> {
+    let mut first = true;
+    for arg in args.iter() {
+        if !first {
+            eprint!("\t");
+        } else {
+            first = false;
+        }
+        eprint!("{}", arg.to_string()?);
+    }
+    io::stdout().flush()?;
+});
+
+func_object_void!(Eprintr, (0..), _c, args -> {
+    let mut first = true;
+    for arg in args.iter() {
+        if !first {
+            eprint!("\t");
+        } else {
+            first = false;
+        }
+        eprint!("{}", arg.to_string()?);
+    }
+    eprint!("\r");
+    io::stdout().flush()?;
+});
+
+func_object_void!(Eprintln, (0..), _c, args -> {
+    let mut first = true;
+    for arg in args.iter() {
+        if !first {
+            eprint!("\t");
+        } else {
+            first = false;
+        }
+        eprint!("{}", arg.to_string()?);
+    }
+    eprintln!();
 });
 
 func_object!(Exit, (1..=1), _c, args -> {

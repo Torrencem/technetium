@@ -12,34 +12,34 @@ x = 5
 y = 6
 z = 7
 if x < y && x <= y {
-    print(1)
+    println(1)
 }
 if y > x && y >= x {
-    print(2)
+    println(2)
 }
 if x <= x && x >= x && x == x && x != y {
-    print(3)
+    println(3)
 }
 if x < y || y < x {
-    print(4)
+    println(4)
 }
 if (x * y) / y == x {
-    print(5)
+    println(5)
 }
 x = 5.0
 y = 6.0
 z = 7.0
 if x < y && x <= y {
-    print(1)
+    println(1)
 }
 if y > x && y >= x {
-    print(2)
+    println(2)
 }
 if x <= x && x >= x && x == x && x != y {
-    print(3)
+    println(3)
 }
 if x < y || y < x {
-    print(4)
+    println(4)
 }
 "#,
     );
@@ -56,10 +56,10 @@ fn index_list_tuple() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
-print([1, 2, 3, "hello"][0])
-print(["we", 123.01, 999][2])
-print((1, 2, 3, "hello")[0])
-print(("we", 123.01, 999)[2])
+println([1, 2, 3, "hello"][0])
+println(["we", 123.01, 999][2])
+println((1, 2, 3, "hello")[0])
+println(("we", 123.01, 999)[2])
 "#,
     );
 
@@ -77,7 +77,7 @@ fn test_list_arith() -> Result<(), TestError> {
         r#"
 l = [1] * 3 + [2] * 3
 
-print(l)
+println(l)
 "#,
     );
 
@@ -93,10 +93,10 @@ fn test_list_tuple_eq() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
-print((1, 2) == (1, 2))
-print((1, 2) == (1, 3))
-print([1, 2, 3] == [1])
-print([1, 2, [3, [4]]] == [1, 2, [3, [4]]])
+println((1, 2) == (1, 2))
+println((1, 2) == (1, 3))
+println([1, 2, 3] == [1])
+println([1, 2, [3, [4]]] == [1, 2, [3, [4]]])
 "#,
     );
 
@@ -112,9 +112,9 @@ fn test_bitwise_operators() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
-print(123 & 321)
-print(123 | 321)
-print(123 ^ 321)
+println(123 & 321)
+println(123 | 321)
+println(123 ^ 321)
 "#,
     );
 

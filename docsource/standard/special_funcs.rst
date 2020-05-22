@@ -9,12 +9,37 @@ Special Functions
     :local:
     :depth: 2
 
-Special Functions
------------------
+Print Functions
+---------------
 
 .. function:: print([object], ...)  [void]
 
-    Prints its arguments, seperated by tabs. The strings that are printed are the equivelent of calling the ``string`` conversion function.
+    Prints its arguments, seperated by tabs, to standard output. The strings that are printed are the equivelent of calling the ``string`` conversion function.
+    This function will not automatically add a newline. To get this behavior, use ``println``
+
+.. function:: println([object], ...)  [void]
+
+    Prints its arguments, the same as ``print``, except ``println`` appends a newline at the end.
+
+.. function:: printr([object], ...)  [void]
+
+    Prints its arguments, the same as ``print``, except ``printr`` appends a carriage return at the end.
+
+.. function:: eprint([object], ...)  [void]
+
+    The equivelent of ``print``, but outputs to standard error instead of standard output.
+
+.. function:: eprintln([object], ...)  [void]
+
+    The equivelent of ``println``, but outputs to standard error instead of standard output.
+
+.. function:: eprintr([object], ...)  [void]
+
+    The equivelent of ``printr``, but outputs to standard error instead of standard output.
+
+
+Special Functions
+-----------------
 
 .. function:: exit([int])  [void]
 

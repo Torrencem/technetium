@@ -25,7 +25,7 @@ Since the project is still very young, all suggestions are welcome! A contributi
 ```coffeescript
 for letter in ['A', 'B', 'C', 'D'] {
 	name = "file_" + letter
-	print(~"Creating file {name}")
+	println(~"Creating file {name}")
 	$ echo "{name}" > {name}.txt
 }
 ```
@@ -53,9 +53,27 @@ func create_counter() {
 }
 
 c1 = create_counter()
-print(c1())  # 1
+println(c1())  # 1
 c2 = create_counter()
-print(c1())  # 2
-print(c2())  # 1
-print(c1())  # 3
+println(c1())  # 2
+println(c2())  # 1
+println(c1())  # 3
+```
+
+### Countdown timer
+
+```coffeescript
+# Read the first command line argument as an integer
+count = int(args()[0])
+
+while count != 0 {
+    # Print a message and return to the beginning
+    # of the line with a carriage return
+    printr(~"{count--}s remaining")
+
+    # Wait for 1 second
+    $ sleep 1
+}
+
+println()
 ```

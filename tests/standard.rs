@@ -12,7 +12,7 @@ l = [1, 2, 3]
 
 l[0] = "Pie"
 
-print(l[0])
+println(l[0])
 "#,
     );
 
@@ -25,7 +25,7 @@ l = [1, "w", 3]
 
 l[2] += 100
 
-print(l[2])
+println(l[2])
 "#,
     );
 
@@ -40,15 +40,15 @@ fn test_range() -> Result<(), TestError> {
     cmd.write_stdin(
         r#"
 for i in range(5) {
-	print(i)
+	println(i)
 }
 
 for i in range(-10, -5) {
-	print(i)
+	println(i)
 }
 
 for i in range(10, 100, 10) {
-	print(i)
+	println(i)
 }
 "#,
     );
@@ -88,8 +88,8 @@ a = "hello"
 
 b = a
 
-print(a == b)
-print(a != b)
+println(a == b)
+println(a != b)
 "#,
     );
 
@@ -104,11 +104,11 @@ fn test_bool_literals() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
-print(false && true)
+println(false && true)
 
-print(true && true)
+println(true && true)
 
-print(false || true)
+println(false || true)
 "#,
     );
 
@@ -127,8 +127,8 @@ my_name = "matt"
 
 my_name[0] = 'M'
 
-print(my_name)
-print(my_name[2])
+println(my_name)
+println(my_name[2])
 "#,
     );
 
@@ -146,7 +146,7 @@ b = clone(a)
 
 b[0] = 'h'
 
-print(a)
+println(a)
 "#,
     );
 
@@ -160,7 +160,7 @@ b = a
 
 b[0] = 'h'
 
-print(a)
+println(a)
 "#,
     );
 
@@ -178,10 +178,10 @@ f = 3.14
 i = 3
 s = "3.14"
 si = "3"
-print(int(f) == i)
-print(abs(float(s) - f) < 0.001)
-print(int(si) == i)
-print(bool(f) && bool(i) && bool(s) && bool(si))
+println(int(f) == i)
+println(abs(float(s) - f) < 0.001)
+println(int(si) == i)
+println(bool(f) && bool(i) && bool(s) && bool(si))
 "#,
     );
 
@@ -199,8 +199,8 @@ fn test_char_conversions() -> Result<(), TestError> {
         r#"
 c = '💯'
 
-print(int(c))
-print(char(int(c)))
+println(int(c))
+println(char(int(c)))
 "#,
     );
 
@@ -216,7 +216,7 @@ fn test_escape() -> Result<(), TestError> {
         r#"
 s = "random\t\"string\"\n\n"
 
-print(s.escape())
+println(s.escape())
 "#,
     );
 
@@ -234,10 +234,10 @@ fn test_slices() -> Result<(), TestError> {
         r#"
 list = [1, 2, 5, 10]
 
-print(list[::2])
-print(list[1::2])
-print(list[0:3])
-print(list[2:-1:-1])
+println(list[::2])
+println(list[1::2])
+println(list[0:3])
+println(list[2:-1:-1])
 "#,
     );
 
@@ -252,7 +252,7 @@ list = [1, 2, 5, 10]
 
 list[::2][1] = 100
 
-print(list)
+println(list)
 "#,
     );
 
@@ -270,8 +270,8 @@ fn test_lines() -> Result<(), TestError> {
         r#"
 s = "abc\n123\nj\n"
 for line in s.lines() {
-    print(line)
-    print("-")
+    println(line)
+    println("-")
 }
 "#,
     );
@@ -290,18 +290,18 @@ fn test_contains() -> Result<(), TestError> {
         r#"
 s = "hello world"
 
-print(s.contains('w'))
-print(s.contains('!'))
+println(s.contains('w'))
+println(s.contains('!'))
 
 l = [1, 2, {15, "hi"}]
 
-print(l.contains({15, "hi"}))
-print(l.contains({20, "hi"}))
+println(l.contains({15, "hi"}))
+println(l.contains({20, "hi"}))
 
 t = (1, 2, {15, "hi"})
 
-print(t.contains({15, "hi"}))
-print(t.contains({20, "hi"}))
+println(t.contains({15, "hi"}))
+println(t.contains({20, "hi"}))
 "#,
     );
 
@@ -317,7 +317,7 @@ fn test_args() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
-print(args())
+println(args())
 "#,
     );
 
@@ -327,7 +327,7 @@ print(args())
     cmd.args(&["--", "alpha", "beta", "gamma"]);
     cmd.write_stdin(
         r#"
-print(args())
+println(args())
 "#,
     );
 
@@ -345,7 +345,7 @@ fn test_map() -> Result<(), TestError> {
         r#"
 l = [10, 100]
 
-print(list(map(l, \x -> x / 10)))
+println(list(map(l, \x -> x / 10)))
 "#,
     );
 
@@ -363,7 +363,7 @@ l = [1, 2, 3, 4, 5, 6]
 
 l = list(filter(l, \x -> x % 2 == 0))
 
-print(l)
+println(l)
 "#,
     );
 

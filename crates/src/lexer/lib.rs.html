@@ -626,6 +626,7 @@
 <span id="626">626</span>
 <span id="627">627</span>
 <span id="628">628</span>
+<span id="629">629</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">CharIndices</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">FromStr</span>;
@@ -763,6 +764,7 @@
                         }
                         <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="string">&#39;n&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&#39;\n&#39;</span>),
                         <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="string">&#39;t&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&#39;\t&#39;</span>),
+                        <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="string">&#39;r&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&#39;\r&#39;</span>),
                         <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="string">&#39;&quot;&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&#39;&quot;&#39;</span>),
                         <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="string">&#39;\\&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&#39;\\&#39;</span>),
                         <span class="prelude-val">Some</span>((<span class="ident">i</span>, <span class="ident">c</span>)) <span class="op">=</span><span class="op">&gt;</span> {
@@ -802,6 +804,7 @@
                     )),
                     <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="string">&#39;n&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="string">&#39;\n&#39;</span>),
                     <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="string">&#39;t&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="string">&#39;\t&#39;</span>),
+                    <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="string">&#39;r&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="string">&#39;\r&#39;</span>),
                     <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="string">&#39;\&#39;&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="string">&#39;\&#39;&#39;</span>),
                     <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="string">&#39;\\&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="string">&#39;\\&#39;</span>),
                     <span class="prelude-val">Some</span>((<span class="ident">i</span>, <span class="ident">c</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">MiscParseError</span>::<span class="ident">lex</span>(
@@ -845,11 +848,10 @@
                         }
                         <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="string">&#39;n&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&#39;\n&#39;</span>),
                         <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="string">&#39;t&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&#39;\t&#39;</span>),
+                        <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="string">&#39;r&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&#39;\r&#39;</span>),
                         <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="string">&#39;&quot;&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&#39;&quot;&#39;</span>),
-                        <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="string">&#39;{&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> {
-                            <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&#39;\\&#39;</span>);
-                            <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&#39;{&#39;</span>);
-                        }
+                        <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="string">&#39;{&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&#39;{&#39;</span>),
+                        <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="string">&#39;}&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&#39;}&#39;</span>),
                         <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="string">&#39;\\&#39;</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&#39;\\&#39;</span>),
                         <span class="prelude-val">Some</span>((<span class="ident">i</span>, <span class="ident">c</span>)) <span class="op">=</span><span class="op">&gt;</span> {
                             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MiscParseError</span>::<span class="ident">lex</span>(

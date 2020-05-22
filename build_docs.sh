@@ -1,6 +1,8 @@
 
 rm -rf ./docs/
 
+rm -rf ./docsource/_build/
+
 git worktree prune
 
 cd docsource

@@ -353,3 +353,21 @@ print(list(map(l, \x -> x / 10)))
 
     Ok(())
 }
+
+#[test]
+fn test_filter() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+l = [1, 2, 3, 4, 5, 6]
+
+l = list(filter(l, \x -> x % 2 == 0))
+
+print(l)
+"#,
+    );
+
+    cmd.assert().success().stdout(predicate::eq("[2, 4, 6]\n"));
+
+    Ok(())
+}

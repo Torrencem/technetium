@@ -47,6 +47,7 @@ pub fn get_default_namespace_descriptors() -> HashMap<String, GlobalConstantDesc
     res.insert("args".to_string(), (STANDARD_CONTEXT_ID, 28));
     res.insert("which".to_string(), (STANDARD_CONTEXT_ID, 29));
     res.insert("map".to_string(), (STANDARD_CONTEXT_ID, 30));
+    res.insert("filter".to_string(), (STANDARD_CONTEXT_ID, 31));
     res
 }
 
@@ -107,6 +108,7 @@ pub fn get_default_namespace() -> HashMap<GlobalConstantDescriptor, ObjectRef> {
     res.insert((STANDARD_CONTEXT_ID, 28), ObjectRef::new(sh::Args));
     res.insert((STANDARD_CONTEXT_ID, 29), ObjectRef::new(sh::Which));
     res.insert((STANDARD_CONTEXT_ID, 30), ObjectRef::new(functional::MapFunc));
+    res.insert((STANDARD_CONTEXT_ID, 31), ObjectRef::new(functional::FilterFunc));
     res
 }
 

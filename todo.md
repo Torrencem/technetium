@@ -1,7 +1,7 @@
 
 This is a rough todo list of features I need to add to the language:
 
-* add filter & reduce, document map filter and reduce
+* add reduce, document map filter and reduce
 * generators
 * comprehensions
 * defer block

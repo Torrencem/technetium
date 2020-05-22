@@ -134,6 +134,7 @@ impl<'input> Lexer<'input> {
                         }
                         Some((_, 'n')) => res.push('\n'),
                         Some((_, 't')) => res.push('\t'),
+                        Some((_, 'r')) => res.push('\r'),
                         Some((_, '"')) => res.push('"'),
                         Some((_, '\\')) => res.push('\\'),
                         Some((i, c)) => {
@@ -173,6 +174,7 @@ impl<'input> Lexer<'input> {
                     )),
                     Some((_, 'n')) => Ok('\n'),
                     Some((_, 't')) => Ok('\t'),
+                    Some((_, 'r')) => Ok('\r'),
                     Some((_, '\'')) => Ok('\''),
                     Some((_, '\\')) => Ok('\\'),
                     Some((i, c)) => Err(MiscParseError::lex(
@@ -216,11 +218,10 @@ impl<'input> Lexer<'input> {
                         }
                         Some((_, 'n')) => res.push('\n'),
                         Some((_, 't')) => res.push('\t'),
+                        Some((_, 'r')) => res.push('\r'),
                         Some((_, '"')) => res.push('"'),
-                        Some((_, '{')) => {
-                            res.push('\\');
-                            res.push('{');
-                        }
+                        Some((_, '{')) => res.push('{'),
+                        Some((_, '}')) => res.push('}'),
                         Some((_, '\\')) => res.push('\\'),
                         Some((i, c)) => {
                             return Err(MiscParseError::lex(

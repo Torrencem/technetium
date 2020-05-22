@@ -6,6 +6,7 @@ pub mod math;
 pub mod sh;
 pub mod special_funcs;
 pub mod string;
+pub mod functional;
 
 use crate::bytecode::{ContextId, GlobalConstantDescriptor};
 use crate::prelude::*;
@@ -45,6 +46,7 @@ pub fn get_default_namespace_descriptors() -> HashMap<String, GlobalConstantDesc
     res.insert("set".to_string(), (STANDARD_CONTEXT_ID, 27));
     res.insert("args".to_string(), (STANDARD_CONTEXT_ID, 28));
     res.insert("which".to_string(), (STANDARD_CONTEXT_ID, 29));
+    res.insert("map".to_string(), (STANDARD_CONTEXT_ID, 30));
     res
 }
 
@@ -104,12 +106,13 @@ pub fn get_default_namespace() -> HashMap<GlobalConstantDescriptor, ObjectRef> {
     res.insert((STANDARD_CONTEXT_ID, 27), ObjectRef::new(conversion::Set_));
     res.insert((STANDARD_CONTEXT_ID, 28), ObjectRef::new(sh::Args));
     res.insert((STANDARD_CONTEXT_ID, 29), ObjectRef::new(sh::Which));
+    res.insert((STANDARD_CONTEXT_ID, 30), ObjectRef::new(functional::MapFunc));
     res
 }
 
 #[macro_export]
 macro_rules! func_object_void {
-    ($id:ident, $args_range:tt, $args:ident -> $call:block) => {
+    ($id:ident, $args_range:tt, $context:ident, $args:ident -> $call:block) => {
         pub struct $id;
 
         impl Object for ObjectCell<$id> {
@@ -117,7 +120,7 @@ macro_rules! func_object_void {
                 "builtin-func".to_string()
             }
 
-            fn call(&self, $args: &[ObjectRef], _locals: &mut crate::memory::MemoryManager) -> RuntimeResult<ObjectRef> {
+            fn call(&self, $args: &[ObjectRef], $context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
                 if !$args_range.contains(&$args.len()) {
                     return Err(RuntimeError::type_error(format!("Incorrect number of arguments: expected {:?}, got {}", $args_range, $args.len())));
                 }
@@ -130,7 +133,7 @@ macro_rules! func_object_void {
 
 #[macro_export]
 macro_rules! func_object {
-    ($id:ident, $args_range:tt, $args:ident -> $call:block) => {
+    ($id:ident, $args_range:tt, $context:ident, $args:ident -> $call:block) => {
         pub struct $id;
 
         impl Object for ObjectCell<$id> {
@@ -141,7 +144,7 @@ macro_rules! func_object {
             fn call(
                 &self,
                 $args: &[ObjectRef],
-                _locals: &mut crate::memory::MemoryManager,
+                $context: &mut RuntimeContext<'_>,
             ) -> RuntimeResult<ObjectRef> {
                 if !$args_range.contains(&$args.len()) {
                     return Err(RuntimeError::type_error(format!(

@@ -7,7 +7,7 @@ use std::process::exit;
 
 use num::bigint::ToBigInt;
 
-func_object_void!(Print, (0..), args -> {
+func_object_void!(Print, (0..), _c, args -> {
     let mut first = true;
     for arg in args.iter() {
         if !first {
@@ -20,7 +20,7 @@ func_object_void!(Print, (0..), args -> {
     println!();
 });
 
-func_object!(Exit, (1..=1), args -> {
+func_object!(Exit, (1..=1), _c, args -> {
     let arg_any = args[0].as_any();
     if let Some(int_obj) = arg_any.downcast_ref::<ObjectCell<IntObject>>() {
         let int_obj = int_obj.try_borrow()?;
@@ -30,22 +30,22 @@ func_object!(Exit, (1..=1), args -> {
     }
 });
 
-func_object!(Type, (1..=1), args -> {
+func_object!(Type, (1..=1), _c, args -> {
     Ok(StringObject::new(args[0].technetium_type_name()))
 });
 
-func_object!(Hash, (1..=1), args -> {
+func_object!(Hash, (1..=1), _c, args -> {
     let hash = args[0].technetium_hash().ok_or_else(|| RuntimeError::type_error(format!("Unhashable type: {}", args[0].technetium_type_name())))?;
     let hash = hash.to_bigint().unwrap();
     Ok(IntObject::new_big(hash))
 });
 
-func_object_void!(Lock, (1..=1), args -> {
+func_object_void!(Lock, (1..=1), _c, args -> {
     args[0].lock_immutable()
 });
 
-func_object!(Clone_, (1..=1), args -> {
-    Ok(args[0].technetium_clone()?)
+func_object!(Clone_, (1..=1), context, args -> {
+    Ok(args[0].technetium_clone(context)?)
 });
 
 #[derive(Debug, Clone)]
@@ -56,7 +56,7 @@ pub struct Range {
 }
 
 impl Object for ObjectCell<Range> {
-    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
+    fn technetium_clone(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         Ok(ObjectRef::new(this.clone()))
     }
@@ -65,7 +65,7 @@ impl Object for ObjectCell<Range> {
         "range".to_string()
     }
 
-    fn make_iter(&self) -> RuntimeResult<ObjectRef> {
+    fn make_iter(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         Ok(RangeIterator::new(this.clone()))
     }
@@ -90,7 +90,7 @@ impl Object for ObjectCell<RangeIterator> {
         "iterator(range)".to_string()
     }
 
-    fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
+    fn take_iter(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<Option<ObjectRef>> {
         let mut this = self.try_borrow_mut()?;
         let step = this.inner.step;
         let end = this.inner.end;
@@ -104,7 +104,7 @@ impl Object for ObjectCell<RangeIterator> {
     }
 }
 
-func_object!(RangeFunc, (1..=3), args -> {
+func_object!(RangeFunc, (1..=3), _c, args -> {
     if args.len() == 1 {
         if let Some(int_obj) = args[0].as_any().downcast_ref::<ObjectCell<IntObject>>() {
             let int_obj = int_obj.try_borrow()?;

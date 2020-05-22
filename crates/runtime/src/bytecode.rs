@@ -1,4 +1,4 @@
-//! Definitions for the technetium bytecode, which all programs will
+
 //! get compiled into to be run.
 
 use std::collections::HashMap;
@@ -324,6 +324,12 @@ impl<'code> Frame<'code> {
         }
     }
 
+    pub fn rt_context(&mut self) -> RuntimeContext<'_> {
+        RuntimeContext {
+            memory: self.locals
+        }
+    }
+
     pub fn run(&mut self) -> RuntimeResult<ObjectRef> {
         let default_namespace = get_default_namespace();
 
@@ -436,7 +442,7 @@ impl<'code> Frame<'code> {
                     if let Some(method_name) = name.downcast_ref::<ObjectCell<StringObject>>() {
                         let method_name = method_name.try_borrow()?;
                         let val = &method_name.val;
-                        let res = try_debug!(self, ds, dsw, obj.call_method(val.as_ref(), &args));
+                        let res = try_debug!(self, ds, dsw, obj.call_method(val.as_ref(), &args, &mut self.rt_context()));
                         self.stack.push(res);
                     } else {
                         return Err(RuntimeError::internal_error("Method name not a string!"));
@@ -452,7 +458,7 @@ impl<'code> Frame<'code> {
                     let args: Vec<ObjectRef> =
                         self.stack.drain((self.stack.len() - nargs)..).collect();
                     let func = self.stack.pop().unwrap();
-                    let res = try_debug!(self, ds, dsw, func.call(&args, &mut self.locals));
+                    let res = try_debug!(self, ds, dsw, func.call(&args, &mut self.rt_context()));
                     self.stack.push(res);
                 }
                 Op::get_attr => {
@@ -468,7 +474,7 @@ impl<'code> Frame<'code> {
                     if let Some(attr_name) = attr.downcast_ref::<ObjectCell<StringObject>>() {
                         let attr_name = attr_name.try_borrow()?;
                         let val = &attr_name.val;
-                        let res = try_debug!(self, ds, dsw, obj.get_attr(val.clone()));
+                        let res = try_debug!(self, ds, dsw, obj.get_attr(val.clone(), &mut self.rt_context()));
                         self.stack.push(res);
                     } else {
                         return Err(RuntimeError::internal_error("Attribute name not a string!"));
@@ -488,7 +494,7 @@ impl<'code> Frame<'code> {
                     if let Some(attr_name) = attr.downcast_ref::<ObjectCell<StringObject>>() {
                         let attr_name = attr_name.try_borrow()?;
                         let val = &attr_name.val;
-                        try_debug!(self, ds, dsw, obj.set_attr(val.clone(), toset));
+                        try_debug!(self, ds, dsw, obj.set_attr(val.clone(), toset, &mut self.rt_context()));
                     } else {
                         return Err(RuntimeError::internal_error("Attribute name not a string!"));
                     }
@@ -825,7 +831,7 @@ impl<'code> Frame<'code> {
                             }
                         };
                     let parent = self.stack.pop().unwrap();
-                    let length = conversion::to_int(parent.call_method("length", &[])?)?
+                    let length = conversion::to_int(parent.call_method("length", &[], &mut self.rt_context())?)?
                         .to_i64()
                         .unwrap();
                     // Make slices like val[1:-1] work
@@ -851,7 +857,9 @@ impl<'code> Frame<'code> {
                 Op::make_iter => {
                     let val = self.stack.pop();
                     if let Some(val) = val {
-                        self.stack.push(try_debug!(self, ds, dsw, val.make_iter()));
+                        let mut context = self.rt_context();
+                        let val = try_debug!(self, ds, dsw, val.make_iter(&mut context));
+                        self.stack.push(val);
                     } else {
                         return Err(RuntimeError::internal_error(
                             "Tried to call make_iter on nothing!",
@@ -861,7 +869,7 @@ impl<'code> Frame<'code> {
                 Op::take_iter(offset) => {
                     let val = self.stack.pop();
                     if let Some(val) = val {
-                        let val = try_debug!(self, ds, dsw, val.take_iter());
+                        let val = try_debug!(self, ds, dsw, val.take_iter(&mut self.rt_context()));
                         if let Some(val) = val {
                             self.stack.push(val);
                         } else {
@@ -963,13 +971,17 @@ impl<'code> Frame<'code> {
                 }
                 Op::push_const_clone(const_descr) => {
                     let obj = self.global_context.constant_descriptors.get(const_descr);
+                    let obj_ref: ObjectRef;
                     if let Some(obj) = obj {
-                        self.stack.push(obj.technetium_clone()?);
+                        obj_ref = ObjectRef::clone(&obj);
                     } else {
                         return Err(RuntimeError::internal_error(
                             "Reference to constant that doesn't exist!",
                         ));
                     }
+                    let mut context = self.rt_context();
+                    let val = obj_ref.technetium_clone(&mut context)?;
+                    self.stack.push(val);
                 }
                 Op::push_global_default(const_descr) => {
                     let obj = default_namespace.get(const_descr);

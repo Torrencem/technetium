@@ -11,7 +11,7 @@ pub struct Lines {
 }
 
 impl Object for ObjectCell<Lines> {
-    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
+    fn technetium_clone(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         Ok(ObjectRef::new(Lines {
             parent: ObjectCell::clone(&this.parent),
@@ -22,7 +22,7 @@ impl Object for ObjectCell<Lines> {
         "lines".to_string()
     }
 
-    fn make_iter(&self) -> RuntimeResult<ObjectRef> {
+    fn make_iter(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         let lines_iter_rental_head =
             line_rentals::LinesIteratorHead::new(ObjectCell::clone(&this.parent), |rc| rc.borrow());
@@ -68,7 +68,7 @@ impl Object for ObjectCell<LinesIterator> {
         "iterator(lines)".to_string()
     }
 
-    fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
+    fn take_iter(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<Option<ObjectRef>> {
         let mut this = self.try_borrow_mut()?;
         let inner = &mut this.inner;
         let next = line_rentals::LinesIterator::rent_mut(inner, |lines| {
@@ -84,7 +84,7 @@ pub struct Chars {
 }
 
 impl Object for ObjectCell<Chars> {
-    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
+    fn technetium_clone(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         Ok(ObjectRef::new(Chars {
             parent: ObjectCell::clone(&this.parent),
@@ -95,7 +95,7 @@ impl Object for ObjectCell<Chars> {
         "chars".to_string()
     }
 
-    fn make_iter(&self) -> RuntimeResult<ObjectRef> {
+    fn make_iter(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         let lines_iter_rental_head =
             char_rentals::CharsIteratorHead::new(ObjectCell::clone(&this.parent), |rc| rc.borrow());
@@ -139,7 +139,7 @@ impl Object for ObjectCell<CharsIterator> {
         "iterator(chars)".to_string()
     }
 
-    fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
+    fn take_iter(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<Option<ObjectRef>> {
         let mut this = self.try_borrow_mut()?;
         let inner = &mut this.inner;
         let next = char_rentals::CharsIterator::rent_mut(inner, |lines| lines.next());

@@ -337,3 +337,19 @@ print(args())
 
     Ok(())
 }
+
+#[test]
+fn test_map() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+l = [10, 100]
+
+print(list(map(l, \x -> x / 10)))
+"#,
+    );
+
+    cmd.assert().success().stdout(predicate::eq("[1, 10]\n"));
+
+    Ok(())
+}

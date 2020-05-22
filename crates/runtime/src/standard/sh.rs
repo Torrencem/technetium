@@ -122,7 +122,7 @@ impl Object for ObjectCell<ShObject> {
         "sh".to_string()
     }
 
-    fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
+    fn call_method(&self, method: &str, args: &[ObjectRef], _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let mut this = self.try_borrow_mut()?;
         if !args.is_empty() {
             return Err(RuntimeError::type_error(
@@ -144,7 +144,7 @@ impl Object for ObjectCell<ShObject> {
     }
 }
 
-func_object!(Sh, (1..=1), args -> {
+func_object!(Sh, (1..=1), _c, args -> {
     let arg_any = args[0].as_any();
     if let Some(str_obj) = arg_any.downcast_ref::<ObjectCell<StringObject>>() {
         let str_obj = str_obj.try_borrow()?;
@@ -155,7 +155,7 @@ func_object!(Sh, (1..=1), args -> {
     }
 });
 
-func_object!(Cd, (1..=1), args -> {
+func_object!(Cd, (1..=1), _c, args -> {
     let arg_any = args[0].as_any();
     if let Some(str_obj) = arg_any.downcast_ref::<ObjectCell<StringObject>>() {
         let str_obj = str_obj.try_borrow()?;
@@ -168,15 +168,15 @@ func_object!(Cd, (1..=1), args -> {
     }
 });
 
-func_object!(Os, (0..=0), args -> {
+func_object!(Os, (0..=0), _c, args -> {
     Ok(StringObject::new(os_type()?))
 });
 
-func_object!(LinuxDistro, (0..=0), args -> {
+func_object!(LinuxDistro, (0..=0), _c, args -> {
     Ok(StringObject::new(linux_os_release()?.name.unwrap_or_else(|| "Unknown".to_string())))
 });
 
-func_object!(Args, (0..=0), args -> {
+func_object!(Args, (0..=0), _c, args -> {
     let mut res = vec![];
     for val in PARSED_CLARGS.get().unwrap().iter() {
         res.push(StringObject::new(val.clone()));
@@ -184,7 +184,7 @@ func_object!(Args, (0..=0), args -> {
     Ok(ObjectRef::new(List { contents: res }))
 });
 
-func_object!(Which, (1..=1), args -> {
+func_object!(Which, (1..=1), _c, args -> {
     let result = which::which(args[0].to_string()?)
         .map_err(|e| RuntimeError::child_process_error(e.to_string()))?;
 

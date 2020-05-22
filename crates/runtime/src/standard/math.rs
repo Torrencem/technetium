@@ -5,7 +5,7 @@ use std::f64;
 
 use crate::func_object;
 
-func_object!(Sin, (1..=1), args -> {
+func_object!(Sin, (1..=1), _c, args -> {
     let arg_any = args[0].as_any();
     if let Some(float_obj) = arg_any.downcast_ref::<ObjectCell<FloatObject>>() {
         let float_obj = float_obj.try_borrow()?;
@@ -18,7 +18,7 @@ func_object!(Sin, (1..=1), args -> {
     }
 });
 
-func_object!(Cos, (1..=1), args -> {
+func_object!(Cos, (1..=1), _c, args -> {
     let arg_any = args[0].as_any();
     if let Some(float_obj) = arg_any.downcast_ref::<ObjectCell<FloatObject>>() {
         let float_obj = float_obj.try_borrow()?;
@@ -31,7 +31,7 @@ func_object!(Cos, (1..=1), args -> {
     }
 });
 
-func_object!(Tan, (1..=1), args -> {
+func_object!(Tan, (1..=1), _c, args -> {
     let arg_any = args[0].as_any();
     if let Some(float_obj) = arg_any.downcast_ref::<ObjectCell<FloatObject>>() {
         let float_obj = float_obj.try_borrow()?;
@@ -44,7 +44,7 @@ func_object!(Tan, (1..=1), args -> {
     }
 });
 
-func_object!(Abs, (1..=1), args -> {
+func_object!(Abs, (1..=1), _c, args -> {
     let arg_any = args[0].as_any();
     if let Some(float_obj) = arg_any.downcast_ref::<ObjectCell<FloatObject>>() {
         let float_obj = float_obj.try_borrow()?;
@@ -57,7 +57,7 @@ func_object!(Abs, (1..=1), args -> {
     }
 });
 
-func_object!(Sqrt, (1..=1), args -> {
+func_object!(Sqrt, (1..=1), _c, args -> {
     let arg_any = args[0].as_any();
     if let Some(float_obj) = arg_any.downcast_ref::<ObjectCell<FloatObject>>() {
         let float_obj = float_obj.try_borrow()?;
@@ -70,7 +70,7 @@ func_object!(Sqrt, (1..=1), args -> {
     }
 });
 
-func_object!(Exp, (1..=1), args -> {
+func_object!(Exp, (1..=1), _c, args -> {
     let arg_any = args[0].as_any();
     if let Some(float_obj) = arg_any.downcast_ref::<ObjectCell<FloatObject>>() {
         let float_obj = float_obj.try_borrow()?;
@@ -83,7 +83,7 @@ func_object!(Exp, (1..=1), args -> {
     }
 });
 
-func_object!(Ln, (1..=1), args -> {
+func_object!(Ln, (1..=1), _c, args -> {
     let arg_any = args[0].as_any();
     if let Some(float_obj) = arg_any.downcast_ref::<ObjectCell<FloatObject>>() {
         let float_obj = float_obj.try_borrow()?;
@@ -96,7 +96,7 @@ func_object!(Ln, (1..=1), args -> {
     }
 });
 
-func_object!(Arcsin, (1..=1), args -> {
+func_object!(Arcsin, (1..=1), _c, args -> {
     let arg_any = args[0].as_any();
     if let Some(float_obj) = arg_any.downcast_ref::<ObjectCell<FloatObject>>() {
         let float_obj = float_obj.try_borrow()?;
@@ -109,7 +109,7 @@ func_object!(Arcsin, (1..=1), args -> {
     }
 });
 
-func_object!(Arccos, (1..=1), args -> {
+func_object!(Arccos, (1..=1), _c, args -> {
     let arg_any = args[0].as_any();
     if let Some(float_obj) = arg_any.downcast_ref::<ObjectCell<FloatObject>>() {
         let float_obj = float_obj.try_borrow()?;
@@ -122,7 +122,7 @@ func_object!(Arccos, (1..=1), args -> {
     }
 });
 
-func_object!(Arctan, (1..=1), args -> {
+func_object!(Arctan, (1..=1), _c, args -> {
     let arg_any = args[0].as_any();
     if let Some(float_obj) = arg_any.downcast_ref::<ObjectCell<FloatObject>>() {
         let float_obj = float_obj.try_borrow()?;

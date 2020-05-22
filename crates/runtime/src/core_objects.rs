@@ -5,7 +5,6 @@ use builtins::index_get;
 use bytecode::Op;
 use bytecode::{ContextId, FrameId};
 use error::*;
-use memory::*;
 use num::bigint::{BigInt, ToBigInt};
 use num::cast::ToPrimitive;
 use parking_lot::RwLock;
@@ -32,7 +31,7 @@ impl BoolObject {
 }
 
 impl Object for ObjectCell<BoolObject> {
-    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
+    fn technetium_clone(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         Ok(BoolObject::new(this.val))
     }
@@ -92,7 +91,7 @@ impl IntObject {
 }
 
 impl Object for ObjectCell<IntObject> {
-    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
+    fn technetium_clone(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         Ok(IntObject::new_big(this.val.clone()))
     }
@@ -137,7 +136,7 @@ impl FloatObject {
 }
 
 impl Object for ObjectCell<FloatObject> {
-    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
+    fn technetium_clone(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         Ok(FloatObject::new(this.val))
     }
@@ -186,7 +185,7 @@ impl CharObject {
 }
 
 impl Object for ObjectCell<CharObject> {
-    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
+    fn technetium_clone(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         Ok(ObjectRef::new(this.clone()))
     }
@@ -232,7 +231,7 @@ impl StringObject {
 }
 
 impl Object for ObjectCell<StringObject> {
-    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
+    fn technetium_clone(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         let val = &this.val;
         Ok(StringObject::new(val.clone()))
@@ -259,7 +258,7 @@ impl Object for ObjectCell<StringObject> {
         this.val != ""
     }
 
-    fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
+    fn call_method(&self, method: &str, args: &[ObjectRef], _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         match method {
             "length" => {
@@ -335,7 +334,7 @@ pub struct Function {
 }
 
 impl Object for ObjectCell<Function> {
-    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
+    fn technetium_clone(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         Ok(ObjectRef::new(Function {
             nargs: this.nargs,
@@ -355,7 +354,7 @@ impl Object for ObjectCell<Function> {
         true
     }
 
-    fn call(&self, args: &[ObjectRef], locals: &mut MemoryManager) -> RuntimeResult<ObjectRef> {
+    fn call(&self, args: &[ObjectRef], context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         if args.len() != this.nargs {
             return Err(RuntimeError::type_error(format!(
@@ -367,7 +366,7 @@ impl Object for ObjectCell<Function> {
         }
         let mut frame = bytecode::Frame::new(
             &this.code,
-            locals,
+            context.memory,
             Rc::clone(&this.context),
             this.least_ancestors.read().as_ref().unwrap().clone(),
             this.context_id,
@@ -378,7 +377,7 @@ impl Object for ObjectCell<Function> {
         let res = frame.run();
         let fid = frame.id;
         drop(frame);
-        locals.clear_frame(fid)?;
+        context.memory.clear_frame(fid)?;
         res
     }
 }
@@ -388,11 +387,11 @@ pub struct List {
 }
 
 impl Object for ObjectCell<List> {
-    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
+    fn technetium_clone(&self, context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         let mut res_contents = vec![];
         for val in this.contents.iter() {
-            res_contents.push(val.technetium_clone()?);
+            res_contents.push(val.technetium_clone(context)?);
         }
         Ok(ObjectRef::new(List {
             contents: res_contents,
@@ -433,7 +432,7 @@ impl Object for ObjectCell<List> {
         !this.contents.is_empty()
     }
 
-    fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
+    fn call_method(&self, method: &str, args: &[ObjectRef], context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         match method {
             "length" => {
                 let this = self.try_borrow()?;
@@ -476,9 +475,9 @@ impl Object for ObjectCell<List> {
                     Err(RuntimeError::type_error("append expects 1 arg"))
                 } else {
                     let contents = &mut this.contents;
-                    let iter = args[0].make_iter()?;
+                    let iter = args[0].make_iter(context)?;
 
-                    while let Some(val) = iter.take_iter()? {
+                    while let Some(val) = iter.take_iter(context)? {
                         contents.push(val);
                     }
                     Ok(UnitObject::new())
@@ -491,7 +490,7 @@ impl Object for ObjectCell<List> {
         }
     }
 
-    fn make_iter(&self) -> RuntimeResult<ObjectRef> {
+    fn make_iter(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let iter = ListIterator {
             parent: ObjectCell::clone(self),
             index: 0,
@@ -531,7 +530,7 @@ impl Object for ObjectCell<ListIterator> {
         "iterator(list)".to_string()
     }
 
-    fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
+    fn take_iter(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<Option<ObjectRef>> {
         let mut this = self.try_borrow_mut()?;
         let len = this.parent.try_borrow()?.contents.len();
         let index = &mut this.index;
@@ -556,7 +555,7 @@ pub struct Slice {
 }
 
 impl Object for ObjectCell<Slice> {
-    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
+    fn technetium_clone(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         Ok(ObjectRef::new(Slice {
             parent: ObjectRef::clone(&this.parent),
@@ -570,7 +569,7 @@ impl Object for ObjectCell<Slice> {
         "slice".to_string()
     }
 
-    fn make_iter(&self) -> RuntimeResult<ObjectRef> {
+    fn make_iter(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         Ok(ObjectRef::new(SliceIterator {
             parent: ObjectRef::clone(&this.parent),
@@ -642,7 +641,7 @@ impl Object for ObjectCell<SliceIterator> {
         "iterator(slice)".to_string()
     }
 
-    fn take_iter(&self) -> RuntimeResult<Option<ObjectRef>> {
+    fn take_iter(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<Option<ObjectRef>> {
         let this = self.try_borrow()?;
         let mut curr_ = this.curr.write();
         if let Some(stop) = this.stop {
@@ -661,11 +660,11 @@ pub struct Tuple {
 }
 
 impl Object for ObjectCell<Tuple> {
-    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
+    fn technetium_clone(&self, context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         let mut res_contents = vec![];
         for val in this.contents.iter() {
-            res_contents.push(val.technetium_clone()?);
+            res_contents.push(val.technetium_clone(context)?);
         }
         Ok(ObjectRef::new(Tuple {
             contents: res_contents,
@@ -689,7 +688,7 @@ impl Object for ObjectCell<Tuple> {
         !this.contents.is_empty()
     }
 
-    fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
+    fn call_method(&self, method: &str, args: &[ObjectRef], _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         match method {
             "length" => {
@@ -770,11 +769,11 @@ pub struct Set {
 }
 
 impl Object for ObjectCell<Set> {
-    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
+    fn technetium_clone(&self, context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         let mut res_contents = HashSet::new();
         for val in this.contents.iter() {
-            res_contents.insert(val.technetium_clone()?.hashable().unwrap());
+            res_contents.insert(val.technetium_clone(context)?.hashable().unwrap());
         }
         Ok(ObjectRef::new(Set {
             contents: res_contents,
@@ -815,7 +814,7 @@ impl Object for ObjectCell<Set> {
         !this.contents.is_empty()
     }
 
-    fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
+    fn call_method(&self, method: &str, args: &[ObjectRef], _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         match method {
             "length" => {
                 let this = self.try_borrow()?;
@@ -882,13 +881,13 @@ pub struct Dictionary {
 }
 
 impl Object for ObjectCell<Dictionary> {
-    fn technetium_clone(&self) -> RuntimeResult<ObjectRef> {
+    fn technetium_clone(&self, context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         let mut res_contents = HashMap::new();
         for (key, val) in this.contents.iter() {
             res_contents.insert(
-                key.technetium_clone()?.hashable().unwrap(),
-                val.technetium_clone()?,
+                key.technetium_clone(context)?.hashable().unwrap(),
+                val.technetium_clone(context)?,
             );
         }
         Ok(ObjectRef::new(Dictionary {
@@ -933,7 +932,7 @@ impl Object for ObjectCell<Dictionary> {
         !this.contents.is_empty()
     }
 
-    fn call_method(&self, method: &str, args: &[ObjectRef]) -> RuntimeResult<ObjectRef> {
+    fn call_method(&self, method: &str, args: &[ObjectRef], _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         match method {
             "length" => {
                 let this = self.try_borrow()?;

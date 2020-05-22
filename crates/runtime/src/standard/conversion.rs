@@ -9,11 +9,11 @@ use num::BigInt;
 
 use crate::func_object;
 
-func_object!(String_, (1..=1), args -> {
+func_object!(String_, (1..=1), _c, args -> {
     Ok(StringObject::new(args[0].to_string()?))
 });
 
-func_object!(Bool, (1..=1), args -> {
+func_object!(Bool, (1..=1), _c, args -> {
     Ok(BoolObject::new(args[0].truthy()))
 });
 
@@ -62,7 +62,7 @@ pub fn to_int(val: ObjectRef) -> RuntimeResult<BigInt> {
     }
 }
 
-func_object!(Int, (1..=1), args -> {
+func_object!(Int, (1..=1), _c, args -> {
     Ok(IntObject::new_big(to_int(ObjectRef::clone(&args[0]))?))
 });
 
@@ -101,7 +101,7 @@ pub fn to_float(val: ObjectRef) -> RuntimeResult<f64> {
     }
 }
 
-func_object!(Float, (1..=1), args -> {
+func_object!(Float, (1..=1), _c, args -> {
     Ok(FloatObject::new(to_float(ObjectRef::clone(&args[0]))?))
 });
 
@@ -154,23 +154,23 @@ pub fn to_char(val: ObjectRef) -> RuntimeResult<char> {
     }
 }
 
-func_object!(Char, (1..=1), args -> {
+func_object!(Char, (1..=1), _c, args -> {
     Ok(CharObject::new(to_char(ObjectRef::clone(&args[0]))?))
 });
 
-func_object!(List_, (1..=1), args -> {
+func_object!(List_, (1..=1), context, args -> {
     let mut res = vec![];
-    let iter = args[0].make_iter()?;
-    while let Some(val) = iter.take_iter()? {
+    let iter = args[0].make_iter(context)?;
+    while let Some(val) = iter.take_iter(context)? {
         res.push(ObjectRef::clone(&val));
     }
     Ok(ObjectRef::new(List { contents: res }))
 });
 
-func_object!(Set_, (1..=1), args -> {
+func_object!(Set_, (1..=1), context, args -> {
     let mut res = HashSet::new();
-    let iter = args[0].make_iter()?;
-    while let Some(val) = iter.take_iter()? {
+    let iter = args[0].make_iter(context)?;
+    while let Some(val) = iter.take_iter(context)? {
         let hashable = val.hashable().ok_or_else(|| RuntimeError::type_error(format!("Type {} used in set is not hashable", val.technetium_type_name())))?;
         res.insert(hashable);
     }

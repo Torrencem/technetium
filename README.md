@@ -33,11 +33,10 @@ for letter in ['A', 'B', 'C', 'D'] {
 ### Creating an index of files in the current directory
 
 ```coffeescript
-files = sh("ls")
+# Run "ls" on the command line, blocking, and get the standard output
+files = sh("ls").stdout()
 
-files.join()  # Run "files"
-
-for line in files.stdout().lines() {  # For each line in the output
+for line in files.lines() {  # For each line in the string
 	# Append the line to index.txt
 	$ echo {line} >> index.txt
 }
@@ -49,10 +48,8 @@ for line in files.stdout().lines() {  # For each line in the output
 ```coffeescript
 func create_counter() {
     value = 1
-    func count() {
-        return value++
-    }
-    return count
+    # Return an anonymous function that increments and returns "value"
+    return \() -> value++
 }
 
 c1 = create_counter()

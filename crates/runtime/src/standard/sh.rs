@@ -67,30 +67,31 @@ impl ShObject {
         Ok(())
     }
 
-    pub fn stdout(&self) -> RuntimeResult<ObjectRef> {
+    pub fn stdout(&mut self) -> RuntimeResult<ObjectRef> {
         if let Some(ref output) = self.output {
             let bytes = &output.stdout;
             Ok(StringObject::new(
                 String::from_utf8_lossy(bytes).into_owned(),
             ))
         } else {
-            // TODO: Should this be like this?
-            Ok(StringObject::new("".to_string()))
+            self.join()?;
+            self.stdout()
         }
     }
 
-    pub fn stderr(&self) -> RuntimeResult<ObjectRef> {
+    pub fn stderr(&mut self) -> RuntimeResult<ObjectRef> {
         if let Some(ref output) = self.output {
             let bytes = &output.stderr;
             Ok(StringObject::new(
                 String::from_utf8_lossy(bytes).into_owned(),
             ))
         } else {
-            Ok(StringObject::new("".to_string()))
+            self.join()?;
+            self.stderr()
         }
     }
 
-    pub fn exit_code(&self) -> RuntimeResult<ObjectRef> {
+    pub fn exit_code(&mut self) -> RuntimeResult<ObjectRef> {
         if let Some(ref output) = self.output {
             let status = &output.status;
             if let Some(val) = status.code() {
@@ -99,9 +100,8 @@ impl ShObject {
                 Ok(BoolObject::new(status.success()))
             }
         } else {
-            Err(RuntimeError::type_error(
-                "Called exit_code() before process exited!",
-            ))
+            self.join()?;
+            self.exit_code()
         }
     }
 

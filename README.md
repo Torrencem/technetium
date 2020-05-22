@@ -66,7 +66,7 @@ println(c1())  # 3
 # Read the first command line argument as an integer
 count = int(args()[0])
 
-while count != 0 {
+while count {
     # Print a message and return to the beginning
     # of the line with a carriage return
     printr(~"{count--}s remaining")

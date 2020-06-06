@@ -125,3 +125,26 @@ println(123 ^ 321)
     Ok(())
 }
 
+#[test]
+fn test_tuples() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+l = (1,)
+
+println(type(l))
+
+println(l)
+
+l2 = (1, 2, 3)
+
+println(l2)
+"#,
+    );
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("tuple\n(1,)\n(1, 2, 3)\n"));
+
+    Ok(())
+}

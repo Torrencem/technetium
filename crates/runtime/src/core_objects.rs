@@ -670,6 +670,26 @@ impl Object for ObjectCell<Tuple> {
             contents: res_contents,
         }))
     }
+    
+    fn to_string(&self) -> RuntimeResult<String> {
+        let this = self.try_borrow()?;
+        let mut res = String::new();
+        res.push('(');
+        let mut first = true;
+        for item in this.contents.iter() {
+            if first {
+                first = false;
+            } else {
+                res.push_str(", ");
+            }
+            res.push_str(item.to_string()?.as_ref());
+        }
+        if this.contents.len() == 1 {
+            res.push(',');
+        }
+        res.push(')');
+        Ok(res)
+    }
 
     fn technetium_type_name(&self) -> String {
         "tuple".to_string()

@@ -685,6 +685,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "pretty_dtoa"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5499c1a416ecc78ee0ac47cde371042fe726067b20cc5e7262940574d858f23c"
+dependencies = [
+ "ryu_floating_decimal",
+]
+
+[[package]]
 name = "proc-macro2"
 version = "1.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -879,12 +888,12 @@ version = "0.1.0"
 dependencies = [
  "codespan",
  "codespan-reporting",
- "dtoa",
  "lazy_static",
  "mlrefcell",
  "num",
  "once_cell",
  "parking_lot",
+ "pretty_dtoa",
  "rental",
  "stable_deref_trait",
  "sys-info",
@@ -908,6 +917,12 @@ name = "rustc-demangle"
 version = "0.1.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4c691c0e608126e00913e33f0ccf3727d5fc84573623b8d65b2df340b5201783"
+
+[[package]]
+name = "ryu_floating_decimal"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "700de91d5fd6091442d00fdd9ee790af6d4f0f480562b0f5a1e8f59e90aafe73"
 
 [[package]]
 name = "scopeguard"
@@ -1041,7 +1056,6 @@ dependencies = [
  "codespan",
  "codespan-reporting",
  "compile",
- "dtoa",
  "lalrpop-util",
  "lazy_static",
  "lexer",
@@ -1050,6 +1064,7 @@ dependencies = [
  "num",
  "parking_lot",
  "predicates",
+ "pretty_dtoa",
  "rental",
  "runtime",
  "stable_deref_trait",

@@ -17,6 +17,7 @@ use memory::*;
 use mlrefcell::MLRefCell;
 use once_cell::sync::OnceCell;
 use stable_deref_trait::StableDeref;
+use pretty_dtoa::FmtFloatConfig;
 use std::any::Any;
 use std::clone::Clone as RustClone;
 use std::collections::HashSet;
@@ -26,6 +27,8 @@ use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
 
 use std::fmt;
+
+pub static DEFAULT_FLOAT_FMT: FmtFloatConfig = FmtFloatConfig::default();
 
 pub static PARSED_CLARGS: OnceCell<Vec<String>> = OnceCell::new();
 

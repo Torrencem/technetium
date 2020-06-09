@@ -1,5 +1,5 @@
 
-This is a rough todo list of features I need to add to the language:
+This is a rough todo list of features I want to add to the language:
 
 * Update function doc style according to https://pythonhosted.org/an_example_pypi_project/sphinx.html#function-definitions
 * Add a bunch of examples to documentation, especially for map filter
@@ -17,5 +17,5 @@ This is a rough todo list of features I need to add to the language:
 * 2 places where memory is essentially leaked: Reference cycles (fix with change to Gc and GcCell), and "parent references"
 * windows?
 * unicode string literal \u{blahblah}
-* make it easy to round floats when printing (I might want to write my own dtoa that is better)
+* make it easy to round floats when printing
 * benchmarks

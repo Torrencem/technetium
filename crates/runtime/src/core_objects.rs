@@ -8,6 +8,7 @@ use error::*;
 use num::bigint::{BigInt, ToBigInt};
 use num::cast::ToPrimitive;
 use parking_lot::RwLock;
+use pretty_dtoa::dtoa;
 use std::any::TypeId;
 use std::clone::Clone as RustClone;
 use std::collections::hash_map::DefaultHasher;
@@ -16,8 +17,6 @@ use std::collections::HashSet;
 use std::hash::Hash;
 use std::hash::Hasher;
 use std::rc::Rc;
-
-use dtoa;
 
 #[derive(Hash)]
 pub struct BoolObject {
@@ -154,9 +153,8 @@ impl Object for ObjectCell<FloatObject> {
 
     fn to_string(&self) -> RuntimeResult<String> {
         let this = self.try_borrow()?;
-        let mut res: Vec<u8> = vec![];
-        dtoa::write(&mut res, this.val)?;
-        Ok(String::from_utf8(res).unwrap())
+        let res = dtoa(this.val, DEFAULT_FLOAT_FMT);
+        Ok(res)
     }
 
     fn truthy(&self) -> bool {

@@ -39,7 +39,7 @@ fn main() {
         .setting(AppSettings::TrailingVarArg)
         .arg(
             Arg::with_name("INPUT")
-                .help("Run file as a script (if not given, will read from stdin). If INPUT is not given, and additional arguments must be passed to the script, use '--' before additional arguments")
+                .help("Run file as a script (if not given, or '-', will read from stdin). If INPUT is not given, and additional arguments must be passed to the script, use '--' before additional arguments")
         )
         .arg(
             Arg::with_name("verbose")
@@ -93,14 +93,14 @@ fn main() {
     let mut files: Files<Cow<'_, str>> = Files::new();
 
     let input: String = match matches.value_of("INPUT") {
-        Some(file_name) => std::fs::read_to_string(file_name).unwrap_or_else(|e| fail(format!("Error reading file '{}'", file_name), e)),
-        None => {
+        None | Some("-") => {
             let mut buffer = String::new();
             io::stdin()
                 .read_to_string(&mut buffer)
                 .expect("Error reading stdin");
             buffer
         }
+        Some(file_name) => std::fs::read_to_string(file_name).unwrap_or_else(|e| fail(format!("Error reading file '{}'", file_name), e)),
     };
 
     let file_id = files.add(

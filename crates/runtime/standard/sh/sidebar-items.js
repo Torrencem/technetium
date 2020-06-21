@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["ShObjectState",""]],"struct":[["Args",""],["Cd",""],["LinuxDistro",""],["Os",""],["Sh",""],["ShObject",""],["Which",""]]});
+initSidebarItems({"enum":[["ShObjectState",""]],"struct":[["Args",""],["Cd",""],["LinuxDistro",""],["Open",""],["Os",""],["Sh",""],["ShObject",""],["Which",""]]});

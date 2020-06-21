@@ -245,6 +245,13 @@
 
 <span class="kw">use</span> <span class="ident">log</span>::<span class="ident">Level</span>;
 
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Display</span>;
+
+<span class="kw">fn</span> <span class="ident">fail</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Display</span>, <span class="ident">S</span>: <span class="ident">Display</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="ident">S</span>, <span class="ident">e</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="op">!</span> {
+    <span class="macro">eprintln</span><span class="macro">!</span>(<span class="string">&quot;{}: {}&quot;</span>, <span class="ident">message</span>, <span class="ident">e</span>);
+    <span class="ident">exit</span>(<span class="number">1</span>)
+}
+
 <span class="doccomment">/// The main application entry point</span>
 <span class="kw">fn</span> <span class="ident">main</span>() {
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">App</span>::<span class="ident">new</span>(<span class="string">&quot;technetium&quot;</span>)
@@ -254,7 +261,7 @@
         .<span class="ident">setting</span>(<span class="ident">AppSettings</span>::<span class="ident">TrailingVarArg</span>)
         .<span class="ident">arg</span>(
             <span class="ident">Arg</span>::<span class="ident">with_name</span>(<span class="string">&quot;INPUT&quot;</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Run file as a script (if not given, will read from stdin). If INPUT is not given, and additional arguments must be passed to the script, use &#39;--&#39; before additional arguments&quot;</span>)
+                .<span class="ident">help</span>(<span class="string">&quot;Run file as a script (if not given, or &#39;-&#39;, will read from stdin). If INPUT is not given, and additional arguments must be passed to the script, use &#39;--&#39; before additional arguments&quot;</span>)
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg</span>::<span class="ident">with_name</span>(<span class="string">&quot;verbose&quot;</span>)
@@ -303,19 +310,19 @@
 
     <span class="ident">runtime</span>::<span class="ident">PARSED_CLARGS</span>.<span class="ident">set</span>(<span class="ident">extra_args</span>).<span class="ident">unwrap</span>();
 
-    <span class="ident">logging</span>::<span class="ident">init</span>(<span class="ident">log_level</span>).<span class="ident">expect</span>(<span class="string">&quot;error initializing logging&quot;</span>);
+    <span class="ident">logging</span>::<span class="ident">init</span>(<span class="ident">log_level</span>).<span class="ident">expect</span>(<span class="string">&quot;Error initializing logging&quot;</span>);
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">files</span>: <span class="ident">Files</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Files</span>::<span class="ident">new</span>();
 
     <span class="kw">let</span> <span class="ident">input</span>: <span class="ident">String</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;INPUT&quot;</span>) {
-        <span class="prelude-val">Some</span>(<span class="ident">file_name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">std</span>::<span class="ident">fs</span>::<span class="ident">read_to_string</span>(<span class="ident">file_name</span>).<span class="ident">expect</span>(<span class="string">&quot;Error reading file&quot;</span>),
-        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="prelude-val">None</span> <span class="op">|</span> <span class="prelude-val">Some</span>(<span class="string">&quot;-&quot;</span>) <span class="op">=</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
             <span class="ident">io</span>::<span class="ident">stdin</span>()
                 .<span class="ident">read_to_string</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buffer</span>)
                 .<span class="ident">expect</span>(<span class="string">&quot;Error reading stdin&quot;</span>);
             <span class="ident">buffer</span>
         }
+        <span class="prelude-val">Some</span>(<span class="ident">file_name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">std</span>::<span class="ident">fs</span>::<span class="ident">read_to_string</span>(<span class="ident">file_name</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">fail</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Error reading file &#39;{}&#39;&quot;</span>, <span class="ident">file_name</span>), <span class="ident">e</span>)),
     };
 
     <span class="kw">let</span> <span class="ident">file_id</span> <span class="op">=</span> <span class="ident">files</span>.<span class="ident">add</span>(
@@ -326,6 +333,9 @@
         <span class="ident">Cow</span>::<span class="ident">from</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>),
     );
 
+    <span class="kw">let</span> <span class="ident">err_writer</span> <span class="op">=</span> <span class="ident">StandardStream</span>::<span class="ident">stderr</span>(<span class="ident">ColorChoice</span>::<span class="ident">Always</span>);
+    <span class="kw">let</span> <span class="ident">err_config</span> <span class="op">=</span> <span class="ident">codespan_reporting</span>::<span class="ident">term</span>::<span class="ident">Config</span>::<span class="ident">default</span>();
+
     <span class="kw">let</span> <span class="ident">lexer</span> <span class="op">=</span> <span class="ident">Lexer</span>::<span class="ident">new</span>(<span class="ident">input</span>.<span class="ident">as_ref</span>());
 
     <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;Beginning parsing stage&quot;</span>);
@@ -335,11 +345,9 @@
     <span class="kw">let</span> <span class="ident">ast</span> <span class="op">=</span> <span class="ident">script</span>::<span class="ident">ProgramParser</span>::<span class="ident">new</span>()
         .<span class="ident">parse</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">recoveries</span>, <span class="ident">lexer</span>)
         .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">writer</span> <span class="op">=</span> <span class="ident">StandardStream</span>::<span class="ident">stderr</span>(<span class="ident">ColorChoice</span>::<span class="ident">Always</span>);
-            <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">codespan_reporting</span>::<span class="ident">term</span>::<span class="ident">Config</span>::<span class="ident">default</span>();
             <span class="kw">let</span> <span class="ident">diagnostic</span> <span class="op">=</span> <span class="ident">parse_error_to_diagnostic</span>(<span class="kw-2">&amp;</span><span class="ident">e</span>, <span class="ident">file_id</span>);
 
-            <span class="ident">term</span>::<span class="ident">emit</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>.<span class="ident">lock</span>(), <span class="kw-2">&amp;</span><span class="ident">config</span>, <span class="kw-2">&amp;</span><span class="ident">files</span>, <span class="kw-2">&amp;</span><span class="ident">diagnostic</span>)
+            <span class="ident">term</span>::<span class="ident">emit</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">err_writer</span>.<span class="ident">lock</span>(), <span class="kw-2">&amp;</span><span class="ident">err_config</span>, <span class="kw-2">&amp;</span><span class="ident">files</span>, <span class="kw-2">&amp;</span><span class="ident">diagnostic</span>)
                 .<span class="ident">expect</span>(<span class="string">&quot;Error writing error message&quot;</span>);
 
             <span class="macro">eprintln</span><span class="macro">!</span>(<span class="string">&quot;The above error could not be recovered from, and parsing stopped.&quot;</span>);
@@ -348,13 +356,10 @@
         });
 
     <span class="kw">if</span> <span class="ident">recoveries</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
-        <span class="kw">let</span> <span class="ident">writer</span> <span class="op">=</span> <span class="ident">StandardStream</span>::<span class="ident">stderr</span>(<span class="ident">ColorChoice</span>::<span class="ident">Always</span>);
-        <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">codespan_reporting</span>::<span class="ident">term</span>::<span class="ident">Config</span>::<span class="ident">default</span>();
-
         <span class="kw">for</span> <span class="ident">recovery</span> <span class="kw">in</span> <span class="ident">recoveries</span>.<span class="ident">iter</span>() {
             <span class="kw">let</span> <span class="ident">diagnostic</span> <span class="op">=</span> <span class="ident">parse_error_to_diagnostic</span>(<span class="kw-2">&amp;</span><span class="ident">recovery</span>.<span class="ident">error</span>, <span class="ident">file_id</span>);
 
-            <span class="ident">term</span>::<span class="ident">emit</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>.<span class="ident">lock</span>(), <span class="kw-2">&amp;</span><span class="ident">config</span>, <span class="kw-2">&amp;</span><span class="ident">files</span>, <span class="kw-2">&amp;</span><span class="ident">diagnostic</span>)
+            <span class="ident">term</span>::<span class="ident">emit</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">err_writer</span>.<span class="ident">lock</span>(), <span class="kw-2">&amp;</span><span class="ident">err_config</span>, <span class="kw-2">&amp;</span><span class="ident">files</span>, <span class="kw-2">&amp;</span><span class="ident">diagnostic</span>)
                 .<span class="ident">expect</span>(<span class="string">&quot;Error writing error message&quot;</span>);
         }
 
@@ -378,12 +383,9 @@
     <span class="kw">let</span> <span class="ident">compile_context</span> <span class="op">=</span> <span class="ident">manager</span>.<span class="ident">context_stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
 
     <span class="kw">let</span> <span class="ident">code</span> <span class="op">=</span> <span class="ident">code</span>.<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">writer</span> <span class="op">=</span> <span class="ident">StandardStream</span>::<span class="ident">stderr</span>(<span class="ident">ColorChoice</span>::<span class="ident">Always</span>);
-        <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">codespan_reporting</span>::<span class="ident">term</span>::<span class="ident">Config</span>::<span class="ident">default</span>();
-
         <span class="kw">let</span> <span class="ident">diagnostic</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">as_diagnostic</span>(<span class="ident">file_id</span>);
 
-        <span class="ident">term</span>::<span class="ident">emit</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>.<span class="ident">lock</span>(), <span class="kw-2">&amp;</span><span class="ident">config</span>, <span class="kw-2">&amp;</span><span class="ident">files</span>, <span class="kw-2">&amp;</span><span class="ident">diagnostic</span>)
+        <span class="ident">term</span>::<span class="ident">emit</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">err_writer</span>.<span class="ident">lock</span>(), <span class="kw-2">&amp;</span><span class="ident">err_config</span>, <span class="kw-2">&amp;</span><span class="ident">files</span>, <span class="kw-2">&amp;</span><span class="ident">diagnostic</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;Error writing error message&quot;</span>);
         <span class="ident">exit</span>(<span class="number">1</span>)
     });
@@ -416,18 +418,16 @@
     <span class="kw">let</span> <span class="ident">computation</span> <span class="op">=</span> <span class="ident">frame</span>.<span class="ident">run</span>();
 
     <span class="kw">let</span> <span class="ident">computation</span> <span class="op">=</span> <span class="ident">computation</span>.<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">writer</span> <span class="op">=</span> <span class="ident">StandardStream</span>::<span class="ident">stderr</span>(<span class="ident">ColorChoice</span>::<span class="ident">Always</span>);
-        <span class="kw">let</span> <span class="ident">primary_config</span> <span class="op">=</span> <span class="ident">codespan_reporting</span>::<span class="ident">term</span>::<span class="ident">Config</span>::<span class="ident">default</span>();
-
         <span class="kw">let</span> <span class="ident">primary_diagnostic</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">as_diagnostic</span>();
 
         <span class="ident">term</span>::<span class="ident">emit</span>(
-            <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>.<span class="ident">lock</span>(),
-            <span class="kw-2">&amp;</span><span class="ident">primary_config</span>,
+            <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">err_writer</span>.<span class="ident">lock</span>(),
+            <span class="kw-2">&amp;</span><span class="ident">err_config</span>,
             <span class="kw-2">&amp;</span><span class="ident">files</span>,
             <span class="kw-2">&amp;</span><span class="ident">primary_diagnostic</span>,
         )
         .<span class="ident">expect</span>(<span class="string">&quot;Error writing error message&quot;</span>);
+
         <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Stack trace:&quot;</span>);
         <span class="kw">let</span> <span class="ident">secondary_diagnostics</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">stack_trace</span>(<span class="kw-2">&amp;</span><span class="ident">files</span>);
         <span class="kw">for</span> <span class="ident">secondary</span> <span class="kw">in</span> <span class="ident">secondary_diagnostics</span>.<span class="ident">iter</span>() {

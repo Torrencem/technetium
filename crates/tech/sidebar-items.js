@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["main","The main application entry point"]],"mod":[["logging","Application logging utilities for technetium"]]});
+initSidebarItems({"fn":[["fail",""],["main","The main application entry point"]],"mod":[["logging","Application logging utilities for technetium"]]});

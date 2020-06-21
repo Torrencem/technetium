@@ -26,6 +26,10 @@ Command Line Utils
 
     Equivelent of the Unix command ``which``. Wraps the `rust crate 'which' <https://docs.rs/which/3.1.1/which/>`_.
 
+.. function:: open([string])  [void]
+
+    Opens a path (either a URL or a file path) with the default system program. Uses ``xdg-open`` on linux, and ``open`` on mac. See the `rust crate 'opener' <https://docs.rs/opener/0.4.1/opener/fn.open.html>`_ for more information.
+
 .. function:: args()  [list(string)]
 
     Returns a list of the command line arguments passed to the script, excluding the executable name and script name, if applicable.
@@ -36,4 +40,4 @@ Command Line Utils
 
 .. function:: linux_distro()  [string]
 
-    Returns the name of the linux distribution the script is running on, or "Unknown" if it's not known. This information is sourced from /etc/os-release. See `this rust crate <https://docs.rs/sys-info/0.6.1/sys_info/fn.linux_os_release.html>`_ for more information
+    Returns the name of the linux distribution the script is running on, or "Unknown" if it's not known. This information is sourced from /etc/os-release. See `this rust crate <https://docs.rs/sys-info/0.6.1/sys_info/fn.linux_os_release.html>`_ for more information.

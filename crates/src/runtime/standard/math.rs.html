@@ -136,13 +136,13 @@
 <span id="136">136</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">error</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">prelude</span>::<span class="kw-2">*</span>;
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">f64</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">func_object</span>;
 
-<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Sin</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Sin</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">arg_any</span> <span class="op">=</span> <span class="ident">args</span>[<span class="number">0</span>].<span class="ident">as_any</span>();
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">float_obj</span>) <span class="op">=</span> <span class="ident">arg_any</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">FloatObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
         <span class="kw">let</span> <span class="ident">float_obj</span> <span class="op">=</span> <span class="ident">float_obj</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;
@@ -155,7 +155,7 @@
     }
 });
 
-<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Cos</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Cos</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">arg_any</span> <span class="op">=</span> <span class="ident">args</span>[<span class="number">0</span>].<span class="ident">as_any</span>();
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">float_obj</span>) <span class="op">=</span> <span class="ident">arg_any</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">FloatObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
         <span class="kw">let</span> <span class="ident">float_obj</span> <span class="op">=</span> <span class="ident">float_obj</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;
@@ -168,7 +168,7 @@
     }
 });
 
-<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Tan</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Tan</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">arg_any</span> <span class="op">=</span> <span class="ident">args</span>[<span class="number">0</span>].<span class="ident">as_any</span>();
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">float_obj</span>) <span class="op">=</span> <span class="ident">arg_any</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">FloatObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
         <span class="kw">let</span> <span class="ident">float_obj</span> <span class="op">=</span> <span class="ident">float_obj</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;
@@ -181,7 +181,7 @@
     }
 });
 
-<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Abs</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Abs</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">arg_any</span> <span class="op">=</span> <span class="ident">args</span>[<span class="number">0</span>].<span class="ident">as_any</span>();
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">float_obj</span>) <span class="op">=</span> <span class="ident">arg_any</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">FloatObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
         <span class="kw">let</span> <span class="ident">float_obj</span> <span class="op">=</span> <span class="ident">float_obj</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;
@@ -194,7 +194,7 @@
     }
 });
 
-<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Sqrt</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Sqrt</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">arg_any</span> <span class="op">=</span> <span class="ident">args</span>[<span class="number">0</span>].<span class="ident">as_any</span>();
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">float_obj</span>) <span class="op">=</span> <span class="ident">arg_any</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">FloatObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
         <span class="kw">let</span> <span class="ident">float_obj</span> <span class="op">=</span> <span class="ident">float_obj</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;
@@ -207,7 +207,7 @@
     }
 });
 
-<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Exp</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Exp</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">arg_any</span> <span class="op">=</span> <span class="ident">args</span>[<span class="number">0</span>].<span class="ident">as_any</span>();
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">float_obj</span>) <span class="op">=</span> <span class="ident">arg_any</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">FloatObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
         <span class="kw">let</span> <span class="ident">float_obj</span> <span class="op">=</span> <span class="ident">float_obj</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;
@@ -220,7 +220,7 @@
     }
 });
 
-<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Ln</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Ln</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">arg_any</span> <span class="op">=</span> <span class="ident">args</span>[<span class="number">0</span>].<span class="ident">as_any</span>();
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">float_obj</span>) <span class="op">=</span> <span class="ident">arg_any</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">FloatObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
         <span class="kw">let</span> <span class="ident">float_obj</span> <span class="op">=</span> <span class="ident">float_obj</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;
@@ -233,7 +233,7 @@
     }
 });
 
-<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Arcsin</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Arcsin</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">arg_any</span> <span class="op">=</span> <span class="ident">args</span>[<span class="number">0</span>].<span class="ident">as_any</span>();
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">float_obj</span>) <span class="op">=</span> <span class="ident">arg_any</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">FloatObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
         <span class="kw">let</span> <span class="ident">float_obj</span> <span class="op">=</span> <span class="ident">float_obj</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;
@@ -246,7 +246,7 @@
     }
 });
 
-<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Arccos</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Arccos</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">arg_any</span> <span class="op">=</span> <span class="ident">args</span>[<span class="number">0</span>].<span class="ident">as_any</span>();
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">float_obj</span>) <span class="op">=</span> <span class="ident">arg_any</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">FloatObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
         <span class="kw">let</span> <span class="ident">float_obj</span> <span class="op">=</span> <span class="ident">float_obj</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;
@@ -259,7 +259,7 @@
     }
 });
 
-<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Arctan</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Arctan</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">arg_any</span> <span class="op">=</span> <span class="ident">args</span>[<span class="number">0</span>].<span class="ident">as_any</span>();
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">float_obj</span>) <span class="op">=</span> <span class="ident">arg_any</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">FloatObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
         <span class="kw">let</span> <span class="ident">float_obj</span> <span class="op">=</span> <span class="ident">float_obj</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;

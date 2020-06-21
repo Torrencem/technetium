@@ -160,6 +160,15 @@
 <span id="160">160</span>
 <span id="161">161</span>
 <span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! The standard library. This module contains definitions for function objects</span>
 <span class="doccomment">//! which are in scope throughout all technetium programs</span>
@@ -210,6 +219,13 @@
     <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;which&quot;</span>.<span class="ident">to_string</span>(), (<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">29</span>));
     <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;map&quot;</span>.<span class="ident">to_string</span>(), (<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">30</span>));
     <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;filter&quot;</span>.<span class="ident">to_string</span>(), (<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">31</span>));
+    <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;print&quot;</span>.<span class="ident">to_string</span>(), (<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">32</span>));
+    <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;printr&quot;</span>.<span class="ident">to_string</span>(), (<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">33</span>));
+    <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;println&quot;</span>.<span class="ident">to_string</span>(), (<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">34</span>));
+    <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;eprint&quot;</span>.<span class="ident">to_string</span>(), (<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">35</span>));
+    <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;eprintr&quot;</span>.<span class="ident">to_string</span>(), (<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">36</span>));
+    <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;eprintln&quot;</span>.<span class="ident">to_string</span>(), (<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">37</span>));
+    <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;open&quot;</span>.<span class="ident">to_string</span>(), (<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">38</span>));
     <span class="ident">res</span>
 }
 
@@ -267,6 +283,13 @@
     <span class="ident">res</span>.<span class="ident">insert</span>((<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">29</span>), <span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">sh</span>::<span class="ident">Which</span>));
     <span class="ident">res</span>.<span class="ident">insert</span>((<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">30</span>), <span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">functional</span>::<span class="ident">MapFunc</span>));
     <span class="ident">res</span>.<span class="ident">insert</span>((<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">31</span>), <span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">functional</span>::<span class="ident">FilterFunc</span>));
+    <span class="ident">res</span>.<span class="ident">insert</span>((<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">32</span>), <span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">special_funcs</span>::<span class="ident">Print</span>));
+    <span class="ident">res</span>.<span class="ident">insert</span>((<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">33</span>), <span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">special_funcs</span>::<span class="ident">Printr</span>));
+    <span class="ident">res</span>.<span class="ident">insert</span>((<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">34</span>), <span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">special_funcs</span>::<span class="ident">Println</span>));
+    <span class="ident">res</span>.<span class="ident">insert</span>((<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">35</span>), <span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">special_funcs</span>::<span class="ident">Eprint</span>));
+    <span class="ident">res</span>.<span class="ident">insert</span>((<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">36</span>), <span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">special_funcs</span>::<span class="ident">Eprintr</span>));
+    <span class="ident">res</span>.<span class="ident">insert</span>((<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">37</span>), <span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">special_funcs</span>::<span class="ident">Eprintln</span>));
+    <span class="ident">res</span>.<span class="ident">insert</span>((<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">38</span>), <span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">sh</span>::<span class="ident">Open</span>));
     <span class="ident">res</span>
 }
 

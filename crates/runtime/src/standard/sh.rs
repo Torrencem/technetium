@@ -12,6 +12,8 @@ use crate::func_object;
 use sys_info::linux_os_release;
 use sys_info::os_type;
 
+use opener::open;
+
 #[derive(Debug)]
 pub struct ShObject {
     pub argument: String,
@@ -165,6 +167,17 @@ func_object!(Cd, (1..=1), _c, args -> {
         Ok(UnitObject::new())
     } else {
         Err(RuntimeError::type_error("Expected string as argument to cd"))
+    }
+});
+
+func_object_void!(Open, (1..=1), _c, args -> {
+    let arg_any = args[0].as_any();
+    if let Some(str_obj) = arg_any.downcast_ref::<ObjectCell<StringObject>>() {
+        let str_obj = str_obj.try_borrow()?;
+        let val = &str_obj.val;
+        open(val)?;
+    } else {
+        return Err(RuntimeError::type_error("Expected string as argument to open"));
     }
 });
 

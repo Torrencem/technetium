@@ -53,6 +53,7 @@ pub fn get_default_namespace_descriptors() -> HashMap<String, GlobalConstantDesc
     res.insert("eprint".to_string(), (STANDARD_CONTEXT_ID, 35));
     res.insert("eprintr".to_string(), (STANDARD_CONTEXT_ID, 36));
     res.insert("eprintln".to_string(), (STANDARD_CONTEXT_ID, 37));
+    res.insert("open".to_string(), (STANDARD_CONTEXT_ID, 38));
     res
 }
 
@@ -116,6 +117,7 @@ pub fn get_default_namespace() -> HashMap<GlobalConstantDescriptor, ObjectRef> {
     res.insert((STANDARD_CONTEXT_ID, 35), ObjectRef::new(special_funcs::Eprint));
     res.insert((STANDARD_CONTEXT_ID, 36), ObjectRef::new(special_funcs::Eprintr));
     res.insert((STANDARD_CONTEXT_ID, 37), ObjectRef::new(special_funcs::Eprintln));
+    res.insert((STANDARD_CONTEXT_ID, 38), ObjectRef::new(sh::Open));
     res
 }
 

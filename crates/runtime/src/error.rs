@@ -9,6 +9,7 @@ use std::cell;
 use std::fmt;
 use std::sync;
 use sys_info;
+use opener;
 
 /// The result of a computation on the technetium runtime
 pub type RuntimeResult<T> = std::result::Result<T, RuntimeError>;
@@ -51,6 +52,7 @@ pub enum RuntimeErrorType {
     MutateImmutableError,
     /// Caused by trying to read a key that doesn't exist in a dictionary
     KeyError,
+    OpenError,
 }
 
 impl From<sys_info::Error> for RuntimeError {
@@ -116,6 +118,16 @@ impl From<mlrefcell::BorrowMutError> for RuntimeError {
                 help: "tried to mutate value that was forced to be immutable".to_string(),
                 symbols: vec![],
             },
+        }
+    }
+}
+
+impl From<opener::OpenError> for RuntimeError {
+    fn from(error: opener::OpenError) -> Self {
+        RuntimeError {
+            err: RuntimeErrorType::OpenError,
+            help: error.to_string(),
+            symbols: vec![],
         }
     }
 }

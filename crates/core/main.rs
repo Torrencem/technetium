@@ -49,6 +49,13 @@ fn main() {
                 .multiple(true),
         )
         .arg(
+            Arg::with_name("COMMAND")
+                .short("c")
+                .long("command")
+                .help("Run COMMAND as a technetium script and exit")
+                .takes_value(true)
+        )
+        .arg(
             Arg::with_name("args")
                 .help("Arguments to pass to script")
                 .multiple(true)
@@ -92,16 +99,28 @@ fn main() {
 
     let mut files: Files<Cow<'_, str>> = Files::new();
 
-    let input: String = match matches.value_of("INPUT") {
-        None | Some("-") => {
-            let mut buffer = String::new();
-            io::stdin()
-                .read_to_string(&mut buffer)
-                .expect("Error reading stdin");
-            buffer
+    let mut input: String = {
+        if let Some(cmd) = matches.value_of("COMMAND") {
+            cmd.to_owned()
+        } else {
+            match matches.value_of("INPUT") {
+                None | Some("-") => {
+                    let mut buffer = String::new();
+                    io::stdin()
+                        .read_to_string(&mut buffer)
+                        .expect("Error reading stdin");
+                    buffer
+                }
+                Some(file_name) => std::fs::read_to_string(file_name).unwrap_or_else(|e| fail(format!("Error reading file '{}'", file_name), e)),
+            }
         }
-        Some(file_name) => std::fs::read_to_string(file_name).unwrap_or_else(|e| fail(format!("Error reading file '{}'", file_name), e)),
     };
+
+    // Input should always end in a newline. This would be useful to add to the grammar,
+    // so that things like "return 1; }" would compile, but that is harder to get working.
+    if !input.ends_with("\n") {
+        input.push('\n');
+    }
 
     let file_id = files.add(
         match matches.value_of("INPUT") {

@@ -69,7 +69,7 @@ count = int(args()[0])
 while count {
     # Print a message and return to the beginning
     # of the line with a carriage return
-    printr(~"{count--}s remaining")
+    printr(~"{count--}s remaining   ")
 
     # Wait for 1 second
     $ sleep 1

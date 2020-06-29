@@ -4,7 +4,7 @@ use crate::prelude::*;
 
 use std::env;
 use std::io::Write;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Output, Stdio};
 
 use crate::func_object;
@@ -202,4 +202,50 @@ func_object!(Which, (1..=1), _c, args -> {
         .map_err(|e| RuntimeError::child_process_error(e.to_string()))?;
 
     Ok(StringObject::new(result.to_string_lossy().into_owned()))
+});
+
+func_object!(Exists, (1..=1), _c, args -> {
+    let arg_any = args[0].as_any();
+    if let Some(str_obj) = arg_any.downcast_ref::<ObjectCell<StringObject>>() {
+        let str_obj = str_obj.try_borrow()?;
+        let val = &str_obj.val;
+
+        let p = PathBuf::from(val);
+
+        Ok(BoolObject::new(p.exists()))
+    } else {
+        return Err(RuntimeError::type_error("Expected string as argument to exists"));
+    }
+});
+
+func_object!(IsDirectory, (1..=1), _c, args -> {
+    let arg_any = args[0].as_any();
+    if let Some(str_obj) = arg_any.downcast_ref::<ObjectCell<StringObject>>() {
+        let str_obj = str_obj.try_borrow()?;
+        let val = &str_obj.val;
+
+        let p = PathBuf::from(val);
+
+        Ok(BoolObject::new(p.is_dir()))
+    } else {
+        return Err(RuntimeError::type_error("Expected string as argument to is_directory"));
+    }
+});
+
+func_object!(Canonicalize, (1..=1), _c, args -> {
+    let arg_any = args[0].as_any();
+    if let Some(str_obj) = arg_any.downcast_ref::<ObjectCell<StringObject>>() {
+        let str_obj = str_obj.try_borrow()?;
+        let val = &str_obj.val;
+
+        let p = PathBuf::from(val);
+
+        let canonicalized = p.canonicalize()?
+            .to_string_lossy()
+            .into_owned();
+
+        Ok(StringObject::new(canonicalized))
+    } else {
+        return Err(RuntimeError::type_error("Expected string as argument to canonicalize"));
+    }
 });

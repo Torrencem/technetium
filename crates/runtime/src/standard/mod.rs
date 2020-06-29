@@ -54,6 +54,9 @@ pub fn get_default_namespace_descriptors() -> HashMap<String, GlobalConstantDesc
     res.insert("eprintr".to_string(), (STANDARD_CONTEXT_ID, 36));
     res.insert("eprintln".to_string(), (STANDARD_CONTEXT_ID, 37));
     res.insert("open".to_string(), (STANDARD_CONTEXT_ID, 38));
+    res.insert("exists".to_string(), (STANDARD_CONTEXT_ID, 39));
+    res.insert("is_directory".to_string(), (STANDARD_CONTEXT_ID, 40));
+    res.insert("canonicalize".to_string(), (STANDARD_CONTEXT_ID, 41));
     res
 }
 
@@ -118,6 +121,9 @@ pub fn get_default_namespace() -> HashMap<GlobalConstantDescriptor, ObjectRef> {
     res.insert((STANDARD_CONTEXT_ID, 36), ObjectRef::new(special_funcs::Eprintr));
     res.insert((STANDARD_CONTEXT_ID, 37), ObjectRef::new(special_funcs::Eprintln));
     res.insert((STANDARD_CONTEXT_ID, 38), ObjectRef::new(sh::Open));
+    res.insert((STANDARD_CONTEXT_ID, 39), ObjectRef::new(sh::Exists));
+    res.insert((STANDARD_CONTEXT_ID, 40), ObjectRef::new(sh::IsDirectory));
+    res.insert((STANDARD_CONTEXT_ID, 41), ObjectRef::new(sh::Canonicalize));
     res
 }
 

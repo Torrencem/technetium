@@ -30,6 +30,18 @@ Command Line Utils
 
     Opens a path (either a URL or a file path) with the default system program. Uses ``xdg-open`` on linux, and ``open`` on mac. See the `rust crate 'opener' <https://docs.rs/opener/0.4.1/opener/fn.open.html>`_ for more information.
 
+.. function:: exists([string])  [bool]
+
+    Test if a path exists.
+
+.. function:: is_directory([string])  [bool]
+
+    Test if a path is a directory. Returns false if directory does not exist.
+
+.. function:: canonicalize([string])  [string]
+
+    Canonicalize e.g. a relative path, to make an absolute path.
+
 .. function:: args()  [list(string)]
 
     Returns a list of the command line arguments passed to the script, excluding the executable name and script name, if applicable.

@@ -1,6 +1,7 @@
 
 This is a rough todo list of features I want to add to the language:
 
+* Add "is_dir([path])" function, "canonical([path])" function, etc.
 * Update function doc style according to https://pythonhosted.org/an_example_pypi_project/sphinx.html#function-definitions
 * Add a bunch of examples to documentation, especially for map filter
 * add some functions relating to https://github.com/xdg-rs/dirs

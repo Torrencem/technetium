@@ -1,7 +1,6 @@
 
 This is a rough todo list of features I want to add to the language:
 
-* Add -r shortcut 'tcmake', change default s/build/make
 * Update function doc style according to https://pythonhosted.org/an_example_pypi_project/sphinx.html#function-definitions
 * Add a bunch of examples to documentation, especially for map filter
 * add some functions relating to https://github.com/xdg-rs/dirs

@@ -31,7 +31,7 @@ fn fail<D: Display, S: Display>(message: S, e: D) -> ! {
     exit(1)
 }
 
-fn recursive_build_script(name: &str) -> io::Result<Option<String>> {
+fn recursive_make_script(name: &str) -> io::Result<Option<String>> {
     let mut dir = env::current_dir()?;
 
     loop {
@@ -68,13 +68,13 @@ fn main() {
             Arg::with_name("recursive")
                 .short("r")
                 .long("recursive")
-                .help("Search current directory and parents for a build file (default name: 'build.tc') and run it.")
+                .help("Search current directory and parents for a make file (default name: 'make.tc') and run it.")
         )
         .arg(
-            Arg::with_name("BUILD_FILE_NAME")
+            Arg::with_name("MAKE_FILE_NAME")
                 .short("bf")
-                .long("build_file_name")
-                .help("Name of build file to search for. Requires '-r'. Can also be overridden using the environment variable 'TC_BUILD_FILE_NAME'.")
+                .long("make_file_name")
+                .help("Name of make file to search for. Requires '-r'. Can also be overridden using the environment variable 'TC_MAKE_FILE_NAME'.")
                 .requires("recursive")
                 .takes_value(true)
         )
@@ -141,18 +141,18 @@ fn main() {
         if let Some(cmd) = matches.value_of("COMMAND") {
             cmd.to_owned()
         } else if matches.is_present("recursive") {
-            let build_script_name = match env::var("TC_BUILD_FILE_NAME") {
+            let make_script_name = match env::var("TC_MAKE_FILE_NAME") {
                 Ok(variable) => variable,
                 _ => matches
-                            .value_of("BUILD_FILE_NAME")
-                            .unwrap_or("build.tc")
+                            .value_of("MAKE_FILE_NAME")
+                            .unwrap_or("make.tc")
                             .to_owned(),
             };
             
-            recursive_build_script(&build_script_name)
-                .unwrap_or_else(|e| fail(format!("No build script found ('{}') in current or any parent directory", build_script_name), e))
+            recursive_make_script(&make_script_name)
+                .unwrap_or_else(|e| fail(format!("No build script found ('{}') in current or any parent directory", make_script_name), e))
                 .unwrap_or_else(|| {
-                    eprintln!("No build script found ('{}') in current or any parent directory", build_script_name);
+                    eprintln!("No build script found ('{}') in current or any parent directory", make_script_name);
                     exit(1)
                 })
         } else {

@@ -12,6 +12,7 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 use std::process::exit;
 use std::rc::Rc;
+use std::env;
 
 extern crate clap;
 use clap::{App, AppSettings, Arg};
@@ -28,6 +29,21 @@ use std::fmt::Display;
 fn fail<D: Display, S: Display>(message: S, e: D) -> ! {
     eprintln!("{}: {}", message, e);
     exit(1)
+}
+
+fn recursive_build_script(name: &str) -> io::Result<Option<String>> {
+    let mut dir = env::current_dir()?;
+
+    loop {
+        let mut build_script = dir.clone();
+        build_script.push(name);
+        if build_script.exists() {
+            return Ok(Some(std::fs::read_to_string(build_script)?));
+        }
+        if !dir.pop() {
+            return Ok(None);
+        }
+    }
 }
 
 /// The main application entry point
@@ -47,6 +63,20 @@ fn main() {
                 .long("verbose")
                 .help("Set logging verbosity level")
                 .multiple(true),
+        )
+        .arg(
+            Arg::with_name("recursive")
+                .short("r")
+                .long("recursive")
+                .help("Search current directory and parents for a build file (default name: 'build.tc') and run it.")
+        )
+        .arg(
+            Arg::with_name("BUILD_FILE_NAME")
+                .short("bf")
+                .long("build_file_name")
+                .help("Name of build file to search for. Requires '-r'. Can also be overridden using the environment variable 'TC_BUILD_FILE_NAME'.")
+                .requires("recursive")
+                .takes_value(true)
         )
         .arg(
             Arg::with_name("COMMAND")
@@ -77,7 +107,17 @@ fn main() {
         _ => Level::Trace,
     };
 
+    logging::init(log_level).expect("Error initializing logging");
+
     let mut extra_args = vec![];
+
+    if matches.is_present("recursive") {
+        // If recursive, first argument should be passed
+        // as extra_args, not as INPUT
+        if let Some(first_arg) = matches.value_of("INPUT") {
+            extra_args.push(first_arg.to_string());
+        }
+    }
 
     extra_args.append(
         &mut matches
@@ -95,13 +135,26 @@ fn main() {
 
     runtime::PARSED_CLARGS.set(extra_args).unwrap();
 
-    logging::init(log_level).expect("Error initializing logging");
-
     let mut files: Files<Cow<'_, str>> = Files::new();
 
     let mut input: String = {
         if let Some(cmd) = matches.value_of("COMMAND") {
             cmd.to_owned()
+        } else if matches.is_present("recursive") {
+            let build_script_name = match env::var("TC_BUILD_FILE_NAME") {
+                Ok(variable) => variable,
+                _ => matches
+                            .value_of("BUILD_FILE_NAME")
+                            .unwrap_or("build.tc")
+                            .to_owned(),
+            };
+            
+            recursive_build_script(&build_script_name)
+                .unwrap_or_else(|e| fail(format!("No build script found ('{}') in current or any parent directory", build_script_name), e))
+                .unwrap_or_else(|| {
+                    eprintln!("No build script found ('{}') in current or any parent directory", build_script_name);
+                    exit(1)
+                })
         } else {
             match matches.value_of("INPUT") {
                 None | Some("-") => {

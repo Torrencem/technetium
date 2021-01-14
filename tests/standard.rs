@@ -4,7 +4,23 @@ use predicates::prelude::*;
 type TestError = Box<dyn std::error::Error>;
 
 #[test]
-fn index_set() -> Result<(), TestError> {
+fn test_singleton_set() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+l = {1}
+
+println(l)
+        "#,
+        );
+    
+    cmd.assert().success().stdout(predicate::eq("{1}\n"));
+
+    Ok(())
+}
+
+#[test]
+fn test_index_set() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"

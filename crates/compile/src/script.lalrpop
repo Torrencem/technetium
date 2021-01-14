@@ -350,7 +350,10 @@ ListLiteral: ListLiteral = <l:@L> "[" <v: Comma<Expr>> "]" <r:@R> => ListLiteral
 
 TupleLiteral: TupleLiteral = <l:@L> "(" <v: CommaNonEmpty<Expr>> ")" <r:@R> => TupleLiteral::new(v, l, r);
 
-SetLiteral: SetLiteral = <l:@L> "{" <v: CommaNonEmpty<Expr>> "}" <r:@R> => SetLiteral::new(v, l, r);
+SetLiteral: SetLiteral = {
+    <l:@L> "{" <v: CommaNonEmpty<Expr>> "}" <r:@R> => SetLiteral::new(v, l, r),
+    <l:@L> "{" <e:Expr> "}" <r:@R> => SetLiteral::new(vec![e], l, r),
+};
 
 DictLiteral: DictLiteral = <l:@L> "{" <v: DictStyleComma<DictEntry>> "}" <r:@R> => DictLiteral::new(v, l, r);
 

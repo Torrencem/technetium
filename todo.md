@@ -1,6 +1,19 @@
 
 This is a rough todo list of features I want to add to the language:
 
+* The following code stackoverflows:
+
+```
+l = [1]
+
+l.push(l)
+
+println(l)
+```
+
+Equivelent code in Python is smart enough to notice that `l[i] is l`, and so at that spot, it prints `[...]`. It's even smart enough to notice when `l[i][j] is l`! A somewhat dumber version of this would be nice!
+
+* allow integer literals outside the range of i64
 * Document "using tcmake as a build system"
 * Update function doc style according to https://pythonhosted.org/an_example_pypi_project/sphinx.html#function-definitions
 * Add a bunch of examples to documentation, especially for map filter

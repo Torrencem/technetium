@@ -917,6 +917,7 @@ impl<'code> Frame<'code> {
                                     obj.technetium_type_name()
                                 )))
                         );
+                        obj.lock_immutable();
                         as_hashset.insert(hashable);
                     }
                     self.stack.push(ObjectRef::new(Set {
@@ -941,6 +942,7 @@ impl<'code> Frame<'code> {
                                     key.technetium_type_name()
                                 )))
                         );
+                        key.lock_immutable();
                         as_hashmap.insert(hashable, val);
                     }
                     self.stack.push(ObjectRef::new(Dictionary {

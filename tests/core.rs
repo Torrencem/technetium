@@ -411,6 +411,25 @@ println(a)
         .failure()
         .stderr(predicate::str::contains("Immutable"))
         .stderr(predicate::str::contains("mutate value"));
+
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+a = {1, 2}
+
+b = {a}
+
+a.add(3)
+
+println(b)
+        "#,
+        );
+
+    cmd.assert()
+        .failure()
+        .stderr(predicate::str::contains("Immutable"))
+        .stderr(predicate::str::contains("mutate value"));
+
     Ok(())
 }
 

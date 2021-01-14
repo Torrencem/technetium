@@ -304,6 +304,9 @@ pub trait Object: Any + ToAny + OpaqueClone + RawPointer + LockImmutable {
     
     /// Convert an object to a String.
     fn to_string(&self) -> RuntimeResult<String> {
+        // TODO fix: This should be passed some way to ask "Am I the recursive call of myself" (i.e.
+        // should I just return [...] for lists). This might be able to be attached to a
+        // RuntimeContext<'_>
         Ok(format!("<{}>", self.technetium_type_name()))
     }
     

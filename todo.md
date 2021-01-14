@@ -11,7 +11,8 @@ l.push(l)
 println(l)
 ```
 
-Equivelent code in Python is smart enough to notice that `l[i] is l`, and so at that spot, it prints `[...]`. It's even smart enough to notice when `l[i][j] is l`! A somewhat dumber version of this would be nice!
+Equivelent code in Python is smart enough to notice that `l[i] is l`, and so at that spot, it prints `[...]`. It's even smart enough to notice when `l[i][j] is l`!
+It looks like the code in CPython that's responsible for this is here: https://github.com/python/cpython/blob/e5fe509054183bed9aef42c92da8407d339e8af8/Objects/listobject.c#L373
 
 * allow integer literals outside the range of i64
 * Document "using tcmake as a build system"

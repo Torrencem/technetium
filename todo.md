@@ -5,6 +5,7 @@ This is a rough todo list of features I want to add to the language:
 * interactive mode (a la python)
 * add chars to get string
 * treat slices more like strings
+* add a way to get an empty dict
 * The following code stackoverflows:
 
 ```

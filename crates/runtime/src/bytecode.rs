@@ -203,7 +203,7 @@ impl fmt::Display for Op {
             Op::load_non_local(x) => f.write_str(format!("load_non_local\t{:?}", x).as_ref()),
             Op::attach_ancestors => f.write_str("attach_ancestors"),
             Op::call_method(x) => f.write_str(format!("call_method\t{}", x).as_ref()),
-            Op::call_function(x) => f.write_str(format!("call_method\t{}", x).as_ref()),
+            Op::call_function(x) => f.write_str(format!("call_function\t{}", x).as_ref()),
             Op::fmt_string(x) => f.write_str(format!("fmt_string\t{}", x).as_ref()),
             Op::take_iter(x) => f.write_str(format!("take_iter\t{}", x).as_ref()),
             Op::mklist(x) => f.write_str(format!("mklist\t{}", x).as_ref()),

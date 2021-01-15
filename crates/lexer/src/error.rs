@@ -102,26 +102,28 @@ pub fn parse_error_to_diagnostic<FileId>(p: &ParseError, fileid: FileId) -> Diag
             .with_message("Invalid or unknown token")]),
         ParseError::UnrecognizedEOF {
             location: l,
-            expected: e,
+            expected: _e,
         } => Diagnostic::error()
             .with_message("Parse error: Unrecognized End of Input")
             .with_labels(vec![Label::primary(
                 fileid,
-                Span::new(*l as u32, *l as u32 + 1),
+                // NOTE: This is -2 and -1 because all programs end in a newline, and usually
+                // highlighting this newline isn't helpful for the user.
+                Span::new(*l as u32 - 2, *l as u32 - 1),
             )
-            .with_message("Invalid EOI")])
-            .with_notes(vec![format!("Expected one of {:?} after this point", e)]),
+            .with_message("Invalid EOI after this character")]),
+            // .with_notes(vec![format!("Expected one of {:?} after this point", e)]),
         ParseError::UnrecognizedToken {
             token: t,
-            expected: e,
+            expected: _e,
         } => Diagnostic::error()
             .with_message("Parse error: Unrecognized or unexpected token")
             .with_labels(vec![Label::primary(
                 fileid,
                 Span::new(t.0 as u32, t.2 as u32),
             )
-            .with_message(format!("Did not expect {:?} here", t.1))])
-            .with_notes(vec![format!("Expected one of {:?}", e)]),
+            .with_message(format!("Did not expect {:?} here", t.1))]),
+            // .with_notes(vec![format!("Expected one of {:?}", e)]),
         ParseError::ExtraToken { token: t } => Diagnostic::error()
             .with_message("Parse error: extra token")
             .with_labels(vec![Label::primary(

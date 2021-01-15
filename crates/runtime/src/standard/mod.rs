@@ -127,6 +127,59 @@ pub fn get_default_namespace() -> HashMap<GlobalConstantDescriptor, ObjectRef> {
     res
 }
 
+pub(crate) trait HumanReadableRange {
+    fn print_range(&self) -> String;
+}
+
+pub(crate) fn print_range<T: HumanReadableRange>(val: &T) -> String {
+    val.print_range()
+}
+
+use std::ops;
+
+// Probably could be more general using stepping, but only meant to be used on integers
+impl<T: std::fmt::Display + PartialEq + From<u8> + Copy> HumanReadableRange for ops::Range<T> 
+where T: ops::Sub<T, Output=T>
+{
+    fn print_range(&self) -> String {
+        if self.start == self.end - T::from(1u8) {
+            self.start.to_string()
+        } else {
+            format!("{}-{}", self.start, self.end - T::from(1u8)).to_string()
+        }
+    }
+}
+
+impl<T: std::fmt::Display + Copy> HumanReadableRange for ops::RangeFrom<T> {
+    fn print_range(&self) -> String {
+        format!("at least {}", self.start).to_string()
+    }
+}
+
+impl<T: std::fmt::Display + PartialEq + Copy> HumanReadableRange for ops::RangeInclusive<T> {
+    fn print_range(&self) -> String {
+        if *self.start() == *self.end() {
+            self.start().to_string()
+        } else {
+            format!("{}-{}", self.start(), self.end()).to_string()
+        }
+    }
+}
+
+impl<T: std::fmt::Display + Copy> HumanReadableRange for ops::RangeTo<T> {
+    fn print_range(&self) -> String {
+        format!("less than {}", self.end).to_string()
+    }
+}
+
+impl<T: std::fmt::Display + Copy> HumanReadableRange for ops::RangeToInclusive<T> {
+    fn print_range(&self) -> String {
+        format!("at most {}", self.end).to_string()
+    }
+}
+
+
+
 #[macro_export]
 macro_rules! func_object_void {
     ($id:ident, $args_range:tt, $context:ident, $args:ident -> $call:block) => {
@@ -139,7 +192,7 @@ macro_rules! func_object_void {
 
             fn call(&self, $args: &[ObjectRef], $context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
                 if !$args_range.contains(&$args.len()) {
-                    return Err(RuntimeError::type_error(format!("Incorrect number of arguments: expected {:?}, got {}", $args_range, $args.len())));
+                    return Err(RuntimeError::type_error(format!("Incorrect number of arguments: expected {}, got {}", crate::standard::print_range(&$args_range), $args.len())));
                 }
                 $call
                 Ok(UnitObject::new())
@@ -165,8 +218,8 @@ macro_rules! func_object {
             ) -> RuntimeResult<ObjectRef> {
                 if !$args_range.contains(&$args.len()) {
                     return Err(RuntimeError::type_error(format!(
-                        "Incorrect number of arguments: expected {:?}, got {}",
-                        $args_range,
+                        "Incorrect number of arguments: expected {}, got {}",
+                        crate::standard::print_range(&$args_range),
                         $args.len()
                     )));
                 }

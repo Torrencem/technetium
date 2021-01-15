@@ -158,8 +158,11 @@ func_object!(Char, (1..=1), _c, args -> {
     Ok(CharObject::new(to_char(ObjectRef::clone(&args[0]))?))
 });
 
-func_object!(List_, (1..=1), context, args -> {
+func_object!(List_, (0..=1), context, args -> {
     let mut res = vec![];
+    if args.len() == 0 {
+        return Ok(ObjectRef::new(List { contents: res }));
+    }
     let iter = args[0].make_iter(context)?;
     while let Some(val) = iter.take_iter(context)? {
         res.push(ObjectRef::clone(&val));
@@ -167,8 +170,11 @@ func_object!(List_, (1..=1), context, args -> {
     Ok(ObjectRef::new(List { contents: res }))
 });
 
-func_object!(Set_, (1..=1), context, args -> {
+func_object!(Set_, (0..=1), context, args -> {
     let mut res = HashSet::new();
+    if args.len() == 0 {
+        return Ok(ObjectRef::new(Set { contents: res }));
+    }
     let iter = args[0].make_iter(context)?;
     while let Some(val) = iter.take_iter(context)? {
         let hashable = val.hashable().ok_or_else(|| RuntimeError::type_error(format!("Type {} used in set is not hashable", val.technetium_type_name())))?;

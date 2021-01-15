@@ -1,7 +1,10 @@
 
 This is a rough todo list of features I want to add to the language:
 
-* multiplication for lists and strings!
+* multiplication for strings!
+* interactive mode (a la python)
+* add chars to get string
+* treat slices more like strings
 * The following code stackoverflows:
 
 ```
@@ -25,8 +28,6 @@ println(a)
 ```
 
 * Print / Println is dumb
-* Allow empty dict literal
-* Let set() be empty set (no args)
 * Union / intersection / subtraction of sets (with + ^ and - respectively)
 * allow integer literals outside the range of i64
 * Document "using tcmake as a build system"
@@ -36,7 +37,6 @@ println(a)
 * add reduce
 * way to get reference to self in a lambda expression (a la this in javascript)
 * defer
-* interactive mode (a la python)
 * tertiery expressions (if blah then blah else blah)
 * generators
 * comprehensions

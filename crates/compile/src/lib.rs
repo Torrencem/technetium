@@ -300,6 +300,7 @@ impl CompileManager {
                 for arg in ast.arguments.iter() {
                     res.append(&mut self.compile_expr(arg)?);
                 }
+                res.push(Op::debug(self.create_debug_descriptor(ast.span)));
                 res.push(*op);
                 return Ok(res);
             }

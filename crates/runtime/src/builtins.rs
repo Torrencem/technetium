@@ -291,6 +291,7 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             }
             Ok(ObjectRef::new(List { contents: res }))
         }
+        // TODO: Add int * string and string * int
         _ => Err(RuntimeError::type_error(format!(
             "Cannot multiply type {} by type {}",
             a.technetium_type_name(),

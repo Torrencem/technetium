@@ -487,15 +487,22 @@ impl CompileManager {
         // Turn it into an iterator
         res.push(Op::make_iter);
 
-        // Override any variable of the appropriate name
-        let local_name = self.local_name_gen();
+        // We want to store this iterator as a variable
+        let local_iter_name = self.local_name_gen();
         let cid = self.context().context_id;
+        // We don't need to put it in the local_index though because the user shouldn't be
+        // accessing it
+        res.push(Op::store(local_iter_name));
+
+
+        // Override any variable of the appropriate name of the loop variable
+        let local_name = self.local_name_gen();
         self.local_index
             .insert((cid, ast.binding.name.clone()), local_name);
 
         let mut body = self.compile_statement_list(&ast.body)?;
 
-        res.push(Op::dup);
+        res.push(Op::load(local_iter_name));
         let skip_body_offset = body.len() as u16 as i16 + 3;
         let back_to_dup_offset = -(body.len() as u16 as i16) - 4;
         res.push(Op::debug(debug_descr));

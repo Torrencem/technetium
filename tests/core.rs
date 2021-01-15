@@ -628,3 +628,23 @@ println((\() -> (\x -> x + 2)((\() -> 2)()))())
 
     Ok(())
 }
+
+#[test]
+fn test_nested_loops() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+for i in range(3) {
+    for j in range(3) {
+        println(i + ", " + j)
+    }
+}
+"#,
+    );
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("0, 0\n0, 1\n0, 2\n1, 0\n1, 1\n1, 2\n2, 0\n2, 1\n2, 2\n"));
+
+    Ok(())
+}

@@ -225,3 +225,21 @@ b = 3 * 4 *
 
     Ok(())
 }
+
+
+#[test]
+fn special_char_lex() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+l = [1]
+
+print(@l@@@@@)
+        "#);
+
+    cmd.assert()
+        .failure()
+        .stderr(predicate::str::contains("special char"));
+
+    Ok(())
+}

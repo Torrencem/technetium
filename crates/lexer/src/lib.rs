@@ -620,6 +620,12 @@ impl<'input> Iterator for Lexer<'input> {
                             }
                             Err(x) => return Some(Err(x)),
                         }
+                    } else {
+                        // Default case: Completely unknown character (for example: @ or ;)
+                        return Some(Err(MiscParseError::lex(
+                                    "Unexpected special character",
+                                    Some(i),
+                        )));
                     }
                 }
                 None => return None, // EOF

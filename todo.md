@@ -24,7 +24,6 @@ b.add(5)
 println(a)
 ```
 
-* @ in the middle of programs doesn't cause errors
 * Print / Println is dumb
 * Allow empty dict literal
 * Let set() be empty set (no args)

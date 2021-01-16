@@ -1,8 +1,10 @@
 use crate::error::*;
 use crate::prelude::*;
+use std::collections::HashMap;
 use std::any::TypeId;
 use std::char;
 use std::u32;
+use crate::builtins;
 
 use num::bigint::ToBigInt;
 use num::BigInt;
@@ -181,4 +183,20 @@ func_object!(Set_, (0..=1), context, args -> {
         res.insert(hashable);
     }
     Ok(ObjectRef::new(Set { contents: res }))
+});
+
+func_object!(Dict_, (0..=1), context, args -> {
+    let mut res = HashMap::<HashableObjectRef, ObjectRef>::new();
+    if args.len() == 0 {
+        return Ok(ObjectRef::new(Dictionary { contents: res }));
+    }
+    let iter = args[0].make_iter(context)?;
+    while let Some(val) = iter.take_iter(context)? {
+        // TODO: Should this map_err?
+        let key = builtins::index_get(val.clone(), IntObject::new(0))?.hashable().ok_or_else(|| RuntimeError::type_error(format!("Type {} used in set is not hashable", val.technetium_type_name())))?;
+        let val = builtins::index_get(val.clone(), IntObject::new(1))?;
+        key.lock_immutable();
+        res.insert(key, val);
+    }
+    Ok(ObjectRef::new(Dictionary { contents: res }))
 });

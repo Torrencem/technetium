@@ -57,6 +57,7 @@ pub fn get_default_namespace_descriptors() -> HashMap<String, GlobalConstantDesc
     res.insert("exists".to_string(), (STANDARD_CONTEXT_ID, 39));
     res.insert("is_directory".to_string(), (STANDARD_CONTEXT_ID, 40));
     res.insert("canonicalize".to_string(), (STANDARD_CONTEXT_ID, 41));
+    res.insert("dict".to_string(), (STANDARD_CONTEXT_ID, 42));
     res
 }
 
@@ -124,6 +125,7 @@ pub fn get_default_namespace() -> HashMap<GlobalConstantDescriptor, ObjectRef> {
     res.insert((STANDARD_CONTEXT_ID, 39), ObjectRef::new(sh::Exists));
     res.insert((STANDARD_CONTEXT_ID, 40), ObjectRef::new(sh::IsDirectory));
     res.insert((STANDARD_CONTEXT_ID, 41), ObjectRef::new(sh::Canonicalize));
+    res.insert((STANDARD_CONTEXT_ID, 42), ObjectRef::new(conversion::Dict_));
     res
 }
 

@@ -2,7 +2,7 @@
 This is a rough todo list of features I want to add to the language:
 
 * treat slices more like strings
-* add a way to get an empty dict
+* document dict conversion function (dict())
 * user defined classes
 * The following code stackoverflows:
 

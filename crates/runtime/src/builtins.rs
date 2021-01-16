@@ -1215,6 +1215,7 @@ pub fn index_set(a: ObjectRef, b: ObjectRef, c: ObjectRef) -> RuntimeResult<()> 
                     b.technetium_type_name()
                 ))
             })?;
+            hashable.lock_immutable();
             val_a.contents.insert(hashable, c);
             Ok(())
         }

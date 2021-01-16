@@ -1,7 +1,6 @@
 
 This is a rough todo list of features I want to add to the language:
 
-* add chars to get string
 * treat slices more like strings
 * add a way to get an empty dict
 * user defined classes

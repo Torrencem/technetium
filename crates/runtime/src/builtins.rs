@@ -291,6 +291,48 @@ pub fn mul(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             }
             Ok(ObjectRef::new(List { contents: res }))
         }
+        (a, b)
+            if a == TypeId::of::<ObjectCell<StringObject>>()
+                && b == TypeId::of::<ObjectCell<IntObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<StringObject>>()
+                .unwrap()
+                .try_borrow()?
+                .val
+                .clone();
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?
+                .to_i64()?;
+            let mut res: String = String::new();
+            for _ in 0..val_b {
+                res.push_str(&val_a);
+            }
+            Ok(ObjectRef::new(StringObject { val: res }))
+        }
+        (a, b)
+            if a == TypeId::of::<ObjectCell<IntObject>>()
+                && b == TypeId::of::<ObjectCell<StringObject>>() =>
+        {
+            let val_a = a_any
+                .downcast_ref::<ObjectCell<IntObject>>()
+                .unwrap()
+                .try_borrow()?
+                .to_i64()?;
+            let val_b = b_any
+                .downcast_ref::<ObjectCell<StringObject>>()
+                .unwrap()
+                .try_borrow()?
+                .val
+                .clone();
+            let mut res: String = String::new();
+            for _ in 0..val_a {
+                res.push_str(&val_b);
+            }
+            Ok(ObjectRef::new(StringObject { val: res }))
+        }
         // TODO: Add int * string and string * int
         _ => Err(RuntimeError::type_error(format!(
             "Cannot multiply type {} by type {}",

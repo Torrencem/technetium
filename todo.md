@@ -1,11 +1,10 @@
 
 This is a rough todo list of features I want to add to the language:
 
-* multiplication for strings!
-* interactive mode (a la python)
 * add chars to get string
 * treat slices more like strings
 * add a way to get an empty dict
+* user defined classes
 * The following code stackoverflows:
 
 ```
@@ -30,6 +29,7 @@ println(a)
 
 * Print / Println is dumb
 * Union / intersection / subtraction of sets (with + ^ and - respectively)
+* interactive mode (a la python)
 * allow integer literals outside the range of i64
 * Document "using tcmake as a build system"
 * Update function doc style according to https://pythonhosted.org/an_example_pypi_project/sphinx.html#function-definitions

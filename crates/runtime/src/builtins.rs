@@ -90,6 +90,23 @@ pub fn add(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let res = format!("{}{}", a.to_string()?, b.val);
             Ok(StringObject::new(res))
         }
+        (a, b)
+            if a == TypeId::of::<ObjectCell<CharObject>>()
+                && b == TypeId::of::<ObjectCell<CharObject>>() =>
+        {
+            let a = a_any
+                .downcast_ref::<ObjectCell<CharObject>>()
+                .unwrap()
+                .try_borrow()?
+                .val;
+            let b = b_any
+                .downcast_ref::<ObjectCell<CharObject>>()
+                .unwrap()
+                .try_borrow()?
+                .val;
+            let res = format!("{}{}", a, b);
+            Ok(StringObject::new(res))
+        }
         (a_, b_)
             if a_ == TypeId::of::<ObjectCell<List>>() && b_ == TypeId::of::<ObjectCell<List>>() =>
         {

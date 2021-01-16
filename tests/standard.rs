@@ -393,12 +393,12 @@ fn test_dict_conversion() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
         r#"
-println(dict([["a", 1], ["b", 2]]))
+println(dict([["a", 1]]))
 println(dict())
 "#,
     );
 
-    cmd.assert().success().stdout(predicate::eq("{b: 2, a: 1}\n{}\n"));
+    cmd.assert().success().stdout(predicate::eq("{a: 1}\n{}\n"));
 
     Ok(())
 }

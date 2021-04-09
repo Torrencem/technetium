@@ -29,7 +29,7 @@ println(a)
 
 * Print / Println is dumb
 * Union / intersection / subtraction of sets (with + ^ and - respectively)
-* interactive mode (a la python)
+* interactive mode (like python). Detect if in a TTY etc.
 * allow integer literals outside the range of i64
 * Document "using tcmake as a build system"
 * Update function doc style according to https://pythonhosted.org/an_example_pypi_project/sphinx.html#function-definitions

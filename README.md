@@ -8,15 +8,19 @@ Technetium is a sleek interpreted programming language that features inline shel
 
 Since the project is still very young, all suggestions are welcome! A contributing guide with notes on internals and other considerations is to come.
 
+## Installation
+
+To install, setup cargo and rust, and then use the command ``cargo install --path .`` in the main directory to install the ``tech`` binary. You can also copy the ``scripts/tcmake`` script into your path to be able to use the ``tcmake`` command (relies on ``tech``).
+
 ## Features
 
-* Inline shell statements with very practical integration, and super-intuitive child process first-class objects via `sh`
+* Inline shell statements with very practical integration, and super-intuitive child process first class objects via `sh`
 
-* Super-simple syntax. A familiar, non-controversial syntax that plays nice with expectations
+* Super simple syntax. A familiar, non-controversial syntax that plays nice with expectations
 
-* A set of ever-convenient and always-expanding utility functions (for example, `os()` will return the current operating system as a string) and dead-easy conversion functions
+* A set of convenient and expanding utility functions (for example, `os()` will return the current operating system as a string) and easy conversion functions
 
-* UTF-8 by default, with sensible character types that play nicely with strings
+* UTF-8 by default, with a sensible character type that plays nicely with encoded strings
 
 ## Examples
 

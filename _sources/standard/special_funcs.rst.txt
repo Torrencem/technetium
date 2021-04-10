@@ -56,3 +56,11 @@ Special Functions
 .. function:: clone([object])  [object]
 
     Will create a deep-clone of an object, if possible. The clone will be unlocked and mutation will be allowed. ``clone`` will throw an error if the object is not cloneable.
+
+.. function:: assert([bool], [string]?)  [void]
+
+    Assert a condition, with an optional message in case the condition fails.
+
+.. function:: tech_version()  ([int], [int], [int])
+
+    Returns the major, minor and patch version of technetium.

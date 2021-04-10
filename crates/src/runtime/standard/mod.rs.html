@@ -245,6 +245,12 @@
 <span id="242">242</span>
 <span id="243">243</span>
 <span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! The standard library. This module contains definitions for function objects</span>
 <span class="doccomment">//! which are in scope throughout all technetium programs</span>
@@ -312,6 +318,9 @@
     <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;username&quot;</span>.<span class="ident">to_string</span>(), (<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">46</span>));
     <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;languages&quot;</span>.<span class="ident">to_string</span>(), (<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">47</span>));
     <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;desktop_env&quot;</span>.<span class="ident">to_string</span>(), (<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">48</span>));
+    <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;assert&quot;</span>.<span class="ident">to_string</span>(), (<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">49</span>));
+    <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;tech_version&quot;</span>.<span class="ident">to_string</span>(), (<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">50</span>));
+    <span class="ident">res</span>.<span class="ident">insert</span>(<span class="string">&quot;stale&quot;</span>.<span class="ident">to_string</span>(), (<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">51</span>));
     <span class="ident">res</span>
 }
 
@@ -386,6 +395,9 @@
     <span class="ident">res</span>.<span class="ident">insert</span>((<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">46</span>), <span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">sh</span>::<span class="ident">Username</span>));
     <span class="ident">res</span>.<span class="ident">insert</span>((<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">47</span>), <span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">sh</span>::<span class="ident">Langs</span>));
     <span class="ident">res</span>.<span class="ident">insert</span>((<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">48</span>), <span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">sh</span>::<span class="ident">DesktopEnv</span>));
+    <span class="ident">res</span>.<span class="ident">insert</span>((<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">49</span>), <span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">special_funcs</span>::<span class="ident">Assert</span>));
+    <span class="ident">res</span>.<span class="ident">insert</span>((<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">50</span>), <span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">special_funcs</span>::<span class="ident">Version</span>));
+    <span class="ident">res</span>.<span class="ident">insert</span>((<span class="ident">STANDARD_CONTEXT_ID</span>, <span class="number">51</span>), <span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">special_funcs</span>::<span class="ident">Stale</span>));
     <span class="ident">res</span>
 }
 

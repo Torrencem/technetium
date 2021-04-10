@@ -38,6 +38,7 @@
 <p class="topic-title">Contents</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="#the-shell-operator" id="id1">The Shell Operator</a></p></li>
+<li><p><a class="reference internal" href="#technetium-as-a-build-system" id="id2">Technetium as a Build System</a></p></li>
 </ul>
 </div>
 <div class="section" id="the-shell-operator">
@@ -66,6 +67,25 @@
 </pre></div>
 </div>
 </div>
+<div class="section" id="technetium-as-a-build-system">
+<h2><a class="toc-backref" href="#id2">Technetium as a Build System</a><a class="headerlink" href="#technetium-as-a-build-system" title="Permalink to this headline">¶</a></h2>
+<p>Technetium can be used as a build system. The <code class="docutils literal notranslate"><span class="pre">-r</span></code> flag recursively searches up directories until it finds a <code class="docutils literal notranslate"><span class="pre">make.tc</span></code> file (this filename is configurable in several ways). It might be helpful to either put <code class="docutils literal notranslate"><span class="pre">scripts/tcmake</span></code> in your path, or to alias <code class="docutils literal notranslate"><span class="pre">tcmake</span></code> to <code class="docutils literal notranslate"><span class="pre">tech</span> <span class="pre">-r</span></code> to make it easier to use this feature, so that <code class="docutils literal notranslate"><span class="pre">tcmake</span></code> will make your current project.</p>
+<p>In using technetium as a build system, one command that will come in handy is the <code class="docutils literal notranslate"><span class="pre">stale</span></code> command, which can be used to emulate systems such as <code class="docutils literal notranslate"><span class="pre">make</span></code> which check to see if files have changed since you’ve last built your project:</p>
+<dl class="py function">
+<dt>
+<code class="sig-name descname"><span class="pre">stale([list(string)])</span> <span class="pre">or</span> <span class="pre">stale([string],</span> <span class="pre">[string],</span> <span class="pre">...)</span>&#160; <span class="pre">[bool]</span></code></dt>
+<dd><p>Returns whether any of the files given as an argument have changed since the last time this function was called. This function also accepts Unix glob-patterns (i.e. <code class="docutils literal notranslate"><span class="pre">./src/**/*</span></code>):</p>
+<div class="highlight-technetium notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">stale</span><span class="p">(</span><span class="o">[</span><span class="s">&quot;src/**/*.c&quot;</span><span class="p">,</span> <span class="s">&quot;main.c&quot;</span><span class="o">]</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">println</span><span class="p">(</span><span class="s">&quot;performing build...&quot;</span><span class="p">)</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="n">println</span><span class="p">(</span><span class="s">&quot;nothing needs to be done!&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>This code will print “performing build…” whenever any of the C source code files underneath the source directory, or the main.c file, have changed since the last run of the script. It keeps track using the file ./.tcmake/stale.cache</p>
+</dd></dl>
+
+</div>
 </div>
 
 
@@ -90,6 +110,7 @@
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction to Technetium</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#the-shell-operator">The Shell Operator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#technetium-as-a-build-system">Technetium as a Build System</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="types/core.html">Core Types</a></li>

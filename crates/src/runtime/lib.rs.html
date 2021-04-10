@@ -408,6 +408,22 @@
 <span id="405">405</span>
 <span id="406">406</span>
 <span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">builtins</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">bytecode</span>;
@@ -436,12 +452,28 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">hash</span>::<span class="ident">Hasher</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::{<span class="ident">Deref</span>, <span class="ident">DerefMut</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">rc</span>::<span class="ident">Rc</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">path</span>::<span class="ident">PathBuf</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fs</span>;
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
 
 <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">DEFAULT_FLOAT_FMT</span>: <span class="ident">FmtFloatConfig</span> <span class="op">=</span> <span class="ident">FmtFloatConfig</span>::<span class="ident">default</span>();
 
 <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">PARSED_CLARGS</span>: <span class="ident">OnceCell</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">OnceCell</span>::<span class="ident">new</span>();
+
+<span class="doccomment">/// The parent directory of the script that tc is being run in, or the parent directory from where</span>
+<span class="doccomment">/// the user called the ``tech`` binary. Useful for locating the .tcmake folder</span>
+<span class="kw">pub</span> <span class="kw">static</span> <span class="ident">INVOKE_ABSOLUTE_PARENT_DIR</span>: <span class="ident">OnceCell</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">OnceCell</span>::<span class="ident">new</span>();
+
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_tcmake_dir</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span> {
+    <span class="ident">INVOKE_ABSOLUTE_PARENT_DIR</span>.<span class="ident">get</span>().<span class="ident">cloned</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">mut</span> <span class="ident">path</span><span class="op">|</span> {
+        <span class="ident">path</span>.<span class="ident">push</span>(<span class="string">&quot;.tcmake&quot;</span>);
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">path</span>.<span class="ident">exists</span>() {
+            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">fs</span>::<span class="ident">create_dir</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>);
+        }
+        <span class="ident">path</span>
+    })
+}
 
 <span class="doccomment">/// The main object reference type, which can be passed around to represent</span>
 <span class="doccomment">/// an object of any valid Object type</span>

@@ -37,3 +37,8 @@ Technetium makes it very easy to surround shell code by easy to understand synta
                 }
         }
 
+Technetium as a Build System
+----------------------
+
+
+Technetium can be used as a build system. The ``-r`` flag recursively searches up directories until it finds a ``make.tc`` file (this filename is configurable in several ways). It might be helpful to either put ``scripts/tcmake`` in your path, or to alias ``tcmake`` to ``tech -r`` to make it easier to use this feature, so that ``tcmake`` will make your current project.

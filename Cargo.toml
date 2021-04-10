@@ -1,9 +1,9 @@
 [package]
-name = "technetium"
+name = "technetium-lang"
 version = "0.1.0"
 authors = ["Matt Torrence <matt@torrencefamily.net>"]
 description = """
-technetium is an interpreted scripting language, optimized for install, build,
+technetium is an interpreted scripting language made mostly for install, build,
 and configuration scripts.
 """
 documentation = "https://matthewtorrence.com/technetium"
@@ -11,6 +11,7 @@ homepage = "https://matthewtorrence.com/technetium"
 repository = "https://github.com/Torrencem/technetium"
 readme = "README.md"
 edition = "2018"
+build = "build.rs"
 
 [[bin]]
 path = "crates/core/main.rs"

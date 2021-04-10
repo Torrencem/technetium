@@ -1074,7 +1074,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "technetium"
+name = "technetium-lang"
 version = "0.1.0"
 dependencies = [
  "assert_cmd",

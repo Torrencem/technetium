@@ -117,6 +117,31 @@ func_object!(Clone_, (1..=1), context, args -> {
     Ok(args[0].technetium_clone(context)?)
 });
 
+func_object!(Assert, (1..=2), _c, args -> {
+    if !args[0].truthy() {
+        let message = if let Some(val) = args.get(1) {
+            Some(val.to_string()?)
+        } else {
+            None
+        };
+        Err(RuntimeError::assertion_error(message))
+    } else {
+        Ok(UnitObject::new())
+    }
+});
+
+func_object!(Version, (0..=0), _c, args -> {
+    let (major, minor, patch) = (env!("CARGO_PKG_VERSION_MAJOR"), env!("CARGO_PKG_VERSION_MINOR"), env!("CARGO_PKG_VERSION_PATCH"));
+    
+    Ok(ObjectRef::new(Tuple {
+        contents: vec![
+            IntObject::new(major.parse::<i64>().unwrap()),
+            IntObject::new(minor.parse::<i64>().unwrap()),
+            IntObject::new(patch.parse::<i64>().unwrap()),
+        ]
+    }))
+});
+
 #[derive(Debug, Clone)]
 pub struct Range {
     start: i64,

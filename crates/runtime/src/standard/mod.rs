@@ -64,6 +64,8 @@ pub fn get_default_namespace_descriptors() -> HashMap<String, GlobalConstantDesc
     res.insert("username".to_string(), (STANDARD_CONTEXT_ID, 46));
     res.insert("languages".to_string(), (STANDARD_CONTEXT_ID, 47));
     res.insert("desktop_env".to_string(), (STANDARD_CONTEXT_ID, 48));
+    res.insert("assert".to_string(), (STANDARD_CONTEXT_ID, 49));
+    res.insert("tech_version".to_string(), (STANDARD_CONTEXT_ID, 50));
     res
 }
 
@@ -138,6 +140,8 @@ pub fn get_default_namespace() -> HashMap<GlobalConstantDescriptor, ObjectRef> {
     res.insert((STANDARD_CONTEXT_ID, 46), ObjectRef::new(sh::Username));
     res.insert((STANDARD_CONTEXT_ID, 47), ObjectRef::new(sh::Langs));
     res.insert((STANDARD_CONTEXT_ID, 48), ObjectRef::new(sh::DesktopEnv));
+    res.insert((STANDARD_CONTEXT_ID, 49), ObjectRef::new(special_funcs::Assert));
+    res.insert((STANDARD_CONTEXT_ID, 50), ObjectRef::new(special_funcs::Version));
     res
 }
 

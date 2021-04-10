@@ -53,6 +53,8 @@ pub enum RuntimeErrorType {
     /// Caused by trying to read a key that doesn't exist in a dictionary
     KeyError,
     OpenError,
+    /// Caused by a runtime call to the ``assert`` function
+    AssertionError,
 }
 
 impl From<sys_info::Error> for RuntimeError {
@@ -193,6 +195,14 @@ impl RuntimeError {
         RuntimeError {
             err: RuntimeErrorType::ChildProcessError,
             help: message.to_string(),
+            symbols: vec![],
+        }
+    }
+
+    pub fn assertion_error<S: ToString>(message: Option<S>) -> Self {
+        RuntimeError {
+            err: RuntimeErrorType::AssertionError,
+            help: message.map(|val| val.to_string()).unwrap_or_else(|| String::from("Assertion failed")),
             symbols: vec![],
         }
     }

@@ -319,6 +319,7 @@ func_object!(Stale, (1..), _c, args -> {
     };
     let mut file_checks: Vec<PathBuf> = vec![];
     for file in file_checks_raw.iter() {
+        let mut ct = 0;
         for string in glob(file)
             .map_err(|e| RuntimeError::type_error(format!("Invalid or unknown file or pattern in call to stale(): {:?}", e).to_string()))?
             .filter_map(Result::ok) {
@@ -327,6 +328,12 @@ func_object!(Stale, (1..), _c, args -> {
                 return Ok(BoolObject::new(true));
             }
             file_checks.push(p.unwrap());
+            ct += 1;
+        }
+        if ct == 0 {
+            let mut e = RuntimeError::type_error(format!("File or pattern does not exist that was passed to stale(): {:?}", file).to_string());
+            e.err = RuntimeErrorType::IOError;
+            return Err(e);
         }
     }
 

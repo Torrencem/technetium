@@ -40,6 +40,7 @@ fn recursive_make_script(name: &str) -> io::Result<Option<String>> {
         build_script.push(name);
         if build_script.exists() {
             runtime::INVOKE_ABSOLUTE_PARENT_DIR.set(dir.clone().canonicalize().unwrap()).unwrap();
+            env::set_current_dir(&dir).unwrap();
             return Ok(Some(std::fs::read_to_string(build_script)?));
         }
         if !dir.pop() {
@@ -185,8 +186,18 @@ fn main() {
 
     let file_id = files.add(
         match matches.value_of("INPUT") {
-            Some(file_name) => file_name,
-            None => "<anonymous>",
+            Some(file_name) => file_name.to_string(),
+            None => if matches.is_present("recursive") {
+                match env::var("TC_MAKE_FILE_NAME") {
+                    Ok(variable) => variable,
+                    _ => matches
+                                .value_of("MAKE_FILE_NAME")
+                                .unwrap_or("make.tc")
+                                .to_owned(),
+                }
+            } else {
+                "<anonymous>".to_string()
+            },
         },
         Cow::from(&input),
     );

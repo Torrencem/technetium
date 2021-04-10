@@ -13,6 +13,7 @@ use std::collections::HashMap;
 use std::process::exit;
 use std::rc::Rc;
 use std::env;
+use std::path::PathBuf;
 
 extern crate clap;
 use clap::{App, AppSettings, Arg};
@@ -38,6 +39,7 @@ fn recursive_make_script(name: &str) -> io::Result<Option<String>> {
         let mut build_script = dir.clone();
         build_script.push(name);
         if build_script.exists() {
+            runtime::INVOKE_ABSOLUTE_PARENT_DIR.set(dir.clone().canonicalize().unwrap()).unwrap();
             return Ok(Some(std::fs::read_to_string(build_script)?));
         }
         if !dir.pop() {
@@ -139,6 +141,7 @@ fn main() {
 
     let mut input: String = {
         if let Some(cmd) = matches.value_of("COMMAND") {
+            runtime::INVOKE_ABSOLUTE_PARENT_DIR.set(env::current_dir().unwrap().canonicalize().unwrap()).unwrap();
             cmd.to_owned()
         } else if matches.is_present("recursive") {
             let make_script_name = match env::var("TC_MAKE_FILE_NAME") {
@@ -158,13 +161,18 @@ fn main() {
         } else {
             match matches.value_of("INPUT") {
                 None | Some("-") => {
+                    runtime::INVOKE_ABSOLUTE_PARENT_DIR.set(env::current_dir().unwrap().canonicalize().unwrap()).unwrap();
                     let mut buffer = String::new();
                     io::stdin()
                         .read_to_string(&mut buffer)
                         .expect("Error reading stdin");
                     buffer
                 }
-                Some(file_name) => std::fs::read_to_string(file_name).unwrap_or_else(|e| fail(format!("Error reading file '{}'", file_name), e)),
+                Some(file_name) => {
+                    let path = PathBuf::from(file_name);
+                    runtime::INVOKE_ABSOLUTE_PARENT_DIR.set(path.canonicalize().unwrap().parent().unwrap().to_path_buf()).unwrap();
+                    std::fs::read_to_string(file_name).unwrap_or_else(|e| fail(format!("Error reading file '{}'", file_name), e))
+                },
             }
         }
     };

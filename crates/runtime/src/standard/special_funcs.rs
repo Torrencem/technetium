@@ -4,10 +4,16 @@ use crate::prelude::*;
 use crate::{func_object, func_object_void};
 
 use std::process::exit;
+use std::time::SystemTime;
+use std::fs;
+use std::collections::HashMap;
 
 use num::bigint::ToBigInt;
 
 use std::io::{self, Write};
+
+use glob::glob;
+use std::result::Result;
 
 func_object_void!(Print, (0..), _c, args -> {
     let mut first = true;
@@ -250,4 +256,117 @@ func_object!(RangeFunc, (1..=3), _c, args -> {
     }
 });
 
+// Staleness is a special feature that replicates the features of most build systems like make,
+// where you can check if a file has been modified since the last time the build script was run.
+// This feature needs to make use of a cache that can keep track of last modified times. For now,
+// this information will be stored in a serialized HashMap with canonical paths in
+// [script_parent_directory]/.tcmake/stale.cache
+func_object!(Stale, (1..), _c, args -> {
+    let mut cache_location = crate::get_tcmake_dir().unwrap();
+    cache_location.push("stale.cache");
+    let previous_timestamps: Option<HashMap<PathBuf, SystemTime>> = {
+        if !cache_location.exists() {
+            None
+        } else {
+            if let Ok(file) = fs::read(&cache_location) {
+                bincode::deserialize(&file).ok()
+            } else {
+                // info!("Error reading cache location: {:?}", e.err().unwrap());
+                None
+            }
+        }
+    };
+    let old_timestamps = previous_timestamps.unwrap_or_else(|| HashMap::new());
+    // Files to check passed by the user. Might be expanded from globs, might include directories,
+    // and could be passed in either from all arguments, or might be passed in as a list
+    // Should all be canonicalized!
+    let file_checks_raw: Vec<String> = {
+        if args.len() == 1 {
+            if let Some(list_obj) = args[0].as_any().downcast_ref::<ObjectCell<List>>() {
+                let mut res = vec![];
+                let list_obj = list_obj.try_borrow()?;
+                let list = &list_obj.contents;
+                for inner_obj in list.iter() {
+                    if let Some(string_obj) = inner_obj.as_any().downcast_ref::<ObjectCell<StringObject>>() {
+                        let string_obj = string_obj.try_borrow()?;
+                        let string = &string_obj.val;
+                        res.push(string.clone());
+                    } else {
+                        return Err(RuntimeError::type_error("Got a list containing a {:?} as an argument to stale(). Most likely expected a list of strings."));
+                    }
+                }
+                res
+            } else if let Some(string_obj) = args[0].as_any().downcast_ref::<ObjectCell<StringObject>>() {
+                let string_obj = string_obj.try_borrow()?;
+                let string = &string_obj.val;
+                vec![string.clone()]
+            } else {
+                return Err(RuntimeError::type_error("Expected either a string or a list to be passed to stale()."));
+            }
+        } else {
+            let mut res = vec![];
+            for arg in args.iter() {
+                if let Some(string_obj) = arg.as_any().downcast_ref::<ObjectCell<StringObject>>() {
+                    let string_obj = string_obj.try_borrow()?;
+                    let string = &string_obj.val;
+                    res.push(string.clone())
+                } else {
+                    return Err(RuntimeError::type_error("Expected either a string or a list to be passed to stale()."));
+                }
+            }
+            res
+        }
+    };
+    let mut file_checks: Vec<PathBuf> = vec![];
+    for file in file_checks_raw.iter() {
+        for string in glob(file)
+            .map_err(|e| RuntimeError::type_error(format!("Invalid or unknown file or pattern in call to stale(): {:?}", e).to_string()))?
+            .filter_map(Result::ok) {
+            let p = PathBuf::from(string).canonicalize();
+            if p.is_err() {
+                return Ok(BoolObject::new(true));
+            }
+            file_checks.push(p.unwrap());
+        }
+    }
 
+    let mut new_timestamps = old_timestamps.clone();
+    let mut changed_timestamps = false;
+
+    for file in file_checks.iter() {
+        let res = fs::metadata(file);
+        if res.is_err() {
+            changed_timestamps = true;
+            continue;
+        }
+        let modified = res.unwrap().modified();
+        if modified.is_err() {
+            changed_timestamps = true;
+            continue;
+        }
+        let modified = modified.unwrap();
+        if old_timestamps.contains_key(file) {
+            let old_modified = old_timestamps.get(file).unwrap();
+            if old_modified < &modified {
+                new_timestamps.insert(file.clone(), modified);
+                changed_timestamps = true;
+            }
+        } else {
+            new_timestamps.insert(file.clone(), modified);
+            changed_timestamps = true;
+        }
+    }
+
+    // Write out the cache again
+    if changed_timestamps {
+        // It kind of makes sense to ignore failure to write out to the cache. This just means
+        // stale will always return true if there's some weird error.
+        let _e = fs::write(cache_location, &bincode::serialize(&new_timestamps).unwrap());
+        // if e.is_err() {
+        //     info!("Error writing to cache location: {:?}", e);
+        // }
+        Ok(BoolObject::new(true))
+    } else {
+        Ok(BoolObject::new(false))
+    }
+});

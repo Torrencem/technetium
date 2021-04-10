@@ -25,12 +25,28 @@ use std::hash::Hash;
 use std::hash::Hasher;
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
+use std::path::PathBuf;
+use std::fs;
 
 use std::fmt;
 
 pub static DEFAULT_FLOAT_FMT: FmtFloatConfig = FmtFloatConfig::default();
 
 pub static PARSED_CLARGS: OnceCell<Vec<String>> = OnceCell::new();
+
+/// The parent directory of the script that tc is being run in, or the parent directory from where
+/// the user called the ``tech`` binary. Useful for locating the .tcmake folder
+pub static INVOKE_ABSOLUTE_PARENT_DIR: OnceCell<PathBuf> = OnceCell::new();
+
+pub fn get_tcmake_dir() -> Option<PathBuf> {
+    INVOKE_ABSOLUTE_PARENT_DIR.get().cloned().map(|mut path| {
+        path.push(".tcmake");
+        if !path.exists() {
+            let _ = fs::create_dir(&path);
+        }
+        path
+    })
+}
 
 /// The main object reference type, which can be passed around to represent
 /// an object of any valid Object type

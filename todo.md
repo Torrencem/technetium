@@ -2,7 +2,8 @@
 This is a rough todo list of features I want to add to the language:
 
 * add a convenience function to get the name of the script itself
-* add functions for checking last time files have changed (like make) [call it "stale"?]
+* add functions for quickly checking for flags passed to script (maybe more list functions?)
+* add functions to help with persistence (functions for retrieving and storing variables etc.)
 * fix slice equality with strings / lists
 * treat slices more like strings
 * document dict conversion function (dict())

@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["ShObjectState",""]],"struct":[["Args",""],["Cd",""],["LinuxDistro",""],["Open",""],["Os",""],["Sh",""],["ShObject",""],["Which",""]]});
+initSidebarItems({"enum":[["ShObjectState",""]],"struct":[["Args",""],["Canonicalize",""],["Cd",""],["DesktopEnv",""],["Devicename",""],["Exists",""],["Hostname",""],["IsDirectory",""],["Langs",""],["LinuxDistro",""],["Open",""],["Os",""],["Realname",""],["Sh",""],["ShObject",""],["Username",""],["Which",""]]});

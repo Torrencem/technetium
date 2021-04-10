@@ -1,4 +1,7 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `crates/core/main.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>main.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../tech/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/core/main.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>main.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
+<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../tech/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+                <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -219,6 +222,78 @@
 <span id="219">219</span>
 <span id="220">220</span>
 <span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">log</span>;
@@ -234,6 +309,7 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">process</span>::<span class="ident">exit</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">rc</span>::<span class="ident">Rc</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">env</span>;
 
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">clap</span>;
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">App</span>, <span class="ident">AppSettings</span>, <span class="ident">Arg</span>};
@@ -250,6 +326,21 @@
 <span class="kw">fn</span> <span class="ident">fail</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Display</span>, <span class="ident">S</span>: <span class="ident">Display</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="ident">S</span>, <span class="ident">e</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="op">!</span> {
     <span class="macro">eprintln</span><span class="macro">!</span>(<span class="string">&quot;{}: {}&quot;</span>, <span class="ident">message</span>, <span class="ident">e</span>);
     <span class="ident">exit</span>(<span class="number">1</span>)
+}
+
+<span class="kw">fn</span> <span class="ident">recursive_make_script</span>(<span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dir</span> <span class="op">=</span> <span class="ident">env</span>::<span class="ident">current_dir</span>()<span class="question-mark">?</span>;
+
+    <span class="kw">loop</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">build_script</span> <span class="op">=</span> <span class="ident">dir</span>.<span class="ident">clone</span>();
+        <span class="ident">build_script</span>.<span class="ident">push</span>(<span class="ident">name</span>);
+        <span class="kw">if</span> <span class="ident">build_script</span>.<span class="ident">exists</span>() {
+            <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">std</span>::<span class="ident">fs</span>::<span class="ident">read_to_string</span>(<span class="ident">build_script</span>)<span class="question-mark">?</span>));
+        }
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">dir</span>.<span class="ident">pop</span>() {
+            <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
+        }
+    }
 }
 
 <span class="doccomment">/// The main application entry point</span>
@@ -269,6 +360,27 @@
                 .<span class="ident">long</span>(<span class="string">&quot;verbose&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;Set logging verbosity level&quot;</span>)
                 .<span class="ident">multiple</span>(<span class="bool-val">true</span>),
+        )
+        .<span class="ident">arg</span>(
+            <span class="ident">Arg</span>::<span class="ident">with_name</span>(<span class="string">&quot;recursive&quot;</span>)
+                .<span class="ident">short</span>(<span class="string">&quot;r&quot;</span>)
+                .<span class="ident">long</span>(<span class="string">&quot;recursive&quot;</span>)
+                .<span class="ident">help</span>(<span class="string">&quot;Search current directory and parents for a make file (default name: &#39;make.tc&#39;) and run it.&quot;</span>)
+        )
+        .<span class="ident">arg</span>(
+            <span class="ident">Arg</span>::<span class="ident">with_name</span>(<span class="string">&quot;MAKE_FILE_NAME&quot;</span>)
+                .<span class="ident">short</span>(<span class="string">&quot;bf&quot;</span>)
+                .<span class="ident">long</span>(<span class="string">&quot;make_file_name&quot;</span>)
+                .<span class="ident">help</span>(<span class="string">&quot;Name of make file to search for. Requires &#39;-r&#39;. Can also be overridden using the environment variable &#39;TC_MAKE_FILE_NAME&#39;.&quot;</span>)
+                .<span class="ident">requires</span>(<span class="string">&quot;recursive&quot;</span>)
+                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
+        )
+        .<span class="ident">arg</span>(
+            <span class="ident">Arg</span>::<span class="ident">with_name</span>(<span class="string">&quot;COMMAND&quot;</span>)
+                .<span class="ident">short</span>(<span class="string">&quot;c&quot;</span>)
+                .<span class="ident">long</span>(<span class="string">&quot;command&quot;</span>)
+                .<span class="ident">help</span>(<span class="string">&quot;Run COMMAND as a technetium script and exit&quot;</span>)
+                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
         )
         .<span class="ident">arg</span>(
             <span class="ident">Arg</span>::<span class="ident">with_name</span>(<span class="string">&quot;args&quot;</span>)
@@ -292,7 +404,17 @@
         <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Level</span>::<span class="ident">Trace</span>,
     };
 
+    <span class="ident">logging</span>::<span class="ident">init</span>(<span class="ident">log_level</span>).<span class="ident">expect</span>(<span class="string">&quot;Error initializing logging&quot;</span>);
+
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">extra_args</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
+
+    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;recursive&quot;</span>) {
+        <span class="comment">// If recursive, first argument should be passed</span>
+        <span class="comment">// as extra_args, not as INPUT</span>
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">first_arg</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;INPUT&quot;</span>) {
+            <span class="ident">extra_args</span>.<span class="ident">push</span>(<span class="ident">first_arg</span>.<span class="ident">to_string</span>());
+        }
+    }
 
     <span class="ident">extra_args</span>.<span class="ident">append</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">matches</span>
@@ -310,20 +432,45 @@
 
     <span class="ident">runtime</span>::<span class="ident">PARSED_CLARGS</span>.<span class="ident">set</span>(<span class="ident">extra_args</span>).<span class="ident">unwrap</span>();
 
-    <span class="ident">logging</span>::<span class="ident">init</span>(<span class="ident">log_level</span>).<span class="ident">expect</span>(<span class="string">&quot;Error initializing logging&quot;</span>);
-
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">files</span>: <span class="ident">Files</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Files</span>::<span class="ident">new</span>();
 
-    <span class="kw">let</span> <span class="ident">input</span>: <span class="ident">String</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;INPUT&quot;</span>) {
-        <span class="prelude-val">None</span> <span class="op">|</span> <span class="prelude-val">Some</span>(<span class="string">&quot;-&quot;</span>) <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
-            <span class="ident">io</span>::<span class="ident">stdin</span>()
-                .<span class="ident">read_to_string</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buffer</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;Error reading stdin&quot;</span>);
-            <span class="ident">buffer</span>
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">input</span>: <span class="ident">String</span> <span class="op">=</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">cmd</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;COMMAND&quot;</span>) {
+            <span class="ident">cmd</span>.<span class="ident">to_owned</span>()
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;recursive&quot;</span>) {
+            <span class="kw">let</span> <span class="ident">make_script_name</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">env</span>::<span class="ident">var</span>(<span class="string">&quot;TC_MAKE_FILE_NAME&quot;</span>) {
+                <span class="prelude-val">Ok</span>(<span class="ident">variable</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">variable</span>,
+                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">matches</span>
+                            .<span class="ident">value_of</span>(<span class="string">&quot;MAKE_FILE_NAME&quot;</span>)
+                            .<span class="ident">unwrap_or</span>(<span class="string">&quot;make.tc&quot;</span>)
+                            .<span class="ident">to_owned</span>(),
+            };
+            
+            <span class="ident">recursive_make_script</span>(<span class="kw-2">&amp;</span><span class="ident">make_script_name</span>)
+                .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">fail</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;No build script found (&#39;{}&#39;) in current or any parent directory&quot;</span>, <span class="ident">make_script_name</span>), <span class="ident">e</span>))
+                .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> {
+                    <span class="macro">eprintln</span><span class="macro">!</span>(<span class="string">&quot;No build script found (&#39;{}&#39;) in current or any parent directory&quot;</span>, <span class="ident">make_script_name</span>);
+                    <span class="ident">exit</span>(<span class="number">1</span>)
+                })
+        } <span class="kw">else</span> {
+            <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;INPUT&quot;</span>) {
+                <span class="prelude-val">None</span> <span class="op">|</span> <span class="prelude-val">Some</span>(<span class="string">&quot;-&quot;</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
+                    <span class="ident">io</span>::<span class="ident">stdin</span>()
+                        .<span class="ident">read_to_string</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buffer</span>)
+                        .<span class="ident">expect</span>(<span class="string">&quot;Error reading stdin&quot;</span>);
+                    <span class="ident">buffer</span>
+                }
+                <span class="prelude-val">Some</span>(<span class="ident">file_name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">std</span>::<span class="ident">fs</span>::<span class="ident">read_to_string</span>(<span class="ident">file_name</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">fail</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Error reading file &#39;{}&#39;&quot;</span>, <span class="ident">file_name</span>), <span class="ident">e</span>)),
+            }
         }
-        <span class="prelude-val">Some</span>(<span class="ident">file_name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">std</span>::<span class="ident">fs</span>::<span class="ident">read_to_string</span>(<span class="ident">file_name</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">fail</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Error reading file &#39;{}&#39;&quot;</span>, <span class="ident">file_name</span>), <span class="ident">e</span>)),
     };
+
+    <span class="comment">// Input should always end in a newline. This would be useful to add to the grammar,</span>
+    <span class="comment">// so that things like &quot;return 1; }&quot; would compile, but that is harder to get working.</span>
+    <span class="kw">if</span> <span class="op">!</span><span class="ident">input</span>.<span class="ident">ends_with</span>(<span class="string">&quot;\n&quot;</span>) {
+        <span class="ident">input</span>.<span class="ident">push</span>(<span class="string">&#39;\n&#39;</span>);
+    }
 
     <span class="kw">let</span> <span class="ident">file_id</span> <span class="op">=</span> <span class="ident">files</span>.<span class="ident">add</span>(
         <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;INPUT&quot;</span>) {
@@ -442,4 +589,4 @@
     <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;Computation returned: {:?}&quot;</span>, <span class="ident">computation</span>);
 }
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "tech";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "tech";</script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>

@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["to_char",""],["to_float",""],["to_int",""]],"struct":[["Bool",""],["Char",""],["Float",""],["Int",""],["List_",""],["Set_",""],["String_",""]]});
+initSidebarItems({"fn":[["to_char",""],["to_float",""],["to_int",""]],"struct":[["Bool",""],["Char",""],["Dict_",""],["Float",""],["Int",""],["List_",""],["Set_",""],["String_",""]]});

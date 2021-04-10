@@ -1,25 +1,24 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Core Types &#8212; technetium 0.1.0 documentation</title>
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Shell Objects" href="shell.html" />
     <link rel="prev" title="Introduction to Technetium" href="../intro.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
@@ -29,6 +28,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="core-types">
@@ -36,33 +37,38 @@
 <div class="contents local topic" id="contents">
 <p class="topic-title">Contents</p>
 <ul class="simple">
-<li><a class="reference internal" href="#string" id="id1">String</a><ul>
-<li><a class="reference internal" href="#format-literals" id="id2">Format Literals</a></li>
-<li><a class="reference internal" href="#string-methods" id="id3">String Methods</a></li>
+<li><p><a class="reference internal" href="#string" id="id1">String</a></p>
+<ul>
+<li><p><a class="reference internal" href="#format-literals" id="id2">Format Literals</a></p></li>
+<li><p><a class="reference internal" href="#string-methods" id="id3">String Methods</a></p></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#list" id="id4">List</a><ul>
-<li><a class="reference internal" href="#list-methods" id="id5">List Methods</a></li>
+<li><p><a class="reference internal" href="#list" id="id4">List</a></p>
+<ul>
+<li><p><a class="reference internal" href="#list-methods" id="id5">List Methods</a></p></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#tuple" id="id6">Tuple</a><ul>
-<li><a class="reference internal" href="#tuple-methods" id="id7">Tuple Methods</a></li>
+<li><p><a class="reference internal" href="#tuple" id="id6">Tuple</a></p>
+<ul>
+<li><p><a class="reference internal" href="#tuple-methods" id="id7">Tuple Methods</a></p></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#set" id="id8">Set</a><ul>
-<li><a class="reference internal" href="#set-methods" id="id9">Set Methods</a></li>
+<li><p><a class="reference internal" href="#set" id="id8">Set</a></p>
+<ul>
+<li><p><a class="reference internal" href="#set-methods" id="id9">Set Methods</a></p></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#dictionary" id="id10">Dictionary</a><ul>
-<li><a class="reference internal" href="#dictionary-methods" id="id11">Dictionary Methods</a></li>
+<li><p><a class="reference internal" href="#dictionary" id="id10">Dictionary</a></p>
+<ul>
+<li><p><a class="reference internal" href="#dictionary-methods" id="id11">Dictionary Methods</a></p></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#numeric-types-float-and-int" id="id12">Numeric Types (float and int)</a></li>
-<li><a class="reference internal" href="#boolean" id="id13">Boolean</a></li>
-<li><a class="reference internal" href="#unit" id="id14">Unit</a></li>
-<li><a class="reference internal" href="#char" id="id15">Char</a></li>
-<li><a class="reference internal" href="#slice" id="id16">Slice</a></li>
-<li><a class="reference internal" href="#anonymous-functions" id="id17">Anonymous Functions</a></li>
+<li><p><a class="reference internal" href="#numeric-types-float-and-int" id="id12">Numeric Types (float and int)</a></p></li>
+<li><p><a class="reference internal" href="#boolean" id="id13">Boolean</a></p></li>
+<li><p><a class="reference internal" href="#unit" id="id14">Unit</a></p></li>
+<li><p><a class="reference internal" href="#char" id="id15">Char</a></p></li>
+<li><p><a class="reference internal" href="#slice" id="id16">Slice</a></p></li>
+<li><p><a class="reference internal" href="#anonymous-functions" id="id17">Anonymous Functions</a></p></li>
 </ul>
 </div>
 <div class="section" id="string">
@@ -79,33 +85,33 @@
 </div>
 <div class="section" id="string-methods">
 <h3><a class="toc-backref" href="#id3">String Methods</a><a class="headerlink" href="#string-methods" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[string].length()  [int]</code></dt>
+<code class="sig-name descname"><span class="pre">[string].length()</span>&#160; <span class="pre">[int]</span></code></dt>
 <dd><p>Returns the length of the string.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[string].contains([char])  [bool]</code></dt>
+<code class="sig-name descname"><span class="pre">[string].contains([char])</span>&#160; <span class="pre">[bool]</span></code></dt>
 <dd><p>Check if the string contains a given character</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[string].chars()  [chars]</code></dt>
+<code class="sig-name descname"><span class="pre">[string].chars()</span>&#160; <span class="pre">[chars]</span></code></dt>
 <dd><p>Returns an iterator over the characters in the string.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[string].lines()  [lines]</code></dt>
+<code class="sig-name descname"><span class="pre">[string].lines()</span>&#160; <span class="pre">[lines]</span></code></dt>
 <dd><p>Returns an iterator over the lines in the string. The lines can be seperated by either ‘\n’ or ‘\n\r’, and the strings returned will not contain any newlines.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[string].escape()  [string]</code></dt>
+<code class="sig-name descname"><span class="pre">[string].escape()</span>&#160; <span class="pre">[string]</span></code></dt>
 <dd><p>Returns an “escaped” version of this string. The escaped version will replace non-printable characters such as newlines and tabs with escape codes such as ‘\n’ and ‘\t’ respectively.</p>
 </dd></dl>
 
@@ -123,33 +129,33 @@
 </div>
 <div class="section" id="list-methods">
 <h3><a class="toc-backref" href="#id5">List Methods</a><a class="headerlink" href="#list-methods" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[list].length()  [int]</code></dt>
+<code class="sig-name descname"><span class="pre">[list].length()</span>&#160; <span class="pre">[int]</span></code></dt>
 <dd><p>Returns the length of the list</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[list].contains([object])  [bool]</code></dt>
+<code class="sig-name descname"><span class="pre">[list].contains([object])</span>&#160; <span class="pre">[bool]</span></code></dt>
 <dd><p>Check if the list contains a given object</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[list].push([object])  [void]</code></dt>
+<code class="sig-name descname"><span class="pre">[list].push([object])</span>&#160; <span class="pre">[void]</span></code></dt>
 <dd><p>Push an object on the end of the list</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[list].pop()  [object]</code></dt>
+<code class="sig-name descname"><span class="pre">[list].pop()</span>&#160; <span class="pre">[object]</span></code></dt>
 <dd><p>Remove and return the object at the end of the list</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[list].append([iter])  [void]</code></dt>
+<code class="sig-name descname"><span class="pre">[list].append([iter])</span>&#160; <span class="pre">[void]</span></code></dt>
 <dd><p>Append all of the elements from an iterable to the list</p>
 </dd></dl>
 
@@ -160,15 +166,15 @@
 <p>Tuples are similar to lists, except that they are immutable. A tuple is typically expected to be a fixed length container, where the type of each part is known in advanced, but this is not enforced. Tuples are constructed through parenthetic <code class="docutils literal notranslate"><span class="pre">()</span></code> literals, similar to lists, and can similarly be indexed, but cannot be changed once constructed.</p>
 <div class="section" id="tuple-methods">
 <h3><a class="toc-backref" href="#id7">Tuple Methods</a><a class="headerlink" href="#tuple-methods" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[tuple].length()  [int]</code></dt>
+<code class="sig-name descname"><span class="pre">[tuple].length()</span>&#160; <span class="pre">[int]</span></code></dt>
 <dd><p>Returns the number of elements in the tuple</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[tuple].contains([object])  [bool]</code></dt>
+<code class="sig-name descname"><span class="pre">[tuple].contains([object])</span>&#160; <span class="pre">[bool]</span></code></dt>
 <dd><p>Check if the tuple contains a given object</p>
 </dd></dl>
 
@@ -179,27 +185,27 @@
 <p>Sets are containers of hashable objects that ignore duplicates. Sets are constructed through bracket <code class="docutils literal notranslate"><span class="pre">{}</span></code> literals, or through the <code class="docutils literal notranslate"><span class="pre">set</span></code> conversion function, similar to lists. Note that elements inside sets must be hashable and immutable. As all objects are essentially mutable, any objects added to the set will be “locked” immutable, so further changes to these objects will throw an error.</p>
 <div class="section" id="set-methods">
 <h3><a class="toc-backref" href="#id9">Set Methods</a><a class="headerlink" href="#set-methods" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[set].length()  [int]</code></dt>
+<code class="sig-name descname"><span class="pre">[set].length()</span>&#160; <span class="pre">[int]</span></code></dt>
 <dd><p>Returns the number of elements in the set</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[set].contains([object])  [bool]</code></dt>
+<code class="sig-name descname"><span class="pre">[set].contains([object])</span>&#160; <span class="pre">[bool]</span></code></dt>
 <dd><p>Check if the set contains a given object</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[set].add([object])</code></dt>
+<code class="sig-name descname"><span class="pre">[set].add([object])</span></code></dt>
 <dd><p>Add an object to the set. Locks the given object as immutable. Will throw an error if the object is not hashable</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[set].remove([object])  [bool]</code></dt>
+<code class="sig-name descname"><span class="pre">[set].remove([object])</span>&#160; <span class="pre">[bool]</span></code></dt>
 <dd><p>Remove an object from the set. Will throw an error if the object is not hashable. Returns whether or not anything was found and removed from the set</p>
 </dd></dl>
 
@@ -216,9 +222,9 @@
 <p>Dictionaries throw an error if accessed with a key that either doesn’t exist, or isn’t hashable.</p>
 <div class="section" id="dictionary-methods">
 <h3><a class="toc-backref" href="#id11">Dictionary Methods</a><a class="headerlink" href="#dictionary-methods" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descname">[dictionary].length()  [int]</code></dt>
+<code class="sig-name descname"><span class="pre">[dictionary].length()</span>&#160; <span class="pre">[int]</span></code></dt>
 <dd><p>Returns the number of key value pairs in the dictionary</p>
 </dd></dl>
 
@@ -293,6 +299,7 @@
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -342,17 +349,23 @@
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -361,8 +374,8 @@
       &copy;2020, Matt Torrence.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="../_sources/types/core.rst.txt"

@@ -58,6 +58,12 @@ pub fn get_default_namespace_descriptors() -> HashMap<String, GlobalConstantDesc
     res.insert("is_directory".to_string(), (STANDARD_CONTEXT_ID, 40));
     res.insert("canonicalize".to_string(), (STANDARD_CONTEXT_ID, 41));
     res.insert("dict".to_string(), (STANDARD_CONTEXT_ID, 42));
+    res.insert("hostname".to_string(), (STANDARD_CONTEXT_ID, 43));
+    res.insert("device_name".to_string(), (STANDARD_CONTEXT_ID, 44));
+    res.insert("real_name".to_string(), (STANDARD_CONTEXT_ID, 45));
+    res.insert("username".to_string(), (STANDARD_CONTEXT_ID, 46));
+    res.insert("languages".to_string(), (STANDARD_CONTEXT_ID, 47));
+    res.insert("desktop_env".to_string(), (STANDARD_CONTEXT_ID, 48));
     res
 }
 
@@ -126,6 +132,12 @@ pub fn get_default_namespace() -> HashMap<GlobalConstantDescriptor, ObjectRef> {
     res.insert((STANDARD_CONTEXT_ID, 40), ObjectRef::new(sh::IsDirectory));
     res.insert((STANDARD_CONTEXT_ID, 41), ObjectRef::new(sh::Canonicalize));
     res.insert((STANDARD_CONTEXT_ID, 42), ObjectRef::new(conversion::Dict_));
+    res.insert((STANDARD_CONTEXT_ID, 43), ObjectRef::new(sh::Hostname));
+    res.insert((STANDARD_CONTEXT_ID, 44), ObjectRef::new(sh::Devicename));
+    res.insert((STANDARD_CONTEXT_ID, 45), ObjectRef::new(sh::Realname));
+    res.insert((STANDARD_CONTEXT_ID, 46), ObjectRef::new(sh::Username));
+    res.insert((STANDARD_CONTEXT_ID, 47), ObjectRef::new(sh::Langs));
+    res.insert((STANDARD_CONTEXT_ID, 48), ObjectRef::new(sh::DesktopEnv));
     res
 }
 

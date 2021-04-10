@@ -50,6 +50,36 @@ Command Line Utils
 
     Returns "Linux" or "Darwin" depending on the operating system the script is running on.
 
+Miscellaneous Utilities
+-----------------------
+
+The following utilities either come from the rust ``sys-info`` crate, or the rust ``whoami`` crate, both for getting various information about the system.
+
 .. function:: linux_distro()  [string]
 
-    Returns the name of the linux distribution the script is running on, or "Unknown" if it's not known. This information is sourced from /etc/os-release. See `this rust crate <https://docs.rs/sys-info/0.6.1/sys_info/fn.linux_os_release.html>`_ for more information.
+    Returns the name of the linux distribution the script is running on, or "Unknown" if it's not known. Throws an error on unsupported systems (non-linux systems). This information is sourced from /etc/os-release. See `the sys-info rust crate <https://docs.rs/sys-info/0.6.1/sys_info/fn.linux_os_release.html>`_ for more information.
+
+
+.. function:: hostname()  [string]
+
+    Returns the host device's hostname.
+
+.. function:: device_name()  [string]
+
+    Returns a "pretty name" for the system, which is used for bluetooth pairing.
+
+.. function:: real_name()  [string]
+
+    Returns the real name of the current user.
+
+.. function:: username()  [string]
+
+    Returns the username of the current user.
+
+.. function:: languages()  [list(string)]
+
+    Returns a list of the languages in order of preference of the current user. For example: ``['en-US', 'en']``
+
+.. function:: desktop_env()  [string]
+
+    Returns the current desktop environment of the user, or ``"Unknown: ..."``

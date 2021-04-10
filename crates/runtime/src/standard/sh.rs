@@ -12,6 +12,8 @@ use crate::func_object;
 use sys_info::linux_os_release;
 use sys_info::os_type;
 
+use whoami::{hostname, devicename, realname, username, lang, desktop_env};
+
 use opener::open;
 
 #[derive(Debug)]
@@ -248,4 +250,38 @@ func_object!(Canonicalize, (1..=1), _c, args -> {
     } else {
         return Err(RuntimeError::type_error("Expected string as argument to canonicalize"));
     }
+});
+
+func_object!(Hostname, (0..=0), _c, _args -> {
+    let hostname = hostname();
+    Ok(StringObject::new(hostname))
+});
+
+func_object!(Devicename, (0..=0), _c, _args -> {
+    let devicename = devicename();
+    Ok(StringObject::new(devicename))
+});
+
+func_object!(Realname, (0..=0), _c, _args -> {
+    let realname = realname();
+    Ok(StringObject::new(realname))
+});
+
+func_object!(Username, (0..=0), _c, _args -> {
+    let username = username();
+    Ok(StringObject::new(username))
+});
+
+func_object!(Langs, (0..=0), _c, _args -> {
+    let langs = lang();
+    let mut res = vec![];
+    for val in langs.into_iter() {
+        res.push(StringObject::new(val));
+    }
+    Ok(ObjectRef::new(List { contents: res }))
+});
+
+func_object!(DesktopEnv, (0..=0), _c, _args -> {
+    let desktop_env = desktop_env();
+    Ok(StringObject::new(desktop_env.to_string()))
 });

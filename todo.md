@@ -1,7 +1,8 @@
 
 This is a rough todo list of features I want to add to the language:
 
-* add a convenience function to get the current system username (and perhaps more information of the sort)
+* add a convenience function to get the name of the script itself
+* add a version compatability mechanism
 * treat slices more like strings
 * document dict conversion function (dict())
 * user defined classes

@@ -2,10 +2,9 @@
 This is a rough todo list of features I want to add to the language:
 
 * add a convenience function to get the name of the script itself
-* add a version compatability mechanism
+* fix slice equality with strings / lists
 * treat slices more like strings
 * document dict conversion function (dict())
-* user defined classes
 * The following code stackoverflows:
 
 ```
@@ -43,7 +42,7 @@ println(a)
 * generators
 * comprehensions
 * pass Files from main around in compile context, to prepare for multi-file programs
-* multi-file programs (import from another file) using "module" objects
+* multi-file programs (import from another file) using "module" objects. Code at the end of a file should return a module object, which can be used in other files to access stuff.
 * add multiple error reporting for format strings
 * 2 places where memory is essentially leaked: Reference cycles (fix with change to Gc and GcCell), and "parent references"
 * windows?

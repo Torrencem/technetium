@@ -34,6 +34,8 @@ use std::fmt;
 /// type or not. This helps greatly improve readability in internal code
 #[macro_export]
 macro_rules! downcast {
+    // TODO: add an optional 'mut' before the identifier, which will try_borrow_mut instead of
+    // try_borrow
     (($id:ident : $type:ty = $val:expr) -> $main:block else $other:block) => {
         if let Some($id) = $val.as_any().downcast_ref::<ObjectCell<$type>>() {
             let $id = $id.try_borrow()?;

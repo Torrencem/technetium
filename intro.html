@@ -74,7 +74,7 @@
 <dl class="py function">
 <dt>
 <code class="sig-name descname"><span class="pre">stale([list(string)])</span> <span class="pre">or</span> <span class="pre">stale([string],</span> <span class="pre">[string],</span> <span class="pre">...)</span>&#160; <span class="pre">[bool]</span></code></dt>
-<dd><p>Returns whether any of the files given as an argument have changed since the last time this function was called. This function also accepts Unix glob-patterns (i.e. <code class="docutils literal notranslate"><span class="pre">./src/**/*</span></code>):</p>
+<dd><p>Returns whether any of the files given as an argument (or the file that’s running itself!) have changed since the last time this function was called. This function also accepts Unix glob-patterns (i.e. <code class="docutils literal notranslate"><span class="pre">./src/**/*</span></code>):</p>
 <div class="highlight-technetium notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">stale</span><span class="p">(</span><span class="o">[</span><span class="s">&quot;src/**/*.c&quot;</span><span class="p">,</span> <span class="s">&quot;main.c&quot;</span><span class="o">]</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">println</span><span class="p">(</span><span class="s">&quot;performing build...&quot;</span><span class="p">)</span>
 <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
@@ -82,7 +82,7 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>This code will print “performing build…” whenever any of the C source code files underneath the source directory, or the main.c file, have changed since the last run of the script. It keeps track using the file ./.tcmake/stale.cache</p>
+<p>This code will print “performing build…” whenever any of the C source code files underneath the source directory, the main.c file, or the file in which the source code lives have changed since the last run of the script. It keeps track using the file ./.tcmake/stale.cache</p>
 </dd></dl>
 
 </div>

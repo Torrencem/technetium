@@ -64,3 +64,7 @@ Special Functions
 .. function:: tech_version()  ([int], [int], [int])
 
     Returns the major, minor and patch version of technetium.
+
+.. function:: script_path()  [string]
+
+    Returns the absolute (canonicalized) path to the current running script. Throws an error if this doesn't make sense (i.e. if the script is passed via stdin).

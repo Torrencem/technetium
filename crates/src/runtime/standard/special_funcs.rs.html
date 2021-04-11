@@ -373,6 +373,20 @@
 <span id="370">370</span>
 <span id="371">371</span>
 <span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">error</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">prelude</span>::<span class="kw-2">*</span>;
@@ -582,8 +596,7 @@
 
 <span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">RangeFunc</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">3</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="ident">args</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">1</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">int_obj</span>) <span class="op">=</span> <span class="ident">args</span>[<span class="number">0</span>].<span class="ident">as_any</span>().<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">IntObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
-            <span class="kw">let</span> <span class="ident">int_obj</span> <span class="op">=</span> <span class="ident">int_obj</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;
+        <span class="macro">downcast</span><span class="macro">!</span>((<span class="ident">int_obj</span>: <span class="ident">IntObject</span> <span class="op">=</span> <span class="ident">args</span>[<span class="number">0</span>]) <span class="op">-</span><span class="op">&gt;</span> {
             <span class="prelude-val">Ok</span>(<span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">Range</span> {
                 <span class="ident">start</span>: <span class="number">0</span>,
                 <span class="ident">end</span>: <span class="ident">int_obj</span>.<span class="ident">to_i64</span>()<span class="question-mark">?</span>,
@@ -591,7 +604,7 @@
             }))
         } <span class="kw">else</span> {
             <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">type_error</span>(<span class="string">&quot;Expected integer arguments to range&quot;</span>))
-        }
+        })
     } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">args</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">2</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">int_obj_a</span>) <span class="op">=</span> <span class="ident">args</span>[<span class="number">0</span>].<span class="ident">as_any</span>().<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">IntObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">int_obj_b</span>) <span class="op">=</span> <span class="ident">args</span>[<span class="number">1</span>].<span class="ident">as_any</span>().<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">IntObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
@@ -694,7 +707,16 @@
         }
     };
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">file_checks</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
+    <span class="comment">// Push the current script path, if it exists</span>
+    <span class="kw">match</span> <span class="kw">crate</span>::<span class="ident">CURR_SCRIPT_PATH</span>.<span class="ident">get</span>() {
+        <span class="prelude-val">Some</span>(<span class="ident">path</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">file_checks</span>.<span class="ident">push</span>(<span class="ident">path</span>.<span class="ident">clone</span>());
+        },
+        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> { }
+    }
+
     <span class="kw">for</span> <span class="ident">file</span> <span class="kw">in</span> <span class="ident">file_checks_raw</span>.<span class="ident">iter</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ct</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="kw">for</span> <span class="ident">string</span> <span class="kw">in</span> <span class="ident">glob</span>(<span class="ident">file</span>)
             .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">RuntimeError</span>::<span class="ident">type_error</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Invalid or unknown file or pattern in call to stale(): {:?}&quot;</span>, <span class="ident">e</span>).<span class="ident">to_string</span>()))<span class="question-mark">?</span>
             .<span class="ident">filter_map</span>(<span class="prelude-ty">Result</span>::<span class="ident">ok</span>) {
@@ -703,6 +725,12 @@
                 <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">BoolObject</span>::<span class="ident">new</span>(<span class="bool-val">true</span>));
             }
             <span class="ident">file_checks</span>.<span class="ident">push</span>(<span class="ident">p</span>.<span class="ident">unwrap</span>());
+            <span class="ident">ct</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+        }
+        <span class="kw">if</span> <span class="ident">ct</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">e</span> <span class="op">=</span> <span class="ident">RuntimeError</span>::<span class="ident">type_error</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;File or pattern does not exist that was passed to stale(): {:?}&quot;</span>, <span class="ident">file</span>).<span class="ident">to_string</span>());
+            <span class="ident">e</span>.<span class="ident">err</span> <span class="op">=</span> <span class="ident">RuntimeErrorType</span>::<span class="ident">IOError</span>;
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>);
         }
     }
 

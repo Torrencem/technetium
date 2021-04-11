@@ -288,6 +288,18 @@
 <span id="285">285</span>
 <span id="286">286</span>
 <span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">error</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">PARSED_CLARGS</span>;
@@ -488,6 +500,18 @@
         <span class="ident">res</span>.<span class="ident">push</span>(<span class="ident">StringObject</span>::<span class="ident">new</span>(<span class="ident">val</span>.<span class="ident">clone</span>()));
     }
     <span class="prelude-val">Ok</span>(<span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">List</span> { <span class="ident">contents</span>: <span class="ident">res</span> }))
+});
+
+<span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">ScriptPath</span>, (<span class="number">0</span>..<span class="op">=</span><span class="number">0</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw">crate</span>::<span class="ident">CURR_SCRIPT_PATH</span>.<span class="ident">get</span>() {
+        <span class="prelude-val">Some</span>(<span class="ident">path</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">path</span>.<span class="ident">to_str</span>().<span class="ident">unwrap</span>().<span class="ident">to_string</span>()
+        },
+        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">type_error</span>(<span class="string">&quot;Cannot call script_path when source of code is not a file&quot;</span>));
+        }
+    };
+    <span class="prelude-val">Ok</span>(<span class="ident">StringObject</span>::<span class="ident">new</span>(<span class="ident">path</span>))
 });
 
 <span class="macro">func_object</span><span class="macro">!</span>(<span class="ident">Which</span>, (<span class="number">1</span>..<span class="op">=</span><span class="number">1</span>), <span class="ident">_c</span>, <span class="ident">args</span> <span class="op">-</span><span class="op">&gt;</span> {

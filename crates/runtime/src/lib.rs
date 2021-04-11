@@ -30,6 +30,57 @@ use std::fs;
 
 use std::fmt;
 
+/// Conditionally execute code depending on if an ObjectRef contains an inner object of a certain
+/// type or not. This helps greatly improve readability in internal code
+#[macro_export]
+macro_rules! downcast {
+    (($id:ident : $type:ty = $val:expr) -> $main:block else $other:block) => {
+        if let Some($id) = $val.as_any().downcast_ref::<ObjectCell<$type>>() {
+            let $id = $id.try_borrow()?;
+            $main
+        } else {
+            $other
+        }
+    };
+    (($id:ident : $type:ty = $val:expr) -> $main:block) => {
+        if let Some($id) = $val.as_any().downcast_ref::<ObjectCell<$type>>() {
+            let $id = $id.try_borrow()?;
+            $main
+        }
+    };
+}
+
+/// Dynamically dispatch to different code depending on the types of two variables. Useful for
+/// defining readable and short internal code for operations
+#[macro_export]
+macro_rules! match_tech_types {
+    (($a:expr, $b:expr) { $(($v1:ident : $t1:ty, $v2:ident : $t2:ty)=>$b1:block),* , _ => $b2:block } ) => {{
+        let a_any__ = $a.as_any();
+        let b_any__ = $b.as_any();
+        match (a_any__.type_id(), b_any__.type_id()) {
+            $( 
+                (a__, b__)
+                    if a__ == TypeId::of::<ObjectCell<$t1>>()
+                    && b__ == TypeId::of::<ObjectCell<$t2>>() =>
+                    {
+                        let $v1 = a_any__
+                            .downcast_ref::<ObjectCell<$t1>>()
+                            .unwrap()
+                            .try_borrow()?;
+                        let $v2 = b_any__
+                            .downcast_ref::<ObjectCell<$t2>>()
+                            .unwrap()
+                            .try_borrow()?;
+                        $b1
+                    }
+            ),*
+            _ => {
+                $b2
+            }
+        }
+    }};
+}
+
 pub static DEFAULT_FLOAT_FMT: FmtFloatConfig = FmtFloatConfig::default();
 
 pub static PARSED_CLARGS: OnceCell<Vec<String>> = OnceCell::new();

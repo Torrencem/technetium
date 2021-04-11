@@ -206,8 +206,7 @@ impl Object for ObjectCell<RangeIterator> {
 
 func_object!(RangeFunc, (1..=3), _c, args -> {
     if args.len() == 1 {
-        if let Some(int_obj) = args[0].as_any().downcast_ref::<ObjectCell<IntObject>>() {
-            let int_obj = int_obj.try_borrow()?;
+        downcast!((int_obj: IntObject = args[0]) -> {
             Ok(ObjectRef::new(Range {
                 start: 0,
                 end: int_obj.to_i64()?,
@@ -215,7 +214,7 @@ func_object!(RangeFunc, (1..=3), _c, args -> {
             }))
         } else {
             Err(RuntimeError::type_error("Expected integer arguments to range"))
-        }
+        })
     } else if args.len() == 2 {
         if let Some(int_obj_a) = args[0].as_any().downcast_ref::<ObjectCell<IntObject>>() {
             if let Some(int_obj_b) = args[1].as_any().downcast_ref::<ObjectCell<IntObject>>() {

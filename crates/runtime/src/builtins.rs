@@ -11,123 +11,48 @@ use num::traits::ToPrimitive;
 use std::any::TypeId;
 
 pub fn add(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
-    let a_any = a.as_any();
-    let b_any = b.as_any();
-    match (a_any.type_id(), b_any.type_id()) {
-        (a, b)
-            if a == TypeId::of::<ObjectCell<IntObject>>()
-                && b == TypeId::of::<ObjectCell<IntObject>>() =>
-        {
-            let val_a = a_any
-                .downcast_ref::<ObjectCell<IntObject>>()
-                .unwrap()
-                .try_borrow()?;
-            let val_b = b_any
-                .downcast_ref::<ObjectCell<IntObject>>()
-                .unwrap()
-                .try_borrow()?;
+    // Special case: if one of the objects is a string
+    downcast!((a_str: StringObject = a) -> {
+            let res = format!("{}{}", a_str.val, b.to_string()?);
+            return Ok(StringObject::new(res));
+    });
+    downcast!((b_str: StringObject = b) -> {
+            let res = format!("{}{}", a.to_string()?, b_str.val);
+            return Ok(StringObject::new(res));
+    });
+    match_tech_types!((a, b) {
+        (val_a: IntObject, val_b: IntObject) => {
             let res = IntObject::new_big(val_a.val.clone() + val_b.val.clone());
             Ok(res)
-        }
-        (a, b)
-            if a == TypeId::of::<ObjectCell<IntObject>>()
-                && b == TypeId::of::<ObjectCell<FloatObject>>() =>
-        {
-            let val_a = a_any
-                .downcast_ref::<ObjectCell<IntObject>>()
-                .unwrap()
-                .try_borrow()?;
-            let val_b = b_any
-                .downcast_ref::<ObjectCell<FloatObject>>()
-                .unwrap()
-                .try_borrow()?;
+        },
+        (val_a: IntObject, val_b: FloatObject) => {
             let res = FloatObject::new((val_a.to_i64()? as f64) + val_b.val);
             Ok(res)
-        }
-        (a, b)
-            if a == TypeId::of::<ObjectCell<FloatObject>>()
-                && b == TypeId::of::<ObjectCell<IntObject>>() =>
-        {
-            let val_a = a_any
-                .downcast_ref::<ObjectCell<FloatObject>>()
-                .unwrap()
-                .try_borrow()?;
-            let val_b = b_any
-                .downcast_ref::<ObjectCell<IntObject>>()
-                .unwrap()
-                .try_borrow()?;
+        },
+        (val_a: FloatObject, val_b: IntObject) => {
             let res = FloatObject::new(val_a.val + (val_b.to_i64()? as f64));
             Ok(res)
-        }
-        (a, b)
-            if a == TypeId::of::<ObjectCell<FloatObject>>()
-                && b == TypeId::of::<ObjectCell<FloatObject>>() =>
-        {
-            let val_a = a_any
-                .downcast_ref::<ObjectCell<FloatObject>>()
-                .unwrap()
-                .try_borrow()?;
-            let val_b = b_any
-                .downcast_ref::<ObjectCell<FloatObject>>()
-                .unwrap()
-                .try_borrow()?;
+        },
+        (val_a: FloatObject, val_b: FloatObject) => {
             let res = FloatObject::new(val_a.val + val_b.val);
             Ok(res)
-        }
-        (a, _) if a == TypeId::of::<ObjectCell<StringObject>>() => {
-            let a = a_any
-                .downcast_ref::<ObjectCell<StringObject>>()
-                .unwrap()
-                .try_borrow()?;
-            let res = format!("{}{}", a.val, b.to_string()?);
+        },
+        (val_a: CharObject, val_b: CharObject) => {
+            let res = format!("{}{}", val_a.val, val_b.val);
             Ok(StringObject::new(res))
-        }
-        (_, b) if b == TypeId::of::<ObjectCell<StringObject>>() => {
-            let b = b_any
-                .downcast_ref::<ObjectCell<StringObject>>()
-                .unwrap()
-                .try_borrow()?;
-            let res = format!("{}{}", a.to_string()?, b.val);
-            Ok(StringObject::new(res))
-        }
-        (a, b)
-            if a == TypeId::of::<ObjectCell<CharObject>>()
-                && b == TypeId::of::<ObjectCell<CharObject>>() =>
-        {
-            let a = a_any
-                .downcast_ref::<ObjectCell<CharObject>>()
-                .unwrap()
-                .try_borrow()?
-                .val;
-            let b = b_any
-                .downcast_ref::<ObjectCell<CharObject>>()
-                .unwrap()
-                .try_borrow()?
-                .val;
-            let res = format!("{}{}", a, b);
-            Ok(StringObject::new(res))
-        }
-        (a_, b_)
-            if a_ == TypeId::of::<ObjectCell<List>>() && b_ == TypeId::of::<ObjectCell<List>>() =>
-        {
-            let val_a = a_any
-                .downcast_ref::<ObjectCell<List>>()
-                .unwrap()
-                .try_borrow()?;
-            let val_b = b_any
-                .downcast_ref::<ObjectCell<List>>()
-                .unwrap()
-                .try_borrow()?;
+        },
+        (val_a: List, val_b: List) => {
             let mut res = val_a.contents.clone();
             res.append(&mut val_b.contents.clone());
             Ok(ObjectRef::new(List { contents: res }))
+        },
+        _ => {
+            Err(RuntimeError::type_error(format!(
+                "Cannot add type {} to type {}",
+                a.technetium_type_name(),
+                b.technetium_type_name())))
         }
-        _ => Err(RuntimeError::type_error(format!(
-            "Cannot add type {} to type {}",
-            a.technetium_type_name(),
-            b.technetium_type_name()
-        ))),
-    }
+    })
 }
 
 pub fn sub(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {

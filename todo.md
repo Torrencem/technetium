@@ -2,7 +2,6 @@
 This is a rough todo list of features I want to add to the language:
 
 * Continue working with downcast! macro to greatly simplify code in standard
-* add a convenience function to get the name of the script itself
 * add functions for quickly checking for flags passed to script (maybe more list functions?)
 * add functions to help with persistence (functions for retrieving and storing variables etc.)
 * fix slice equality with strings / lists

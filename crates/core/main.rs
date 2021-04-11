@@ -40,6 +40,7 @@ fn recursive_make_script(name: &str) -> io::Result<Option<String>> {
         build_script.push(name);
         if build_script.exists() {
             runtime::INVOKE_ABSOLUTE_PARENT_DIR.set(dir.clone().canonicalize().unwrap()).unwrap();
+            runtime::CURR_SCRIPT_PATH.set(build_script.canonicalize().unwrap()).unwrap();
             env::set_current_dir(&dir).unwrap();
             return Ok(Some(std::fs::read_to_string(build_script)?));
         }
@@ -172,6 +173,7 @@ fn main() {
                 Some(file_name) => {
                     let path = PathBuf::from(file_name);
                     runtime::INVOKE_ABSOLUTE_PARENT_DIR.set(path.canonicalize().unwrap().parent().unwrap().to_path_buf()).unwrap();
+                    runtime::CURR_SCRIPT_PATH.set(path.canonicalize().unwrap()).unwrap();
                     std::fs::read_to_string(file_name).unwrap_or_else(|e| fail(format!("Error reading file '{}'", file_name), e))
                 },
             }

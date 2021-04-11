@@ -317,6 +317,14 @@ func_object!(Stale, (1..), _c, args -> {
         }
     };
     let mut file_checks: Vec<PathBuf> = vec![];
+    // Push the current script path, if it exists
+    match crate::CURR_SCRIPT_PATH.get() {
+        Some(path) => {
+            file_checks.push(path.clone());
+        },
+        None => { }
+    }
+
     for file in file_checks_raw.iter() {
         let mut ct = 0;
         for string in glob(file)

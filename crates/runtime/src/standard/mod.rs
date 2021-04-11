@@ -67,6 +67,7 @@ pub fn get_default_namespace_descriptors() -> HashMap<String, GlobalConstantDesc
     res.insert("assert".to_string(), (STANDARD_CONTEXT_ID, 49));
     res.insert("tech_version".to_string(), (STANDARD_CONTEXT_ID, 50));
     res.insert("stale".to_string(), (STANDARD_CONTEXT_ID, 51));
+    res.insert("script_path".to_string(), (STANDARD_CONTEXT_ID, 52));
     res
 }
 
@@ -144,6 +145,7 @@ pub fn get_default_namespace() -> HashMap<GlobalConstantDescriptor, ObjectRef> {
     res.insert((STANDARD_CONTEXT_ID, 49), ObjectRef::new(special_funcs::Assert));
     res.insert((STANDARD_CONTEXT_ID, 50), ObjectRef::new(special_funcs::Version));
     res.insert((STANDARD_CONTEXT_ID, 51), ObjectRef::new(special_funcs::Stale));
+    res.insert((STANDARD_CONTEXT_ID, 52), ObjectRef::new(sh::ScriptPath));
     res
 }
 

@@ -199,6 +199,18 @@ func_object!(Args, (0..=0), _c, args -> {
     Ok(ObjectRef::new(List { contents: res }))
 });
 
+func_object!(ScriptPath, (0..=0), _c, args -> {
+    let path = match crate::CURR_SCRIPT_PATH.get() {
+        Some(path) => {
+            path.to_str().unwrap().to_string()
+        },
+        None => {
+            return Err(RuntimeError::type_error("Cannot call script_path when source of code is not a file"));
+        }
+    };
+    Ok(StringObject::new(path))
+});
+
 func_object!(Which, (1..=1), _c, args -> {
     let result = which::which(args[0].to_string()?)
         .map_err(|e| RuntimeError::child_process_error(e.to_string()))?;

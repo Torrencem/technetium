@@ -91,6 +91,10 @@ pub static PARSED_CLARGS: OnceCell<Vec<String>> = OnceCell::new();
 /// the user called the ``tech`` binary. Useful for locating the .tcmake folder
 pub static INVOKE_ABSOLUTE_PARENT_DIR: OnceCell<PathBuf> = OnceCell::new();
 
+/// The absolute path to the current running script. If not set, the script isn't
+/// running from a file (this is a perfectly valid situation)
+pub static CURR_SCRIPT_PATH: OnceCell<PathBuf> = OnceCell::new();
+
 pub fn get_tcmake_dir() -> Option<PathBuf> {
     INVOKE_ABSOLUTE_PARENT_DIR.get().cloned().map(|mut path| {
         path.push(".tcmake");

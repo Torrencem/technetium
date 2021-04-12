@@ -1,0 +1,87 @@
+### CONTRIBUTING GUIDE ###
+
+This is a guide through the source code of technetium, as well as guidelines for making contributions.
+
+-- Part 1: Where to find things --
+
+The technetium source code is made up of several different crates that are given a specific job in the pipeline of processing technetium source code. We'll go through these crates one at a time. You can skip parts of this section if this isn't what you're looking for
+
+- core -
+
+The core crate (crates/core/main.rs) provides the command line interface, sets up some small global context, and calls into each of the other crates in turn. This crate uses `clap` for command line argument parsing, and also sets up the `log` crate for verbose logging.
+
+- lexer -
+
+The lexer crate (crates/lexer) is called by the main crate, and has the job of converting the raw source code input into a stream of `lexer::Tok` tokens. It defines the error types that will be used for the lexing and compiling stage of the script execution.
+
+- compile -
+
+The compile crate (crates/compile) is also called by the main crate, and has the job of consuming a token stream and turning it into bytecode. It does this by first parsing the program into an `compile::ast::StatementList` abstract syntax tree, then by creating a `compile::CompileManager` that keeps track of state in the compilation process, and passingn the AST to the CompileManager. The CompileManager will then contain all the required parts for execution on the runtime.
+
+- runtime -
+
+The runtime (crates/runtime) has the job of defining the bytecode, and defining how to run the bytecode. It also includes all the standard types and functions that are part of technetium. This is the most involved part of the codebase.
+
+There is one more crate included, which is kind of trivial:
+
+- mlrefcell -
+
+This is a copy of `std::cell::RefCell`, except an `mlrefcell::MLRefCell` can be Mutably Locked (hence ML). It's really a quite trivial change to RefCell, but it's useful to the technetium runtime because of technetium's "immutable locking" feature.
+
+- miscellaneous -
+
+The documentation is generated using Sphinx. Install Sphinx into your PATH, then run `build_docs.sh` to build the documentation whos source is located in `docsource`. Then, the `docs` folder will contain a git repository that can be commited and pushed, which will update the Github Pages site.
+
+All tests are either in the source code of files themselves (somewhat rare), or in the `tests` directory. The `tests` directory contains several files that all have random golden tests in them, that run the output `tech` binary against several simple scripts and their expected outputs. The division between these files is not clear, and will probably be dissolved in the future.
+
+There's a file called `todo.md` that contains some vague notes for the future of the project. That file will be dissolved into here in the future.
+
+There's a script in `scripts/tcmake`, that just acts as an alias to `tech -r`. This is kind of pointless, but it would be great if in the future this would be added to the install location with `cargo install`. I can't figure out how to do this though.
+
+
+-- Part 2: Backwards Compatibility and Stability --
+
+Although it's a very desirable property of build systems to be unchanging and backwards compatible, with the early releases of technetium, this cannot be guaranteed. So, at each release, the `changelog` file should contain major changes, as well as helpful guides to ALL backwards incompatible changes made to the source from minor version to minor version before `1.0`. A backwards incompatible change is one where a user may have had a script that worked in the past, that breaks in some way (either stops compiling, or produces a runtime error due to changes in the runtime).
+
+
+-- Part 3: How does the runtime work? --
+
+This will be an evolving section detailing how the core of the technetium runtime is structured.
+
+- Dynamic Dispatching -
+
+All technetium objects are passed in rust code as the opaque type `ObjectRef`. This is an opaque `Box` pointer to an implementer of the `Object` trait.
+
+The `Object` trait provides some standard functions, such as a function for getting the name of the type of an object, and a function for cloning an object.
+
+Anything that implements the `Object` trait should be of the form `ObjectCell<T>` for some type `T`. ObjectCells can:
+
+* Have multiple owners
+* Be turned into mutable internal references with checks at runtime
+* Be locked, so that further mutations cause a runtime error
+
+Downcasting `ObjectRef`s into concrete types is done using Rust's dynamic dispatch (using the Any trait). For convenience, since dispatching this way is terribly repetitive, there is a `downcast!` macro in `runtime` that helps with this process.
+
+- Standard Library -
+
+All the functions in the standard library are structs that implement the `Object` trait. These are found in the `runtime::standard` module. There are convenience macros for defining these functions, which make it relatively easy to add new functions to the standard library. These Objects are all then registered in `runtime::standard::mod.rs`.
+
+
+-- Part 4: Desirable Contributions for the short term --
+
+There are several short term projects that I am working on now that I feel are fit for contributions:
+
+1. Macros for DRY. Right now, I repeat myself too much. In particular, the `downcast!` macro is relatively new to the source code, so I am converting its use throughout the `runtime` crate. I am always looking for new macros and ways to make my code less repetitive.
+
+2. Miscellaneous documentation. Some areas of the Rust codebase are somewhat lacking in documentation. I'm always looking to improve on this. This is especially true with respect to all the weird state-holders (MemoryManager, CompileManager, etc.) that are not easy to understand.
+
+3. This document. I could always expand the runtime section of this document. This is important!
+
+4. Error Handling. This is a language feature that I've wanted to add for a while now. This will also probably be the next language feature in technetium. There needs to be a try / catch system in technetium. Here are some sub-tasks that need to be completed first:
+[ ] Errors as first class objects. This shouldn't be too hard, just add an `Object` wrapping the `RuntimeError` struct. What's more difficult is figuring out exactly what methods / attributes these errors should have, and properly documenting them.
+[ ] try / catch in grammar. Messing with the grammar for the language is annoying, because it's really, *really* easy to make the parser not compile. try / catch is totally possible in the grammer (in fact, it's somewhat trivial compared to things like named arguments to functions), but it'll just take some work.
+[ ] try / catch in the AST. Self explanatory. Not much work at all.
+[ ] try / catch in the bytecode. This is more interesting! I think just adding a `try` op that contains a code reference for where the `catch` is is the way to go. Shouldn't be too bad.
+[ ] Putting it all together.
+
+5. Named arguments to functions. I don't know what to do about this. The more I think about it, the more I think "well you could just pass a dictionary as the last argument to your function that has all the options you need". And then I think "but rust doesn't have named arguments and that always makes me sad". Named arguments will be very difficult to implement, since they'll change the way functions are called in technetium, but it's do-able, and figuring out the scope of this change is a good idea.

@@ -67,9 +67,60 @@ Downcasting `ObjectRef`s into concrete types is done using Rust's dynamic dispat
 All the functions in the standard library are structs that implement the `Object` trait. These are found in the `runtime::standard` module. There are convenience macros for defining these functions, which make it relatively easy to add new functions to the standard library. These Objects are all then registered in `runtime::standard::mod.rs`.
 
 
--- Part 4: Desirable Contributions for the short term --
+-- Part 4: Desirable Contributions --
 
-There are several short term projects that I am working on now that I feel are fit for contributions:
+- minor projects -
+
+There are some smaller things that used to be on my todo list which I want to commit to changing in the long run. They vary in scope, but are all relatively small (no major language features):
+
+1. Functions for serializing and persisting variables. Right now, the `stale` function makes use of persistence in the `.tcmake` subdirectory of a project. Users of the programming language should be able to similarly make use of this persistence between script runs, ideally very easily. I don't know exactly what this design would look like, but it would probably just involve several standard library functions for storing and retrieving values from string keys, as well as a serialization mechanism for `Object`'s.
+
+2. String slices are bad. Right now, string slices don't compare nicely:
+```
+mystring = "hello!"
+
+println(mystring[0:2] == "he")
+```
+prints false. This is similar for list slices. This is annoying for a lot of reasons, and should just involve changing the equality code to account for slices.
+
+3. Documentation needs to be added for the `dict()` conversion function. See the tests for how this function works (hint: it's similar to Python)
+
+4. The following code stack overflows:
+```
+l = [1]
+
+l.push(l)
+
+println(l)
+```
+The equivalent code actually works in python though! The CPython source code that's responsible is here: https://github.com/python/cpython/blob/e5fe509054183bed9aef42c92da8407d339e8af8/Objects/listobject.c#L373 . Something similar could be hypothetically implemented in technetium.
+
+5. Lock errors don't show when an object had been locked, which might be very confusing for the user. Take this example:
+```
+a = {2}
+b = {3}
+a.add(b)
+b.add(5)
+println(a)
+```
+
+6. An interactive mode should be added to the language. Statements could be compiled on the fly, and contexts could be reused so that things work out. `isatty` would need to be used, etc.
+
+7. Integer literals, and a lot of standard library functions, expect integers to be within the range of an `i64`. This is unintuitive, and could possibly be changed.
+
+8. The documentation overall could use more examples
+
+9. Windows support. Technetium should *work* on windows, but the shell operator doesn't... We should figure out what it should do, and make it do that.
+
+10. unicode string literals ("\u{something}").
+
+11. A round float function?
+
+12. Format strings that have parsing errors only report the first parsing error. This might be annoying in rare cases.
+
+- major projects -
+
+There are several short term major projects that I am working on now that I feel are fit for contributions:
 
 1. Macros for DRY. Right now, I repeat myself too much. In particular, the `downcast!` macro is relatively new to the source code, so I am converting its use throughout the `runtime` crate. I am always looking for new macros and ways to make my code less repetitive.
 
@@ -85,3 +136,11 @@ There are several short term projects that I am working on now that I feel are f
 [ ] Putting it all together.
 
 5. Named arguments to functions. I don't know what to do about this. The more I think about it, the more I think "well you could just pass a dictionary as the last argument to your function that has all the options you need". And then I think "but rust doesn't have named arguments and that always makes me sad". Named arguments will be very difficult to implement, since they'll change the way functions are called in technetium, but it's do-able, and figuring out the scope of this change is a good idea.
+
+6. Generators and comprehensions. These go together, and would be neat!
+
+7. Modules, i.e. multi file programs. This is a large project, that wouldn't necessarily be that useful to technetium specifically.
+
+8. Reference cycle detection. Same as before, a major project, wouldn't be that useful. Right now, memory is leaked if there ever is a reference cycle. You'd have to try pretty hard to make this happen as it is...
+
+9. Optimization. Code runs pretty slow right now... Not catastrophically slow, but slow none the less.

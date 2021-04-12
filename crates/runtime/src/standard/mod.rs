@@ -68,6 +68,9 @@ pub fn get_default_namespace_descriptors() -> HashMap<String, GlobalConstantDesc
     res.insert("tech_version".to_string(), (STANDARD_CONTEXT_ID, 50));
     res.insert("stale".to_string(), (STANDARD_CONTEXT_ID, 51));
     res.insert("script_path".to_string(), (STANDARD_CONTEXT_ID, 52));
+    res.insert("rand".to_string(), (STANDARD_CONTEXT_ID, 53));
+    res.insert("rand_range".to_string(), (STANDARD_CONTEXT_ID, 54));
+    res.insert("rand_normal".to_string(), (STANDARD_CONTEXT_ID, 55));
     res
 }
 
@@ -146,6 +149,9 @@ pub fn get_default_namespace() -> HashMap<GlobalConstantDescriptor, ObjectRef> {
     res.insert((STANDARD_CONTEXT_ID, 50), ObjectRef::new(special_funcs::Version));
     res.insert((STANDARD_CONTEXT_ID, 51), ObjectRef::new(special_funcs::Stale));
     res.insert((STANDARD_CONTEXT_ID, 52), ObjectRef::new(sh::ScriptPath));
+    res.insert((STANDARD_CONTEXT_ID, 53), ObjectRef::new(math::Rand));
+    res.insert((STANDARD_CONTEXT_ID, 54), ObjectRef::new(math::RandRange));
+    res.insert((STANDARD_CONTEXT_ID, 55), ObjectRef::new(math::RandNormal));
     res
 }
 

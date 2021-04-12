@@ -141,6 +141,6 @@ There are several short term major projects that I am working on now that I feel
 
 7. Modules, i.e. multi file programs. This is a large project, that wouldn't necessarily be that useful to technetium specifically.
 
-8. Reference cycle detection. Same as before, a major project, wouldn't be that useful. Right now, memory is leaked if there ever is a reference cycle. You'd have to try pretty hard to make this happen as it is...
+8. Reference cycle detection. Same as before, a major project, wouldn't be that useful. Right now, memory is leaked if there ever is a reference cycle. You'd have to try pretty hard to make this happen as it is... There's another case when memory is leaked, and that is when some child context references a variable in a parent context (so the variable is captured). A new way to manage memroy might be helpful
 
 9. Optimization. Code runs pretty slow right now... Not catastrophically slow, but slow none the less.

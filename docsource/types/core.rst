@@ -133,6 +133,8 @@ Dictionaries are mappings from hashable and immutable key values to objects. Dic
 
 Dictionaries throw an error if accessed with a key that either doesn't exist, or isn't hashable.
 
+Note that syntatically, dictionaries are allowed to span multiple lines. Sets, although very similar in form, are not, due to parsing restrictions.
+
 Dictionary Methods
 ^^^^^^^^^^^^^^^^^^
 

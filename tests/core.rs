@@ -4,6 +4,27 @@ use predicates::prelude::*;
 type TestError = Box<dyn std::error::Error>;
 
 #[test]
+fn test_dict_format() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+        # Dictionaries are allowed to span multiple lines
+println({
+    "option_a": false,
+    "blah": "blah"
+})
+
+# For bizarre parsing reasons, sets aren't
+println({"hi"})
+        "#
+    );
+    
+    cmd.assert().success().stdout(predicate::eq("{option_a: false, blah: blah}\n{hi}\n"));
+
+    Ok(())
+}
+
+#[test]
 fn capture_variables() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(

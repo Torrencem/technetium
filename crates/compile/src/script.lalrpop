@@ -351,16 +351,16 @@ Literal: Literal = {
 
 ListLiteral: ListLiteral = <l:@L> "[" <v: Comma<Expr>> "]" <r:@R> => ListLiteral::new(v, l, r);
 
-TupleLiteral: TupleLiteral = <l:@L> "(" <v: CommaNonEmpty<Expr>> ")" <r:@R> => TupleLiteral::new(v, l, r);
+TupleLiteral: TupleLiteral = <l:@L> "(" <v: CommaNonEmptyTuple<Expr>> ")" <r:@R> => TupleLiteral::new(v, l, r);
 
 SetLiteral: SetLiteral = {
-    <l:@L> "{" "\n"? <v: CommaNonEmpty<Expr>> "}" <r:@R> => SetLiteral::new(v, l, r),
-    <l:@L> "{" "\n"? <e:Expr> "}" <r:@R> => SetLiteral::new(vec![e], l, r),
+	// Comment here
+    <l:@L> "{" "\n"? <v: SetCommaNonEmpty<Expr>> "}" <r:@R> => SetLiteral::new(v, l, r),
 };
 
-DictLiteral: DictLiteral = <l:@L> "{" "\n"? <v: DictStyleComma<DictEntry>> "}" <r:@R> => DictLiteral::new(v, l, r);
+DictLiteral: DictLiteral = <l:@L> "{" "\n"? <v: CommaNonEmpty<DictEntry>> "}" <r:@R> => DictLiteral::new(v, l, r);
 
-DictEntry: (Expr, Expr) = <e1: Expr> ":" <e2: Expr> "\n"? => (e1, e2);
+DictEntry: (Expr, Expr) = <e1: Expr> ":" <e2: Expr> => (e1, e2);
 
 Identifier: Identifier = <l:@L> <s:ident> <r:@R> => Identifier::new(s.to_owned(), l, r);
 
@@ -397,7 +397,23 @@ CommaNewline<T>: Vec<T> = {
 };
 
 CommaNonEmpty<T>: Vec<T> = {
-	<v:(<T> "," "\n"?)+> <e:T?> => match e {
+	<v:(<T> "," "\n"?)*> <b:T> "\n"? => {
+		let mut v = v;
+		v.push(b);
+		v
+	},
+};
+
+SetCommaNonEmpty<T>: Vec<T> = {
+	<v:(<T> ",")*> <b:T> => {
+		let mut v = v;
+		v.push(b);
+		v
+	},
+};
+
+CommaNonEmptyTuple<T>: Vec<T> = {
+	<v:(<T> ",")+> <e:T?> => match e {
 		None => v,
 		Some(e) => {
 			let mut v = v;
@@ -405,11 +421,6 @@ CommaNonEmpty<T>: Vec<T> = {
 			v
 		}
 	}
-};
-
-DictStyleComma<T>: Vec<T> = {
-	<v:T> => vec![v],
-	<v:CommaNonEmpty<T>> => v,
 };
 
 extern {

@@ -149,38 +149,31 @@ impl Object for ObjectCell<ShObject> {
 }
 
 func_object!(Sh, (1..=1), _c, args -> {
-    let arg_any = args[0].as_any();
-    if let Some(str_obj) = arg_any.downcast_ref::<ObjectCell<StringObject>>() {
-        let str_obj = str_obj.try_borrow()?;
+    downcast!((str_obj: StringObject = args[0]) -> {
         let val = &str_obj.val;
         Ok(ShObject::new(val.clone()))
     } else {
         Err(RuntimeError::type_error("Incorrect type as argument to sh; expected string"))
-    }
+    })
 });
 
-func_object!(Cd, (1..=1), _c, args -> {
-    let arg_any = args[0].as_any();
-    if let Some(str_obj) = arg_any.downcast_ref::<ObjectCell<StringObject>>() {
-        let str_obj = str_obj.try_borrow()?;
+func_object_void!(Cd, (1..=1), _c, args -> {
+    downcast!((str_obj: StringObject = args[0]) -> {
         let val = &str_obj.val;
         let path = Path::new(&*val);
         env::set_current_dir(path)?;
-        Ok(UnitObject::new())
     } else {
-        Err(RuntimeError::type_error("Expected string as argument to cd"))
-    }
+        return Err(RuntimeError::type_error("Expected string as argument to cd"));
+    })
 });
 
 func_object_void!(Open, (1..=1), _c, args -> {
-    let arg_any = args[0].as_any();
-    if let Some(str_obj) = arg_any.downcast_ref::<ObjectCell<StringObject>>() {
-        let str_obj = str_obj.try_borrow()?;
+    downcast!((str_obj: StringObject = args[0]) -> {
         let val = &str_obj.val;
         open(val)?;
     } else {
         return Err(RuntimeError::type_error("Expected string as argument to open"));
-    }
+    });
 });
 
 func_object!(Os, (0..=0), _c, args -> {
@@ -219,49 +212,36 @@ func_object!(Which, (1..=1), _c, args -> {
 });
 
 func_object!(Exists, (1..=1), _c, args -> {
-    let arg_any = args[0].as_any();
-    if let Some(str_obj) = arg_any.downcast_ref::<ObjectCell<StringObject>>() {
-        let str_obj = str_obj.try_borrow()?;
+    downcast!((str_obj: StringObject = args[0]) -> {
         let val = &str_obj.val;
-
         let p = PathBuf::from(val);
-
         Ok(BoolObject::new(p.exists()))
     } else {
-        return Err(RuntimeError::type_error("Expected string as argument to exists"));
-    }
+        Err(RuntimeError::type_error("Expected string as argument to exists"))
+    })
 });
 
 func_object!(IsDirectory, (1..=1), _c, args -> {
-    let arg_any = args[0].as_any();
-    if let Some(str_obj) = arg_any.downcast_ref::<ObjectCell<StringObject>>() {
-        let str_obj = str_obj.try_borrow()?;
+    downcast!((str_obj: StringObject = args[0]) -> {
         let val = &str_obj.val;
-
         let p = PathBuf::from(val);
-
         Ok(BoolObject::new(p.is_dir()))
     } else {
-        return Err(RuntimeError::type_error("Expected string as argument to is_directory"));
-    }
+        Err(RuntimeError::type_error("Expected string as argument to is_directory"))
+    })
 });
 
 func_object!(Canonicalize, (1..=1), _c, args -> {
-    let arg_any = args[0].as_any();
-    if let Some(str_obj) = arg_any.downcast_ref::<ObjectCell<StringObject>>() {
-        let str_obj = str_obj.try_borrow()?;
+    downcast!((str_obj: StringObject = args[0]) -> {
         let val = &str_obj.val;
-
         let p = PathBuf::from(val);
-
         let canonicalized = p.canonicalize()?
             .to_string_lossy()
             .into_owned();
-
         Ok(StringObject::new(canonicalized))
     } else {
-        return Err(RuntimeError::type_error("Expected string as argument to canonicalize"));
-    }
+        Err(RuntimeError::type_error("Expected string as argument to canonicalize"))
+    })
 });
 
 func_object!(Hostname, (0..=0), _c, _args -> {

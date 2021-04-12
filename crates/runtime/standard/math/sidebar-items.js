@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Abs",""],["Arccos",""],["Arcsin",""],["Arctan",""],["Cos",""],["Exp",""],["Ln",""],["Sin",""],["Sqrt",""],["Tan",""]]});
+initSidebarItems({"struct":[["Abs",""],["Arccos",""],["Arcsin",""],["Arctan",""],["Cos",""],["Exp",""],["Ln",""],["Rand",""],["RandNormal",""],["RandRange",""],["Sin",""],["Sqrt",""],["Tan",""]]});

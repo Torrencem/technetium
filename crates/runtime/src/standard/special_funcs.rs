@@ -150,9 +150,9 @@ func_object!(Version, (0..=0), _c, args -> {
 
 #[derive(Debug, Clone)]
 pub struct Range {
-    start: i64,
-    end: i64,
-    step: i64,
+    pub start: i64,
+    pub end: i64,
+    pub step: i64,
 }
 
 impl Object for ObjectCell<Range> {
@@ -168,6 +168,29 @@ impl Object for ObjectCell<Range> {
     fn make_iter(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
         Ok(RangeIterator::new(this.clone()))
+    }
+
+    fn call_method(&self, method: &str, args: &[ObjectRef], _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
+        let this = self.try_borrow()?;
+        match method {
+            "length" => {
+                if args.len() > 0 {
+                    return Err(RuntimeError::type_error("Expected no arguments to range.len()"));
+                }
+                Ok(IntObject::new(
+                    std::cmp::max(0,
+                            (this.end - this.start) / this.step
+                    )
+                ))
+            }
+            _ => {
+                Err(RuntimeError::attribute_error(format!(
+                    "Cannot call method {} of {}",
+                    method,
+                    self.technetium_type_name()
+                )))
+            }
+        }
     }
 }
 

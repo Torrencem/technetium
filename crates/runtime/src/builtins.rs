@@ -11,6 +11,8 @@ use num::traits::ToPrimitive;
 use std::any::TypeId;
 use std::convert::TryInto;
 
+use crate::standard::special_funcs::Range;
+
 pub fn add(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
     // Special case: if one of the objects is a string
     downcast!((a_str: StringObject = a) -> {
@@ -488,6 +490,15 @@ pub fn index_get(a: ObjectRef, b: ObjectRef) -> RuntimeResult<ObjectRef> {
             let val_b = val_b.val.clone();
             let index = val_a.start + val_b * val_a.step;
             index_get(ObjectRef::clone(&val_a.parent), IntObject::new_big(index))
+        },
+        (val_a: Range, val_b: IntObject) => {
+            let val_b = val_b.val.clone();
+            let index = val_a.start + val_b * val_a.step;
+            if index < val_a.start.into() || index >= val_a.end.into() {
+                Err(RuntimeError::index_oob_error("Index accessed in range() is out of bounds"))
+            } else {
+                Ok(IntObject::new_big(index))
+            }
         },
         _ => {
             Err(RuntimeError::type_error(format!(

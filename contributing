@@ -146,3 +146,5 @@ There are several short term "major" projects that I am working on now that I fe
 8. Reference cycle detection. Same as before, a major project, wouldn't be that useful. Right now, memory is leaked if there ever is a reference cycle. You'd have to try pretty hard to make this happen as it is... There's another case when memory is leaked, and that is when some child context references a variable in a parent context (so the variable is captured). A new way to manage memroy might be helpful
 
 9. Optimization. Code runs pretty slow right now... Not catastrophically slow, but slow none the less.
+
+10. Related, the `debug` instruction in the bytecode was a bad idea. The debug information should be stored in a table outside of the code itself, for performance reasons.

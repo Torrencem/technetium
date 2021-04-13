@@ -403,18 +403,15 @@ pub trait Object: Any + ToAny + OpaqueClone + RawPointer + LockImmutable {
     }
     
     /// Call a given method of an object
-    fn call_method(&self, _method: &str, _args: &[ObjectRef], _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
+    fn call_method(&self, method: &str, _args: &[ObjectRef], _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::attribute_error(format!(
-            "Cannot call method of {}",
+            "Cannot call method {} of {}",
+            method,
             self.technetium_type_name()
         )))
     }
     
     /// Call a given object as a function.
-    ///
-    /// This takes a memory manager
-    /// primarily for the [Function](struct.Function.html) object,
-    /// which needs to be able to reference and change locals.
     fn call(&self, _args: &[ObjectRef], _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         Err(RuntimeError::type_error(format!(
             "Object of type {} is not callable",
@@ -474,7 +471,14 @@ impl PartialEq for ObjectRef {
     fn eq(&self, other: &ObjectRef) -> bool {
         match self.technetium_eq(ObjectRef::clone(other)) {
             Some(val) => val,
-            None => self.ref_eq(ObjectRef::clone(other)),
+            None => {
+                match other.technetium_eq(ObjectRef::clone(self)) {
+                    Some(val) => val,
+                    None => {
+                        self.ref_eq(ObjectRef::clone(other))
+                    }
+                }
+            },
         }
     }
 }

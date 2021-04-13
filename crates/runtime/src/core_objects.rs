@@ -624,6 +624,43 @@ impl Object for ObjectCell<Slice> {
             Ok(res)
         }
     }
+
+    // TODO: Implement a reflexive version of this in the list / tuple / string equality so this is reflexive!!!
+    fn technetium_eq(&self, other: ObjectRef) -> Option<bool> {
+        // This error handling is weird... It means that if this slice is currently in use, eq will probably always return false.
+        let this = self.try_borrow().ok()?;
+        // Check indices in order in the other container, to see if they're equal to our values
+        let mut curr_index = this.start;
+        let mut curr_index_0 = 0i64;
+        loop {
+            if let Some(stop) = this.stop {
+                if this.step < 0 && curr_index <= stop || this.step > 0 && curr_index >= stop {
+                    let other_val = index_get(ObjectRef::clone(&other), IntObject::new(curr_index_0));
+                    if !other_val.is_err() {
+                        // other iterator has more entries
+                        return Some(false);
+                    }
+                    break;
+                }
+            }
+            let my_val = index_get(ObjectRef::clone(&this.parent), IntObject::new(curr_index));
+            let other_val = index_get(ObjectRef::clone(&other), IntObject::new(curr_index_0));
+            if my_val.is_err() && other_val.is_err() {
+                return Some(true);
+            }
+            if my_val.is_err() || other_val.is_err() {
+                debug!("A");
+                return Some(false);
+            }
+            if my_val.unwrap() != other_val.unwrap() {
+                debug!("B");
+                return Some(false);
+            }
+            curr_index += this.step;
+            curr_index_0 += 1;
+        }
+        Some(true)
+    }
 }
 
 #[derive(Debug)]

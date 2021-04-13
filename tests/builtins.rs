@@ -148,3 +148,27 @@ println(l2)
 
     Ok(())
 }
+
+#[test]
+fn test_slice_eq() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+println(range(3)[0:2] == [0, 1])
+println(range(3)[0:2] == [0, 1, 2])
+println(range(3)[0:2] == [1, 2])
+println(range(3)[0:2] == [0, 1][0:2])
+println(range(3)[0:2] == [])
+println(range(3)[0:2] == [0, 2])
+
+println([0, 1] == range(3)[0:2])
+println([0, 2] == range(3)[0:2])
+"#,
+    );
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("true\nfalse\nfalse\ntrue\nfalse\nfalse\ntrue\nfalse\n"));
+
+    Ok(())
+}

@@ -75,17 +75,9 @@ There are some smaller things that used to be on my todo list which I want to co
 
 1. Functions for serializing and persisting variables. Right now, the `stale` function makes use of persistence in the `.tcmake` subdirectory of a project. Users of the programming language should be able to similarly make use of this persistence between script runs, ideally very easily. I don't know exactly what this design would look like, but it would probably just involve several standard library functions for storing and retrieving values from string keys, as well as a serialization mechanism for `Object`'s.
 
-2. String slices are bad. Right now, string slices don't compare nicely:
-```
-mystring = "hello!"
+2. Documentation needs to be added for the `dict()` conversion function. See the tests for how this function works (hint: it's similar to Python)
 
-println(mystring[0:2] == "he")
-```
-prints false. This is similar for list slices. This is annoying for a lot of reasons, and should just involve changing the equality code to account for slices.
-
-3. Documentation needs to be added for the `dict()` conversion function. See the tests for how this function works (hint: it's similar to Python)
-
-4. The following code stack overflows:
+3. The following code stack overflows:
 ```
 l = [1]
 
@@ -95,7 +87,7 @@ println(l)
 ```
 The equivalent code actually works in python though! The CPython source code that's responsible is here: https://github.com/python/cpython/blob/e5fe509054183bed9aef42c92da8407d339e8af8/Objects/listobject.c#L373 . Something similar could be hypothetically implemented in technetium.
 
-5. Lock errors don't show when an object had been locked, which might be very confusing for the user. Take this example:
+4. Lock errors don't show when an object had been locked, which might be very confusing for the user. Take this example:
 ```
 a = {2}
 b = {3}
@@ -104,19 +96,19 @@ b.add(5)
 println(a)
 ```
 
-6. An interactive mode should be added to the language. Statements could be compiled on the fly, and contexts could be reused so that things work out. `isatty` would need to be used, etc.
+5. An interactive mode should be added to the language. Statements could be compiled on the fly, and contexts could be reused so that things work out. `isatty` would need to be used, etc.
 
-7. Integer literals, and a lot of standard library functions, expect integers to be within the range of an `i64`. This is unintuitive, and could possibly be changed.
+6. Integer literals, and a lot of standard library functions, expect integers to be within the range of an `i64`. This is unintuitive, and could possibly be changed.
 
-8. The documentation overall could use more examples
+7. The documentation overall could use more examples
 
-9. Windows support. Technetium should *work* on windows, but the shell operator doesn't... We should figure out what it should do, and make it do that.
+8. Windows support. Technetium should *work* on windows, but the shell operator doesn't... We should figure out what it should do, and make it do that.
 
-10. unicode string literals ("\u{something}").
+9. unicode string literals ("\u{something}").
 
-11. A round float function?
+10. A round float function?
 
-12. Format strings that have parsing errors only report the first parsing error. This might be annoying in rare cases.
+11. Format strings that have parsing errors only report the first parsing error. This might be annoying in rare cases.
 
 - major projects -
 

@@ -163,12 +163,17 @@ println(range(3)[0:2] == [0, 2])
 
 println([0, 1] == range(3)[0:2])
 println([0, 2] == range(3)[0:2])
+
+mystring = "hello!"
+
+println("he" == mystring[0:2])
+
 "#,
     );
 
     cmd.assert()
         .success()
-        .stdout(predicate::eq("true\nfalse\nfalse\ntrue\nfalse\nfalse\ntrue\nfalse\n"));
+        .stdout(predicate::eq("true\nfalse\nfalse\ntrue\nfalse\nfalse\ntrue\nfalse\ntrue\n"));
 
     Ok(())
 }

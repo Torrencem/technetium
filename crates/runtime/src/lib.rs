@@ -444,6 +444,10 @@ pub trait Object: Any + ToAny + OpaqueClone + RawPointer + LockImmutable {
     }
     
     /// Equal-as-value (like == in Python, or .equals() in Java)
+    /// Should return None if ``self`` cannot reasonably determine if ``other`` is equal or not.
+    /// Typical implementations will usually only return Some(value) if they can definitively answer,
+    /// And will quickly answer None otherwise.
+    /// This allows equality to be reflexive by calling ``other.technetium_eq`` in case the answer is None.
     fn technetium_eq(&self, _other: ObjectRef) -> Option<bool> {
         None
     }

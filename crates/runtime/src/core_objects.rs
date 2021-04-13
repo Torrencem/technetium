@@ -625,7 +625,6 @@ impl Object for ObjectCell<Slice> {
         }
     }
 
-    // TODO: Implement a reflexive version of this in the list / tuple / string equality so this is reflexive!!!
     fn technetium_eq(&self, other: ObjectRef) -> Option<bool> {
         // This error handling is weird... It means that if this slice is currently in use, eq will probably always return false.
         let this = self.try_borrow().ok()?;

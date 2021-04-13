@@ -120,13 +120,15 @@ println(a)
 
 - major projects -
 
-There are several short term major projects that I am working on now that I feel are fit for contributions:
+There are several short term "major" projects that I am working on now that I feel are fit for contributions:
 
 1. Macros for DRY. Right now, I repeat myself too much. In particular, the `downcast!` macro is relatively new to the source code, so I am converting its use throughout the `runtime` crate. I am always looking for new macros and ways to make my code less repetitive.
 
 2. Miscellaneous documentation. Some areas of the Rust codebase are somewhat lacking in documentation. I'm always looking to improve on this. This is especially true with respect to all the weird state-holders (MemoryManager, CompileManager, etc.) that are not easy to understand.
 
 3. This document. I could always expand the runtime section of this document. This is important!
+
+3.5 More "warn" and "debug" level logging throughout the codebase, especially in the code for the runtime.
 
 4. Error Handling. This is a language feature that I've wanted to add for a while now. This will also probably be the next language feature in technetium. There needs to be a try / catch system in technetium. Here are some sub-tasks that need to be completed first:
 [ ] Errors as first class objects. This shouldn't be too hard, just add an `Object` wrapping the `RuntimeError` struct. What's more difficult is figuring out exactly what methods / attributes these errors should have, and properly documenting them.

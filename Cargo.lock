@@ -1010,6 +1010,7 @@ dependencies = [
  "codespan-reporting",
  "glob",
  "lazy_static",
+ "log",
  "mlrefcell",
  "num",
  "once_cell",

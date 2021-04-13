@@ -267,10 +267,12 @@ func_object!(Stale, (1..), _c, args -> {
         if !cache_location.exists() {
             None
         } else {
-            if let Ok(file) = fs::read(&cache_location) {
+            let cache = fs::read(&cache_location);
+            if let Ok(file) = cache {
                 bincode::deserialize(&file).ok()
             } else {
                 // info!("Error reading cache location: {:?}", e.err().unwrap());
+                warn!("Error reading cache location to find previous time stamps for stale(): {:?}", cache.err().unwrap());
                 None
             }
         }
@@ -332,6 +334,7 @@ func_object!(Stale, (1..), _c, args -> {
             .filter_map(Result::ok) {
             let p = PathBuf::from(string).canonicalize();
             if p.is_err() {
+                warn!("Error canonicalizing path ({:?}) in stale(). Will return true anyway.", p);
                 return Ok(BoolObject::new(true));
             }
             file_checks.push(p.unwrap());
@@ -350,11 +353,13 @@ func_object!(Stale, (1..), _c, args -> {
     for file in file_checks.iter() {
         let res = fs::metadata(file);
         if res.is_err() {
+            warn!("Error reading metadata from file ({:?}) in stale(). Will return true, and update the files it can.", file);
             changed_timestamps = true;
             continue;
         }
         let modified = res.unwrap().modified();
         if modified.is_err() {
+            warn!("Error reading \"modified\" metadata from file ({:?}) in stale(). Will return true, and update the files it can.", file);
             changed_timestamps = true;
             continue;
         }
@@ -375,10 +380,10 @@ func_object!(Stale, (1..), _c, args -> {
     if changed_timestamps {
         // It kind of makes sense to ignore failure to write out to the cache. This just means
         // stale will always return true if there's some weird error.
-        let _e = fs::write(cache_location, &bincode::serialize(&new_timestamps).unwrap());
-        // if e.is_err() {
-        //     info!("Error writing to cache location: {:?}", e);
-        // }
+        let e = fs::write(cache_location, &bincode::serialize(&new_timestamps).unwrap());
+        if e.is_err() {
+            warn!("Error writing to cache location: {:?}. Won't update cache, but will return true anyway.", e);
+        }
         Ok(BoolObject::new(true))
     } else {
         Ok(BoolObject::new(false))

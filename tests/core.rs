@@ -19,7 +19,7 @@ println({"hi"})
         "#
     );
     
-    cmd.assert().success().stdout(predicate::eq("{option_a: false, blah: blah}\n{hi}\n"));
+    cmd.assert().success().stdout(predicate::str::contains("blah: blah"));
 
     Ok(())
 }

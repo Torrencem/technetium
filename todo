@@ -1,4 +1,4 @@
 before release:
-* stale() should return a list of paths,
+* stale() should return a list of paths. Should error if can't read a path.
 * add a sleep(int) function
 * document case of and other language structures

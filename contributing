@@ -22,7 +22,7 @@ The compile crate (crates/compile) is also called by the main crate, and has the
 
 The runtime (crates/runtime) has the job of defining the bytecode, and defining how to run the bytecode. It also includes all the standard types and functions that are part of technetium. This is the most involved part of the codebase.
 
-There is one more crate included, which is kind of trivial:
+There is one more crate included, which is kind of unrelated to the others:
 
 - mlrefcell -
 
@@ -33,8 +33,6 @@ This is a copy of `std::cell::RefCell`, except an `mlrefcell::MLRefCell` can be 
 The documentation is generated using Sphinx. Install Sphinx into your PATH, then run `build_docs.sh` to build the documentation whos source is located in `docsource`. Then, the `docs` folder will contain a git repository that can be commited and pushed, which will update the Github Pages site.
 
 All tests are either in the source code of files themselves (somewhat rare), or in the `tests` directory. The `tests` directory contains several files that all have random golden tests in them, that run the output `tech` binary against several simple scripts and their expected outputs. The division between these files is not clear, and will probably be dissolved in the future.
-
-There's a file called `todo.md` that contains some vague notes for the future of the project. That file will be dissolved into here in the future.
 
 There's a script in `scripts/tcmake`, that just acts as an alias to `tech -r`. This is kind of pointless, but it would be great if in the future this would be added to the install location with `cargo install`. I can't figure out how to do this though.
 
@@ -69,11 +67,13 @@ All the functions in the standard library are structs that implement the `Object
 
 -- Part 4: Desirable Contributions --
 
+If you notice problems with technetium, make a GitHub issue! If you want to, you can check the projects I have listed below and suggest changes / feedback as well:
+
 - minor projects -
 
-There are some smaller things that used to be on my todo list which I want to commit to changing in the long run. They vary in scope, but are all relatively small (no major language features):
+There are some smaller things that used to be on my todo list which I want to commit to changing in the long run. They vary in scope, but are all relatively small:
 
-1. Functions for serializing and persisting variables. Right now, the `stale` function makes use of persistence in the `.tcmake` subdirectory of a project. Users of the programming language should be able to similarly make use of this persistence between script runs, ideally very easily. I don't know exactly what this design would look like, but it would probably just involve several standard library functions for storing and retrieving values from string keys, as well as a serialization mechanism for `Object`'s.
+1. Functions for serializing and persisting variables. Right now, the `stale` function makes use of persistence in the `.tcmake` subdirectory of a project. Users of the programming language could be able to similarly make use of this persistence between script runs, ideally very easily. I don't know exactly what this design would look like, but it would probably just involve several standard library functions for storing and retrieving values from string keys, as well as a serialization mechanism for `Object`'s.
 
 2. Documentation needs to be added for the `dict()` conversion function. See the tests for how this function works (hint: it's similar to Python)
 
@@ -98,17 +98,17 @@ println(a)
 
 5. An interactive mode should be added to the language. Statements could be compiled on the fly, and contexts could be reused so that things work out. `isatty` would need to be used, etc.
 
-6. Integer literals, and a lot of standard library functions, expect integers to be within the range of an `i64`. This is unintuitive, and could possibly be changed.
+6. Integer literals, and a lot of standard library functions, expect integers to be within the range of an `i64`, even though in most cases internally ints are stored as arbitrary sized integers. This is unintuitive, and could possibly be changed.
 
 7. The documentation overall could use more examples
 
-8. Windows support. Technetium should *work* on windows, but the shell operator doesn't... We should figure out what it should do, and make it do that.
+8. Windows support. Technetium should *work* on windows, but the shell operator doesn't... I should figure out what it should do, and make it do that.
 
 9. unicode string literals ("\u{something}").
 
 10. A round float function?
 
-11. Format strings that have parsing errors only report the first parsing error. This might be annoying in rare cases.
+11. Format strings that have parsing errors only report the first parsing error. This might be annoying in unusual cases.
 
 - major projects -
 
@@ -135,8 +135,10 @@ There are several short term "major" projects that I am working on now that I fe
 
 7. Modules, i.e. multi file programs. This is a large project, that wouldn't necessarily be that useful to technetium specifically.
 
-8. Reference cycle detection. Same as before, a major project, wouldn't be that useful. Right now, memory is leaked if there ever is a reference cycle. You'd have to try pretty hard to make this happen as it is... There's another case when memory is leaked, and that is when some child context references a variable in a parent context (so the variable is captured). A new way to manage memroy might be helpful
+8. Reference cycle detection. Same as before, a major project, wouldn't be that useful. Right now, memory is leaked if there ever is a reference cycle. You'd have to try pretty hard to make this happen as it is... There's another case when memory is leaked, and that is when some child context references a variable in a parent context (so the variable is captured). A completely new way to manage memory might be helpful. Maybe using slot arenas?
 
-9. Optimization. Code runs pretty slow right now... Not catastrophically slow, but slow none the less.
+9. Optimization. Code runs pretty slow right now...
 
 10. Related, the `debug` instruction in the bytecode was a bad idea. The debug information should be stored in a table outside of the code itself, for performance reasons.
+
+11. Optimizers that run basic passes on the bytecode could be useful.

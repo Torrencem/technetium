@@ -1,4 +1,4 @@
 before release:
 * stale() should return a list of paths,
 * add a sleep(int) function
-* case of default case
+* document case of and other language structures

@@ -570,6 +570,11 @@ impl CompileManager {
             res.push(Op::jmp(0));
         }
 
+        // Fallthrough case
+        if let Some(body) = &ast.default {
+            res.append(&mut self.compile_statement_list(body)?);
+        }
+
         for index in exit_jmp_indices {
             res[index] = Op::jmp(res.len() as i16 - index as i16);
         }

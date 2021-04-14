@@ -150,6 +150,54 @@ println(l2)
 }
 
 #[test]
+fn test_default_case_of() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(r#"
+
+val = 0
+
+case "bye" of {
+    "Bye" => {
+        val = 1
+        println(1)
+    },
+    "BYE" => {
+        val = 2
+        println(2)
+    },
+} else {
+    val = 3
+    println(3)
+}
+
+println(val)
+
+val = 0
+
+case "BYE" of {
+    "Bye" => {
+        val = 1
+        println(1)
+    },
+    "BYE" => {
+        val = 2
+        println(2)
+    },
+} else {
+    val = 3
+    println(3)
+}
+
+println(val)
+    "#);
+
+    cmd.assert().success()
+        .stdout(predicate::eq("3\n3\n2\n2\n"));
+
+    Ok(())
+}
+
+#[test]
 fn test_slice_eq() -> Result<(), TestError> {
     let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(

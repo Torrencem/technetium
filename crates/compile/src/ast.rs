@@ -603,13 +603,15 @@ pub struct CaseOf {
     pub span: Span,
     pub condition: Expr,
     pub cases: Vec<(Expr, StatementList)>,
+    pub default: Option<StatementList>,
 }
 
 impl CaseOf {
-    pub fn new(condition: Expr, cases: Vec<(Expr, StatementList)>, l: usize, r: usize) -> Self {
+    pub fn new(condition: Expr, cases: Vec<(Expr, StatementList)>, default: Option<StatementList>, l: usize, r: usize) -> Self {
         CaseOf {
             span: Span::new(l as u32, r as u32),
             condition,
+            default,
             cases,
         }
     }

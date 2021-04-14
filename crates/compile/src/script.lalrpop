@@ -142,7 +142,10 @@ WhileLoop: WhileLoop = <l:@L> "while" <e: Expr> "\n"? "{" "\n"? <body: Statement
 
 ForLoop: ForLoop = <l:@L> "for" <n: Identifier> "in" <e: Expr> "\n"? "{" "\n"? <body: StatementList> "}" <r:@R> => ForLoop::new(n, e, body, l, r);
 
-CaseOf: CaseOf = <l:@L> "case" <e: Expr> "of" "\n"? "{" "\n"? <c: CommaNewline<Case>> "}" <r:@R> => CaseOf::new(e, c, l, r);
+CaseOf: CaseOf = {
+	<l:@L> "case" <e: Expr> "of" "\n"? "{" "\n"? <c: CommaNewline<Case>> "}" <r:@R> => CaseOf::new(e, c, None, l, r),
+	<l:@L> "case" <e: Expr> "of" "\n"? "{" "\n"? <c: CommaNewline<Case>> "}" "else" "\n"? "{" "\n"? <default: StatementList> "}" <r:@R> => CaseOf::new(e, c, Some(default), l, r),
+};
 
 Case: (Expr, StatementList) = {
 	<l:@L> <e: Expr> "=>" <s: Statement> <r:@R> => (e, StatementList::new(vec![s], l, r)),

@@ -1,0 +1,12 @@
+
+.. _release_v0.1:
+
+===================
+Release v0.1
+===================
+
+This is the initial release of the technetium programming language! 🎉🎉
+
+Since there's no changelog to speak of, instead these release notes will serve as an introduction to technetium.
+
+Technetium is an interpreted scripting language, which is suited for short utility scripts packaged with code (build and install scripts, for example).

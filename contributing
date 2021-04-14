@@ -39,7 +39,7 @@ There's a script in `scripts/tcmake`, that just acts as an alias to `tech -r`. T
 
 -- Part 2: Backwards Compatibility and Stability --
 
-Although it's a very desirable property of build systems to be unchanging and backwards compatible, with the early releases of technetium, this cannot be guaranteed. So, at each release, the `changelog` file should contain major changes, as well as helpful guides to ALL backwards incompatible changes made to the source from minor version to minor version before `1.0`. A backwards incompatible change is one where a user may have had a script that worked in the past, that breaks in some way (either stops compiling, or produces a runtime error due to changes in the runtime).
+Although it's a very desirable property of build systems to be unchanging and backwards compatible, with the early releases of technetium, this cannot be guaranteed. So, at each release, the changelog should contain major changes, as well as helpful guides to ALL backwards incompatible changes made to the source from minor version to minor version before `1.0`. A backwards incompatible change is one where a user may have had a script that worked in the past, that breaks in some way (either stops compiling, or produces a runtime error due to changes in the runtime).
 
 
 -- Part 3: How does the runtime work? --
@@ -109,6 +109,8 @@ println(a)
 10. A round float function?
 
 11. Format strings that have parsing errors only report the first parsing error. This might be annoying in unusual cases.
+
+12. Incorperate ripgrep, so it's easy to search for patterns. Maybe having a "rg" stdlib function?
 
 - major projects -
 

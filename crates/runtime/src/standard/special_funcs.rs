@@ -15,6 +15,8 @@ use std::io::{self, Write};
 use glob::glob;
 use std::result::Result;
 
+use std::convert::TryInto;
+
 func_object_void!(Print, (0..), _c, args -> {
     let mut first = true;
     for arg in args.iter() {
@@ -276,6 +278,24 @@ func_object!(RangeFunc, (1..=3), _c, args -> {
             Err(RuntimeError::type_error("Expected integer arguments to range"))
         }
     }
+});
+
+func_object_void!(Sleep, (1..=1), _c, args -> {
+    let duration: std::time::Duration = {
+        downcast!((val: IntObject = args[0]) -> {
+            std::time::Duration::from_secs(val
+                .to_i64()?
+                .try_into()
+                .map_err(|_| RuntimeError::type_error("Argument to sleep must be non-negative"))?)
+        } else {
+            downcast!((val: FloatObject = args[0]) -> {
+                std::time::Duration::from_secs_f64(val.val)
+            } else {
+                return Err(RuntimeError::type_error("Expected numeric type argument to sleep"));
+            })
+        })
+    };
+    std::thread::sleep(duration);
 });
 
 // Staleness is a special feature that replicates the features of most build systems like make,

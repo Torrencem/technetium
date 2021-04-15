@@ -71,6 +71,7 @@ pub fn get_default_namespace_descriptors() -> HashMap<String, GlobalConstantDesc
     res.insert("rand".to_string(), (STANDARD_CONTEXT_ID, 53));
     res.insert("rand_range".to_string(), (STANDARD_CONTEXT_ID, 54));
     res.insert("rand_normal".to_string(), (STANDARD_CONTEXT_ID, 55));
+    res.insert("sleep".to_string(), (STANDARD_CONTEXT_ID, 56));
     res
 }
 
@@ -152,6 +153,7 @@ pub fn get_default_namespace() -> HashMap<GlobalConstantDescriptor, ObjectRef> {
     res.insert((STANDARD_CONTEXT_ID, 53), ObjectRef::new(math::Rand));
     res.insert((STANDARD_CONTEXT_ID, 54), ObjectRef::new(math::RandRange));
     res.insert((STANDARD_CONTEXT_ID, 55), ObjectRef::new(math::RandNormal));
+    res.insert((STANDARD_CONTEXT_ID, 56), ObjectRef::new(special_funcs::Sleep));
     res
 }
 

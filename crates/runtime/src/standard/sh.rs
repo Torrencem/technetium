@@ -7,6 +7,8 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Output, Stdio};
 
+use std::any::TypeId;
+
 use crate::func_object;
 
 use sys_info::linux_os_release;
@@ -241,6 +243,31 @@ func_object!(Canonicalize, (1..=1), _c, args -> {
         Ok(StringObject::new(canonicalized))
     } else {
         Err(RuntimeError::type_error("Expected string as argument to canonicalize"))
+    })
+});
+
+func_object!(StripPathPrefix, (2..=2), _c, args -> {
+    match_tech_types!((args[0], args[1]) {
+        (path: StringObject, prefix: StringObject) => {
+            let path = Path::new(&path.val);
+            let corrected_path = path.strip_prefix(prefix.val.clone()).map_err(|strip_prefix_err| {
+                RuntimeError::type_error(format!("Error stripping path prefix: {}", strip_prefix_err))
+            })?;
+
+            let fix_encoding = corrected_path.to_str().map(ToOwned::to_owned);
+            if let Some(name) = fix_encoding {
+                Ok(StringObject::new(name))
+            } else {
+                Err(RuntimeError {
+                    err: RuntimeErrorType::IOError,
+                    help: "Error converting path name into valid Unicode. This might have happened if a file checked in stale() has invalid unicode in its name".to_string(),
+                    symbols: vec![],
+                })
+            }
+        },
+        _ => {
+            Err(RuntimeError::type_error("Expected two strings as arguments to strip_path_prefix"))
+        }
     })
 });
 

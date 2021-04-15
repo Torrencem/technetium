@@ -58,3 +58,12 @@ In using technetium as a build system, one command that will come in handy is th
     This code will print "performing build..." whenever any of the C source code files underneath the source directory, or the main.c file have changed since the last run of the script. It keeps track using the file at ``./.tcmake/stale.cache``.
 
     It might be helpful to add ``script_path()`` as one of the files to check, in case updating the script itself should be of interest (i.e., in a build script).
+
+    One other example use case of stale is to keep files in sync between two seperate directories, only copying those that need to be updated. For example, to copy any recently changed files from ``dir_A`` to ``dir_B``::
+
+        for file in stale(["dir_A/**/*"]) {
+                # Find the path to the file within dir_A
+                relative_path = strip_path_prefix(canonicalize(file), canonicalize("dir_A"))
+                # Copy this file into dir_B
+                $ cp {file} dir_B/{relative_path}
+        }

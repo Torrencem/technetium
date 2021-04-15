@@ -45,9 +45,9 @@ Technetium can be used as a build system. The ``-r`` flag recursively searches u
 
 In using technetium as a build system, one command that will come in handy is the ``stale`` command, which can be used to emulate systems such as ``make`` which check to see if files have changed since you've last built your project:
 
-.. function:: stale([list(string)]) or stale([string], [string], ...)  [bool]
+.. function:: stale([list(string)]) or stale([string], [string], ...)  [list(string)]
 
-    Returns whether any of the files given as an argument (or the file that's running itself!) have changed since the last time this function was called. This function also accepts Unix glob-patterns (i.e. ``./src/**/*``)::
+    Returns a list of which of the files given as an argument have changed since the last time this function was called. This function also accepts Unix glob-patterns (i.e. ``./src/**/*``)::
         
         if stale(["src/**/*.c", "main.c"]) {
             println("performing build...")
@@ -55,5 +55,6 @@ In using technetium as a build system, one command that will come in handy is th
             println("nothing needs to be done!")
         }
     
-    This code will print "performing build..." whenever any of the C source code files underneath the source directory, the main.c file, or the file in which the source code lives have changed since the last run of the script. It keeps track using the file ./.tcmake/stale.cache
+    This code will print "performing build..." whenever any of the C source code files underneath the source directory, or the main.c file have changed since the last run of the script. It keeps track using the file at ``./.tcmake/stale.cache``.
 
+    It might be helpful to add ``script_path()`` as one of the files to check, in case updating the script itself should be of interest (i.e., in a build script).

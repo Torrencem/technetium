@@ -1,2 +1,0 @@
-before release:
-* stale() should return a list of paths. Should error if can't read a path.

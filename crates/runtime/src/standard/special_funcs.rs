@@ -314,7 +314,6 @@ func_object!(Stale, (1..), _c, args -> {
             if let Ok(file) = cache {
                 bincode::deserialize(&file).ok()
             } else {
-                // info!("Error reading cache location: {:?}", e.err().unwrap());
                 warn!("Error reading cache location to find previous time stamps for stale(): {:?}", cache.err().unwrap());
                 None
             }
@@ -363,12 +362,13 @@ func_object!(Stale, (1..), _c, args -> {
     };
     let mut file_checks: Vec<PathBuf> = vec![];
     // Push the current script path, if it exists
-    match crate::CURR_SCRIPT_PATH.get() {
-        Some(path) => {
-            file_checks.push(path.clone());
-        },
-        None => { }
-    }
+    // This is older behavior, which I think isn't necessary.
+    // match crate::CURR_SCRIPT_PATH.get() {
+    //     Some(path) => {
+    //         file_checks.push(path.clone());
+    //     },
+    //     None => { }
+    // }
 
     for file in file_checks_raw.iter() {
         let mut ct = 0;
@@ -391,44 +391,51 @@ func_object!(Stale, (1..), _c, args -> {
     }
 
     let mut new_timestamps = old_timestamps.clone();
-    let mut changed_timestamps = false;
+    let mut changed_timestamps = vec![];
 
     for file in file_checks.iter() {
-        let res = fs::metadata(file);
-        if res.is_err() {
-            warn!("Error reading metadata from file ({:?}) in stale(). Will return true, and update the files it can.", file);
-            changed_timestamps = true;
-            continue;
-        }
-        let modified = res.unwrap().modified();
-        if modified.is_err() {
-            warn!("Error reading \"modified\" metadata from file ({:?}) in stale(). Will return true, and update the files it can.", file);
-            changed_timestamps = true;
-            continue;
-        }
-        let modified = modified.unwrap();
+        let res = fs::metadata(file)?;
+        let modified = res.modified()?;
         if old_timestamps.contains_key(file) {
             let old_modified = old_timestamps.get(file).unwrap();
             if old_modified < &modified {
                 new_timestamps.insert(file.clone(), modified);
-                changed_timestamps = true;
+                let fix_encoding = file.to_str().map(ToOwned::to_owned);
+                if let Some(name) = fix_encoding {
+                    changed_timestamps.push(StringObject::new(name));
+                } else {
+                    return Err(RuntimeError {
+                        err: RuntimeErrorType::IOError,
+                        help: "Error converting path name into valid Unicode. This might have happened if a file checked in stale() has invalid unicode in its name".to_string(),
+                        symbols: vec![],
+                    })
+                }
             }
         } else {
             new_timestamps.insert(file.clone(), modified);
-            changed_timestamps = true;
+            let fix_encoding = file.to_str().map(ToOwned::to_owned);
+            if let Some(name) = fix_encoding {
+                changed_timestamps.push(StringObject::new(name));
+            } else {
+                return Err(RuntimeError {
+                    err: RuntimeErrorType::IOError,
+                    help: "Error converting path name into valid Unicode. This might have happened if a file checked in stale() has invalid unicode in its name".to_string(),
+                    symbols: vec![],
+                })
+            }
         }
     }
 
     // Write out the cache again
-    if changed_timestamps {
+    if changed_timestamps.len() > 0 {
         // It kind of makes sense to ignore failure to write out to the cache. This just means
         // stale will always return true if there's some weird error.
         let e = fs::write(cache_location, &bincode::serialize(&new_timestamps).unwrap());
         if e.is_err() {
             warn!("Error writing to cache location: {:?}. Won't update cache, but will return true anyway.", e);
         }
-        Ok(BoolObject::new(true))
-    } else {
-        Ok(BoolObject::new(false))
     }
+    Ok(ObjectRef::new(List {
+        contents: changed_timestamps
+    }))
 });

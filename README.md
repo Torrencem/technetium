@@ -14,13 +14,13 @@ To install, setup cargo and rust, and then use the command ``cargo install --pat
 
 ## Features
 
-* Inline shell statements with very practical integration, and super-intuitive child process first class objects via `sh`
+* Inline shell statements, and child process first class objects via `sh`
 
-* Super simple syntax. A familiar, non-controversial syntax that plays nice with expectations
+* Super simple syntax
 
-* A set of convenient and expanding utility functions (for example, `os()` will return the current operating system as a string) and easy conversion functions
+* A set of convenient utility functions (for example, `os()` will return the current operating system as a string) and easy conversion functions
 
-* UTF-8 by default, with a sensible character type that plays nicely with encoded strings
+* UTF-8 by default, with a character type that plays nicely with encoded strings
 
 ## Examples
 

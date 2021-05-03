@@ -73,8 +73,8 @@
 <p>In using technetium as a build system, one command that will come in handy is the <code class="docutils literal notranslate"><span class="pre">stale</span></code> command, which can be used to emulate systems such as <code class="docutils literal notranslate"><span class="pre">make</span></code> which check to see if files have changed since you’ve last built your project:</p>
 <dl class="py function">
 <dt>
-<code class="sig-name descname"><span class="pre">stale([list(string)])</span> <span class="pre">or</span> <span class="pre">stale([string],</span> <span class="pre">[string],</span> <span class="pre">...)</span>&#160; <span class="pre">[bool]</span></code></dt>
-<dd><p>Returns whether any of the files given as an argument (or the file that’s running itself!) have changed since the last time this function was called. This function also accepts Unix glob-patterns (i.e. <code class="docutils literal notranslate"><span class="pre">./src/**/*</span></code>):</p>
+<code class="sig-name descname"><span class="pre">stale([list(string)])</span> <span class="pre">or</span> <span class="pre">stale([string],</span> <span class="pre">[string],</span> <span class="pre">...)</span>&#160; <span class="pre">[list(string)]</span></code></dt>
+<dd><p>Returns a list of which of the files given as an argument have changed since the last time this function was called. This function also accepts Unix glob-patterns (i.e. <code class="docutils literal notranslate"><span class="pre">./src/**/*</span></code>):</p>
 <div class="highlight-technetium notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">stale</span><span class="p">(</span><span class="o">[</span><span class="s">&quot;src/**/*.c&quot;</span><span class="p">,</span> <span class="s">&quot;main.c&quot;</span><span class="o">]</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">println</span><span class="p">(</span><span class="s">&quot;performing build...&quot;</span><span class="p">)</span>
 <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
@@ -82,7 +82,17 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>This code will print “performing build…” whenever any of the C source code files underneath the source directory, the main.c file, or the file in which the source code lives have changed since the last run of the script. It keeps track using the file ./.tcmake/stale.cache</p>
+<p>This code will print “performing build…” whenever any of the C source code files underneath the source directory, or the main.c file have changed since the last run of the script. It keeps track using the file at <code class="docutils literal notranslate"><span class="pre">./.tcmake/stale.cache</span></code>.</p>
+<p>It might be helpful to add <code class="docutils literal notranslate"><span class="pre">script_path()</span></code> as one of the files to check, in case updating the script itself should be of interest (i.e., in a build script).</p>
+<p>One other example use case of stale is to keep files in sync between two seperate directories, only copying those that need to be updated. For example, to copy any recently changed files from <code class="docutils literal notranslate"><span class="pre">dir_A</span></code> to <code class="docutils literal notranslate"><span class="pre">dir_B</span></code>:</p>
+<div class="highlight-technetium notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">file</span> <span class="k">in</span> <span class="n">stale</span><span class="p">(</span><span class="o">[</span><span class="s">&quot;dir_A/**/*&quot;</span><span class="o">]</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c"># Find the path to the file within dir_A</span>
+        <span class="n">relative_path</span> <span class="o">=</span> <span class="n">strip_path_prefix</span><span class="p">(</span><span class="n">canonicalize</span><span class="p">(</span><span class="n">file</span><span class="p">),</span> <span class="n">canonicalize</span><span class="p">(</span><span class="s">&quot;dir_A&quot;</span><span class="p">))</span>
+        <span class="c"># Copy this file into dir_B</span>
+        <span class="o">$</span><span class="sa"> cp </span><span class="p">{</span><span class="sa">file</span><span class="p">}</span><span class="sa"> dir_B/</span><span class="p">{</span><span class="sa">relative_path</span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>

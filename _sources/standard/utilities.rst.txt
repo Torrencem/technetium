@@ -42,6 +42,10 @@ Command Line Utils
 
     Canonicalize e.g. a relative path, to make an absolute path.
 
+.. function:: strip_path_prefix(path: [string], prefix: [string])  [string]
+
+    Removes a prefix from a given path. This could be used, for example, to find the relative path of a file within a directory. Throws an error if the given path doesn't contain the given prefix.
+
 .. function:: args()  [list(string)]
 
     Returns a list of the command line arguments passed to the script, excluding the executable name and script name, if applicable.

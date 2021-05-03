@@ -68,3 +68,7 @@ Special Functions
 .. function:: script_path()  [string]
 
     Returns the absolute (canonicalized) path to the current running script. Throws an error if this doesn't make sense (i.e. if the script is passed via stdin).
+
+.. function:: sleep([int or float])  [void]
+
+    Returns after waiting a given number of seconds.

@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Assert",""],["Clone_",""],["Eprint",""],["Eprintln",""],["Eprintr",""],["Exit",""],["Hash",""],["Lock",""],["Print",""],["Println",""],["Printr",""],["Range",""],["RangeFunc",""],["RangeIterator",""],["Stale",""],["Type",""],["Version",""]]});
+initSidebarItems({"struct":[["Assert",""],["Clone_",""],["Eprint",""],["Eprintln",""],["Eprintr",""],["Exit",""],["Hash",""],["Lock",""],["Print",""],["Println",""],["Printr",""],["Range",""],["RangeFunc",""],["RangeIterator",""],["Sleep",""],["Stale",""],["Type",""],["Version",""]]});

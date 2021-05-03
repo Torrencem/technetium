@@ -1,6 +1,6 @@
 [package]
 name = "technetium-lang"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["Matt Torrence <matt@torrencefamily.net>"]
 description = """
 technetium is an interpreted scripting language made mostly for install, build,

@@ -763,6 +763,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "pretty_dtoa"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a239bcdfda2c685fda1add3b4695c06225f50075e3cfb5b954e91545587edff2"
+dependencies = [
+ "ryu_floating_decimal",
+]
+
+[[package]]
 name = "proc-macro2"
 version = "1.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1016,7 +1025,7 @@ dependencies = [
  "once_cell",
  "opener",
  "parking_lot",
- "pretty_dtoa",
+ "pretty_dtoa 0.3.0",
  "rand 0.8.3",
  "rand_distr",
  "rental",
@@ -1190,7 +1199,7 @@ dependencies = [
  "num",
  "parking_lot",
  "predicates",
- "pretty_dtoa",
+ "pretty_dtoa 0.1.0",
  "rental",
  "runtime",
  "stable_deref_trait",

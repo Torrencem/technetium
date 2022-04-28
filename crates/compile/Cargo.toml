@@ -15,7 +15,6 @@ lazy_static = "1.4.0"
 log = { features = ["std"], version = "0.4" }
 sys-info = "0.6.1"
 dtoa = "0.4"
-rental = "0.5.4"
 parking_lot = "0.10.2"
 num = "0.2.1"
 stable_deref_trait = "1.1.1"

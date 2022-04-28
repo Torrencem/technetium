@@ -7,9 +7,6 @@ pub mod core_objects;
 pub mod prelude;
 
 #[macro_use]
-extern crate rental;
-
-#[macro_use]
 extern crate lazy_static;
 
 #[macro_use]

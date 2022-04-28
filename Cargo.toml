@@ -33,7 +33,6 @@ log = { features = ["std"], version = "0.4" }
 whoami = "1.1.2"
 sys-info = "0.6.1"
 pretty_dtoa = "0.1.0"
-rental = "0.5.4"
 parking_lot = "0.10.2"
 num = "0.2.1"
 stable_deref_trait = "1.1.1"

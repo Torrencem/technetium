@@ -1,9 +1,9 @@
 use crate::error::*;
 use crate::prelude::*;
-use std::rc::Rc;
 use std::str;
+use std::cell::Ref;
 
-use rental::rental;
+use ouroboros::self_referencing;
 
 #[derive(Debug, Clone)]
 pub struct Lines {
@@ -24,43 +24,28 @@ impl Object for ObjectCell<Lines> {
 
     fn make_iter(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
-        let lines_iter_rental_head =
-            line_rentals::LinesIteratorHead::new(ObjectCell::clone(&this.parent), |rc| rc.borrow());
+        let linesiterbuild = LinesIteratorBuilder {
+            head: ObjectCell::clone(&this.parent),
+            s_builder: |head| head.try_borrow().unwrap(),
+            lines_builder: |s| s.val.lines()
+        };
 
-        Ok(ObjectRef::new(LinesIterator {
-            inner: line_rentals::LinesIterator::new(Box::new(lines_iter_rental_head), |head| {
-                head.parent.val.lines()
-            }),
-        }))
+        Ok(ObjectRef::new(linesiterbuild.build()))
     }
 }
 
 // Rentals must be used because str::Lines takes a reference
 // to a String, and we own the string it takes a reference to
+
+#[self_referencing]
 pub struct LinesIterator {
-    pub inner: line_rentals::LinesIterator,
-}
-
-rental! {
-    mod line_rentals {
-        use super::*;
-        use std::cell::Ref;
-        use mlrefcell::MLRefCell;
-
-        #[rental]
-        pub struct LinesIteratorHead {
-            #[target_ty = "Rc<MLRefCell<StringObject>>"]
-            head: ObjectCell<StringObject>,
-            parent: Ref<'head, StringObject>,
-        }
-
-        #[rental]
-        pub struct LinesIterator {
-            #[subrental = 2]
-            head: Box<LinesIteratorHead>,
-            lines: str::Lines<'head_1>,
-        }
-    }
+    head: ObjectCell<StringObject>,
+    #[covariant]
+    #[borrows(head)]
+    s: Ref<'this, StringObject>,
+    #[not_covariant]
+    #[borrows(s)]
+    lines: str::Lines<'this>,
 }
 
 impl Object for ObjectCell<LinesIterator> {
@@ -70,11 +55,10 @@ impl Object for ObjectCell<LinesIterator> {
 
     fn take_iter(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<Option<ObjectRef>> {
         let mut this = self.try_borrow_mut()?;
-        let inner = &mut this.inner;
-        let next = line_rentals::LinesIterator::rent_mut(inner, |lines| {
-            lines.next().map(|val| val.to_string())
-        });
-        Ok(next.map(StringObject::new))
+        this.with_mut(|fields| {
+            let next = fields.lines.next().map(|val| val.to_string());
+            Ok(next.map(StringObject::new))
+        })
     }
 }
 
@@ -97,41 +81,27 @@ impl Object for ObjectCell<Chars> {
 
     fn make_iter(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
-        let lines_iter_rental_head =
-            char_rentals::CharsIteratorHead::new(ObjectCell::clone(&this.parent), |rc| rc.borrow());
 
-        Ok(ObjectRef::new(CharsIterator {
-            inner: char_rentals::CharsIterator::new(Box::new(lines_iter_rental_head), |head| {
-                head.parent.val.chars()
-            }),
-        }))
+        let charsiterbuild =
+            CharsIteratorBuilder {
+                head: ObjectCell::clone(&this.parent),
+                s_builder: |head| head.try_borrow().unwrap(),
+                chars_builder: |s| s.val.chars()
+            };
+
+        Ok(ObjectRef::new(charsiterbuild.build()))
     }
 }
 
+#[self_referencing]
 pub struct CharsIterator {
-    pub inner: char_rentals::CharsIterator,
-}
-
-rental! {
-    mod char_rentals {
-        use super::*;
-        use std::cell::Ref;
-        use mlrefcell::MLRefCell;
-
-        #[rental]
-        pub struct CharsIteratorHead {
-            #[target_ty = "Rc<MLRefCell<StringObject>>"]
-            head: ObjectCell<StringObject>,
-            parent: Ref<'head, StringObject>,
-        }
-
-        #[rental]
-        pub struct CharsIterator {
-            #[subrental = 2]
-            head: Box<CharsIteratorHead>,
-            lines: str::Chars<'head_1>,
-        }
-    }
+    head: ObjectCell<StringObject>,
+    #[covariant]
+    #[borrows(head)]
+    s: Ref<'this, StringObject>,
+    #[not_covariant]
+    #[borrows(s)]
+    chars: str::Chars<'this>,
 }
 
 impl Object for ObjectCell<CharsIterator> {
@@ -141,8 +111,9 @@ impl Object for ObjectCell<CharsIterator> {
 
     fn take_iter(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<Option<ObjectRef>> {
         let mut this = self.try_borrow_mut()?;
-        let inner = &mut this.inner;
-        let next = char_rentals::CharsIterator::rent_mut(inner, |lines| lines.next());
-        Ok(next.map(CharObject::new))
+        this.with_mut(|fields| {
+            let next = fields.chars.next();
+            Ok(next.map(CharObject::new))
+        })
     }
 }

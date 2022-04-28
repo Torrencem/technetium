@@ -298,7 +298,7 @@ macro_rules! try_debug {
                     RuntimeError::from(e)
                 }
             }
-        })?;
+        })?
     };
 }
 

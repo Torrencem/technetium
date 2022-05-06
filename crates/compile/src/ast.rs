@@ -394,7 +394,7 @@ pub enum Expr {
     PostPreOp(PostPreOp),
     AnonFuncDefinition(AnonFuncDefinition),
     /// An unreachable expression state, used to finish attempting to parse an AST (read
-    /// http://lalrpop.github.io/lalrpop/tutorial/008_error_recovery.html)
+    /// <http://lalrpop.github.io/lalrpop/tutorial/008_error_recovery.html>
     Error,
 }
 

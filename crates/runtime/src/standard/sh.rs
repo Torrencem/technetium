@@ -18,12 +18,16 @@ use whoami::{hostname, devicename, realname, username, lang, desktop_env};
 
 use opener::open;
 
+use super::conversion::Dict_;
+
 #[derive(Debug)]
 pub struct ShObject {
     pub argument: String,
     pub state: ShObjectState,
     pub child: Option<Child>,
     pub output: Option<Output>,
+    pub env: Option<Vec<(String, String)>>,
+    pub cwd: Option<String>,
 }
 
 #[derive(Debug)]
@@ -40,14 +44,26 @@ impl ShObject {
             state: ShObjectState::Prepared,
             child: None,
             output: None,
+            env: None,
+            cwd: None,
         })
     }
 
     pub fn spawn(&mut self) -> RuntimeResult<()> {
-        let mut cmd = Command::new("sh")
+        let mut cmd = Command::new("sh");
+        let cmd = cmd
             .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .spawn()?;
+            .stdout(Stdio::piped());
+
+        let cmd = if let Some(env) = &self.env {
+            cmd.envs(env.iter().cloned())
+        } else { cmd };
+
+        let cmd = if let Some(cwd) = &self.cwd {
+            cmd.current_dir(cwd.clone())
+        } else { cmd };
+
+        let mut cmd = cmd.spawn()?;
         cmd.stdin
             .as_mut()
             .unwrap()
@@ -128,11 +144,78 @@ impl Object for ObjectCell<ShObject> {
         "sh".to_string()
     }
 
-    fn call_method(&self, method: &str, args: &[ObjectRef], _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
+    fn call_method(&self, method: &str, args: &[ObjectRef], context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let mut this = self.try_borrow_mut()?;
+        
+        match method {
+            "env" => {
+                // Set the environment of this subprocess
+                // Decipher the env from args[0]
+                if !args.len() == 1 {
+                    return Err(RuntimeError::type_error(
+                        "Unexpected arguments to env method call of sh object"
+                    ));
+                }
+                if this.child.is_some() {
+                    return Err(RuntimeError::type_error(
+                        "Process is currently running, env cannot be set"
+                    ));
+                }
+                // Try to convert to a dict
+                let d = ObjectCell::new(Dict_);
+                let dargs = vec![args[0].clone()];
+                let d = d.call(&dargs, context)?;
+                // Now we should have a dictionary d
+                downcast!((d : Dictionary = d) -> {
+                    let mut envres = Vec::with_capacity(d.contents.len());
+                    for (key, val) in d.contents.iter() {
+                        downcast!((key : StringObject = key) -> {
+                            downcast!((val : StringObject = val) -> {
+                                envres.push((key.val.clone(), val.val.clone()));
+                            } else {
+                                return Err(RuntimeError::type_error(
+                                    format!("Expected keys and values to call of env to be strings, not {}", val.technetium_type_name())
+                                ))
+                            })
+                        } else {
+                            return Err(RuntimeError::type_error(
+                                format!("Expected keys and values to call of env to be strings, not {}", key.technetium_type_name())
+                            ))
+                        })
+                    }
+                    this.env = Some(envres);
+                } else {
+                    unreachable!("dict() should always return a dictionary")
+                });
+                return Ok(ObjectRef::new_from_cell(self.clone()));
+            },
+            "cwd" => {
+                if !args.len() == 1 {
+                    return Err(RuntimeError::type_error(
+                        "Unexpected arguments to cwd method call of sh object"
+                    ));
+                }
+                if this.child.is_some() {
+                    return Err(RuntimeError::type_error(
+                        "Process is currently running, cwd cannot be set"
+                    ));
+                }
+                downcast!((dir: StringObject = args[0]) -> {
+                    this.cwd = Some(dir.val.clone());
+                } else {
+                    return Err(RuntimeError::type_error(
+                        "Expected string as argument to cwd method call of sh object"
+                    ));
+                });
+                return Ok(ObjectRef::new_from_cell(self.clone()));
+            },
+            _ => {}
+        }
+
+        // The rest require no arguments
         if !args.is_empty() {
             return Err(RuntimeError::type_error(
-                "Unexpected arguments to method call",
+                "Unexpected arguments to method call of sh object",
             ));
         }
 
@@ -146,7 +229,7 @@ impl Object for ObjectCell<ShObject> {
             _ => return Err(RuntimeError::type_error("Unknown method")),
         }
 
-        Ok(UnitObject::new())
+        Ok(ObjectRef::new_from_cell(self.clone()))
     }
 }
 

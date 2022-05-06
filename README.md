@@ -2,25 +2,14 @@
 
 ![Rust](https://github.com/Torrencem/technetium/workflows/Rust/badge.svg?event=push)
 
-Technetium is a sleek interpreted programming language that features inline shell statements, and other tools useful for short build / install scripts.
+_technetium_ (or _tech_) is a scripting language with easy access to the shell.
 
 [Documentation can be found here](https://matthewtorrence.com/technetium/)
-
-Since the project is still very young, all suggestions are welcome! See the ``contributing`` file for more information.
 
 ## Installation
 
 To install, setup cargo and rust, and then use the command ``cargo install --path .`` in the main directory to install the ``tech`` binary. You can also copy the ``scripts/tcmake`` script into your path to be able to use the ``tcmake`` command (relies on ``tech``).
 
-## Features
-
-* Inline shell statements, and child process first class objects via `sh`
-
-* Super simple syntax
-
-* A set of convenient utility functions (for example, `os()` will return the current operating system as a string) and easy conversion functions
-
-* UTF-8 by default, with a character type that plays nicely with encoded strings
 
 ## Examples
 

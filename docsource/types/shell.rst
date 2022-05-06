@@ -40,11 +40,13 @@ It's important to note that the shell operator also automatically formats any co
 Shell Object Methods
 --------------------
 
-.. function:: [sh].spawn()  [void]
+Shell methods that would otherwise return ``unit`` instead return references to themselves, to facilitate builder patterns.
+
+.. function:: [sh].spawn()  [sh]
 
     Spawn the shell object as a subprocess in the background.
 
-.. function:: [sh].join()  [void]
+.. function:: [sh].join()  [sh]
 
     Wait for the completion of the shell object as a subprocess. Calls ``spawn`` if the subprocess has not been created yet.
 
@@ -60,6 +62,18 @@ Shell Object Methods
 
     Returns the exit code of a finished process. Throws an error if the process has not finished; use ``.join()`` to make sure the process is finished first.
 
-.. function:: [sh].kill()  [void]
+.. function:: [sh].kill()  [sh]
 
     Sends a kill signal to a running proccess.
+
+.. function:: [sh].cwd([string]) [sh]
+
+    Set the current working directory of a process, only if called before the process is spawned.
+    
+    Throws an error if the process has already started.
+
+.. function:: [sh].env([dict or list of tuples]) [sh]
+
+    Sets the environment of a process, only if called before the process is launched.
+
+    Throws an error if the process has already started.

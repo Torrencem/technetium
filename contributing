@@ -16,7 +16,7 @@ The lexer crate (crates/lexer) is called by the main crate, and has the job of c
 
 - compile -
 
-The compile crate (crates/compile) is also called by the main crate, and has the job of consuming a token stream and turning it into bytecode. It does this by first parsing the program into an `compile::ast::StatementList` abstract syntax tree, then by creating a `compile::CompileManager` that keeps track of state in the compilation process, and passingn the AST to the CompileManager. The CompileManager will then contain all the required parts for execution on the runtime.
+The compile crate (crates/compile) is also called by the main crate, and has the job of consuming a token stream and turning it into bytecode. It does this by first parsing the program into an `compile::ast::StatementList` abstract syntax tree, then by creating a `compile::CompileManager` that keeps track of state in the compilation process, and passing the AST to the CompileManager. The CompileManager will then contain all the required parts for execution on the runtime.
 
 - runtime -
 

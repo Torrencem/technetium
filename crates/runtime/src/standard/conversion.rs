@@ -190,6 +190,11 @@ func_object!(Dict_, (0..=1), context, args -> {
     if args.len() == 0 {
         return Ok(ObjectRef::new(Dictionary { contents: res }));
     }
+    // Check to see if args[0] is a dictionary already
+    downcast!((_as_dict: Dictionary = args[0]) -> {
+        return Ok(args[0].clone());
+    } else { });
+    // Otherwise, assume it's a list of tuples or the like
     let iter = args[0].make_iter(context)?;
     while let Some(val) = iter.take_iter(context)? {
         // TODO: Should this map_err?

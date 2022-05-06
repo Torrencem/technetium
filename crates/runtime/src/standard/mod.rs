@@ -73,6 +73,8 @@ pub fn get_default_namespace_descriptors() -> HashMap<String, GlobalConstantDesc
     res.insert("rand_normal".to_string(), (STANDARD_CONTEXT_ID, 55));
     res.insert("sleep".to_string(), (STANDARD_CONTEXT_ID, 56));
     res.insert("strip_path_prefix".to_string(), (STANDARD_CONTEXT_ID, 57));
+    res.insert("strip_prefix".to_string(), (STANDARD_CONTEXT_ID, 58));
+    res.insert("strip_suffix".to_string(), (STANDARD_CONTEXT_ID, 59));
     res
 }
 
@@ -156,6 +158,8 @@ pub fn get_default_namespace() -> HashMap<GlobalConstantDescriptor, ObjectRef> {
     res.insert((STANDARD_CONTEXT_ID, 55), ObjectRef::new(math::RandNormal));
     res.insert((STANDARD_CONTEXT_ID, 56), ObjectRef::new(special_funcs::Sleep));
     res.insert((STANDARD_CONTEXT_ID, 57), ObjectRef::new(sh::StripPathPrefix));
+    res.insert((STANDARD_CONTEXT_ID, 58), ObjectRef::new(string::StripPrefix));
+    res.insert((STANDARD_CONTEXT_ID, 59), ObjectRef::new(string::StripSuffix));
     res
 }
 

@@ -176,6 +176,12 @@ impl Clone for HashableObjectRef {
     }
 }
 
+impl HashableObjectRef {
+    pub fn downgrade(self) -> ObjectRef {
+        ObjectRef {inner: self.inner}
+    }
+}
+
 impl ObjectRef {
     pub fn new_from_cell<T>(obj: ObjectCell<T>) -> Self
     where

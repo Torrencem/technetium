@@ -357,7 +357,6 @@ ListLiteral: ListLiteral = <l:@L> "[" <v: Comma<Expr>> "]" <r:@R> => ListLiteral
 TupleLiteral: TupleLiteral = <l:@L> "(" <v: CommaNonEmptyTuple<Expr>> ")" <r:@R> => TupleLiteral::new(v, l, r);
 
 SetLiteral: SetLiteral = {
-	// Comment here
     <l:@L> "{" "\n"? <v: SetCommaNonEmpty<Expr>> "}" <r:@R> => SetLiteral::new(v, l, r),
 };
 

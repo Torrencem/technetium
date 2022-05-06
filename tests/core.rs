@@ -430,8 +430,7 @@ println(a)
 
     cmd.assert()
         .failure()
-        .stderr(predicate::str::contains("Immutable"))
-        .stderr(predicate::str::contains("mutate value"));
+        .stderr(predicate::str::contains("locked"));
 
     let mut cmd = Command::cargo_bin("tech")?;
     cmd.write_stdin(
@@ -448,8 +447,7 @@ println(b)
 
     cmd.assert()
         .failure()
-        .stderr(predicate::str::contains("Immutable"))
-        .stderr(predicate::str::contains("mutate value"));
+        .stderr(predicate::str::contains("locked"));
 
     Ok(())
 }
@@ -666,6 +664,32 @@ for i in range(3) {
     cmd.assert()
         .success()
         .stdout(predicate::eq("0, 0\n0, 1\n0, 2\n1, 0\n1, 1\n1, 2\n2, 0\n2, 1\n2, 2\n"));
+
+    Ok(())
+}
+
+#[test]
+fn test_iter_set() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+s = set()
+for i in {1, 2, 3, 4} {
+    s.add(i)
+}
+println(s == {1, 2, 3, 4})
+
+x = 0
+for i in set() {
+    x = 1
+}
+println(x)
+"#,
+    );
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::eq("true\n0\n"));
 
     Ok(())
 }

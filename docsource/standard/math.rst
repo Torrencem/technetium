@@ -50,9 +50,9 @@ Random Functions
 
 .. function:: rand_range([float or int], [float or int])  [float or int]
 
-    Returns a random floating point number between it's first argument, and up to but not including its second argument
+    Returns a random number between it's first argument, and up to but not including its second argument
 
-.. function:: rand_normal(mean:[float or int]?, stdev[float or int]?)  [float]
+.. function:: rand_normal(mean:[float or int]?, stdev:[float or int]?)  [float]
 
     Returns a randomly sampled number in the normal distribution of a given mean and standard deviation (or 0 and 1 respectively if not given)
 

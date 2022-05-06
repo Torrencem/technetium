@@ -117,3 +117,41 @@ impl Object for ObjectCell<CharsIterator> {
         })
     }
 }
+
+func_object!(StripPrefix, (2..=2), _c, args -> {
+    downcast!((str_obj: StringObject = args[0]) -> {
+        downcast!((str_obj2: StringObject = args[1]) -> {
+            let val1 = &str_obj.val;
+            let val2 = &str_obj2.val;
+            let newval = val1.strip_prefix(val2);
+            if let Some(newval) = newval {
+                Ok(StringObject::new(String::from(newval)))
+            } else {
+                Ok(UnitObject::new())
+            }
+        } else {
+            Err(RuntimeError::type_error("Expected strings as arguments to strip_prefix"))
+        })
+    } else {
+        Err(RuntimeError::type_error("Expected string as argument to strip_prefix"))
+    })
+});
+
+func_object!(StripSuffix, (2..=2), _c, args -> {
+    downcast!((str_obj: StringObject = args[0]) -> {
+        downcast!((str_obj2: StringObject = args[1]) -> {
+            let val1 = &str_obj.val;
+            let val2 = &str_obj2.val;
+            let newval = val1.strip_suffix(val2);
+            if let Some(newval) = newval {
+                Ok(StringObject::new(String::from(newval)))
+            } else {
+                Ok(UnitObject::new())
+            }
+        } else {
+            Err(RuntimeError::type_error("Expected strings as arguments to strip_prefix"))
+        })
+    } else {
+        Err(RuntimeError::type_error("Expected string as argument to strip_prefix"))
+    })
+});

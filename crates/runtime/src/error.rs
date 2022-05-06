@@ -117,7 +117,7 @@ impl From<mlrefcell::BorrowMutError> for RuntimeError {
             },
             mlrefcell::BorrowMutError::Locked => RuntimeError {
                 err: RuntimeErrorType::MutateImmutableError,
-                help: "tried to mutate value that was forced to be immutable".to_string(),
+                help: "tried to mutate value that was locked".to_string(),
                 symbols: vec![],
             },
         }

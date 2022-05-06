@@ -402,3 +402,20 @@ println(dict())
 
     Ok(())
 }
+
+#[test]
+fn test_strip_suffix_prefix() -> Result<(), TestError> {
+    let mut cmd = Command::cargo_bin("tech")?;
+    cmd.write_stdin(
+        r#"
+println(strip_prefix("hello there", "hello "))
+println(strip_prefix("hello there", "awesomesauce"))
+println(strip_suffix("hello there", " there"))
+println(strip_suffix("hello there", "awesomesauce"))
+        "#
+    );
+
+    cmd.assert().success().stdout(predicate::eq("there\nunit\nhello\nunit\n"));
+
+    Ok(())
+}

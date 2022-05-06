@@ -28,7 +28,7 @@ To install, setup cargo and rust, and then use the command ``cargo install --pat
 
 ```coffeescript
 for letter in ['A', 'B', 'C', 'D'] {
-	name = "file_" + letter
+	name = ("file_" + letter).escape()
 	println(~"Creating file {name}")
 	$ echo "{name}" > {name}.txt
 }
@@ -80,4 +80,15 @@ while count {
 }
 
 println()
+```
+
+### Sync Files Between Two Directories
+
+```coffeescript
+for file in stale(["dir_A/**/*"]) {
+        # Find the path to the file within dir_A
+        relative_path = strip_path_prefix(canonicalize(file), canonicalize("dir_A"))
+        # Copy this file into dir_B
+        $ cp {file} dir_B/{relative_path}
+}
 ```

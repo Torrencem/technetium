@@ -7,6 +7,7 @@ use bytecode::{ContextId, FrameId};
 use error::*;
 use num::bigint::{BigInt, ToBigInt};
 use num::cast::ToPrimitive;
+use ouroboros::self_referencing;
 use parking_lot::RwLock;
 use pretty_dtoa::dtoa;
 use std::any::TypeId;
@@ -867,6 +868,16 @@ impl Object for ObjectCell<Set> {
         let this = self.borrow();
         !this.contents.is_empty()
     }
+    
+    fn make_iter(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
+        let setiterbuild = SetIteratorBuilder {
+            parent: ObjectCell::clone(self),
+            s_builder: |head| head.try_borrow().unwrap(),
+            siter_builder: |s| s.contents.iter(),
+        };
+
+        Ok(ObjectRef::new(setiterbuild.build()))
+    }
 
     fn call_method(&self, method: &str, args: &[ObjectRef], _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         match method {
@@ -927,6 +938,30 @@ impl Object for ObjectCell<Set> {
         } else {
             None
         }
+    }
+}
+
+#[self_referencing]
+pub struct SetIterator {
+    parent: ObjectCell<Set>,
+    #[covariant]
+    #[borrows(parent)]
+    s: std::cell::Ref< 'this,Set>,
+    #[not_covariant]
+    #[borrows(s)]
+    siter: std::collections::hash_set::Iter<'this, HashableObjectRef>
+}
+
+impl Object for ObjectCell<SetIterator> {
+    fn technetium_type_name(&self) -> String {
+        "iterator(slice)".to_string()
+    }
+
+    fn take_iter(&self, _context: &mut RuntimeContext<'_>) -> RuntimeResult<Option<ObjectRef>> {
+        let mut this = self.try_borrow_mut()?;
+        Ok(this.with_siter_mut(|siter| {
+            siter.next().map(|val| val.clone().downgrade())
+        }))
     }
 }
 

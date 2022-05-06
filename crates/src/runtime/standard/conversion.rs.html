@@ -205,6 +205,11 @@
 <span id="200">200</span>
 <span id="201">201</span>
 <span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::error</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::prelude</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
@@ -397,6 +402,11 @@
     <span class="kw">if</span> <span class="ident">args</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span> {
         <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">ObjectRef::new</span>(<span class="ident">Dictionary</span> { <span class="ident">contents</span>: <span class="ident">res</span> }));
     }
+    <span class="comment">// Check to see if args[0] is a dictionary already</span>
+    <span class="macro">downcast!</span>((<span class="ident">_as_dict</span>: <span class="ident">Dictionary</span> <span class="op">=</span> <span class="ident">args</span>[<span class="number">0</span>]) -&gt; {
+        <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">args</span>[<span class="number">0</span>].<span class="ident">clone</span>());
+    } <span class="kw">else</span> { });
+    <span class="comment">// Otherwise, assume it&#39;s a list of tuples or the like</span>
     <span class="kw">let</span> <span class="ident">iter</span> <span class="op">=</span> <span class="ident">args</span>[<span class="number">0</span>].<span class="ident">make_iter</span>(<span class="ident">context</span>)<span class="question-mark">?</span>;
     <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">take_iter</span>(<span class="ident">context</span>)<span class="question-mark">?</span> {
         <span class="comment">// TODO: Should this map_err?</span>

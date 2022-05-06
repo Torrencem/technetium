@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Chars",""],["CharsIterator",""],["Lines",""],["LinesIterator",""]]});
+initSidebarItems({"struct":[["Chars",""],["CharsIterator","The self-referencing struct."],["Lines",""],["LinesIterator","The self-referencing struct."],["StripPrefix",""],["StripSuffix",""]]});

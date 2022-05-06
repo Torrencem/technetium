@@ -1,7 +1,9 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/runtime/src/bytecode.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>bytecode.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
-<link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../runtime/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
-                <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/runtime/src/bytecode.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>bytecode.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
+    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../runtime/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
+        </a><h2 class="location"></h2>
+    </nav>
+    <nav class="sidebar"><a class="sidebar-logo" href="../../runtime/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
+        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../runtime/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1096,33 +1098,32 @@
 <span id="1093">1093</span>
 <span id="1094">1094</span>
 <span id="1095">1095</span>
-</pre><div class="example-wrap"><pre class="rust ">
-
+</pre><pre class="rust"><code>
 <span class="doccomment">//! get compiled into to be run.</span>
 
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
+<span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">error</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">prelude</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::error</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::prelude</span>::<span class="kw-2">*</span>;
 
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">clone</span>::<span class="ident">Clone</span> <span class="kw">as</span> <span class="ident">RustClone</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">Write</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">process</span>::{<span class="ident">Command</span>, <span class="ident">Stdio</span>};
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">rc</span>::<span class="ident">Rc</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>;
+<span class="kw">use</span> <span class="ident">std::clone::Clone</span> <span class="kw">as</span> <span class="ident">RustClone</span>;
+<span class="kw">use</span> <span class="ident">std::io::Write</span>;
+<span class="kw">use</span> <span class="ident">std::process</span>::{<span class="ident">Command</span>, <span class="ident">Stdio</span>};
+<span class="kw">use</span> <span class="ident">std::rc::Rc</span>;
+<span class="kw">use</span> <span class="ident">std::sync</span>;
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">builtins</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">memory</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">standard</span>::<span class="ident">conversion</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">standard</span>::<span class="ident">get_default_namespace</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::builtins</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::memory</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::standard::conversion</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::standard::get_default_namespace</span>;
 
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">any</span>::<span class="ident">TypeId</span>;
+<span class="kw">use</span> <span class="ident">std::any::TypeId</span>;
 
-<span class="kw">use</span> <span class="ident">num</span>::<span class="ident">traits</span>::<span class="ident">ToPrimitive</span>;
+<span class="kw">use</span> <span class="ident">num::traits::ToPrimitive</span>;
 
-<span class="kw">use</span> <span class="ident">codespan</span>::<span class="ident">Span</span>;
+<span class="kw">use</span> <span class="ident">codespan::Span</span>;
 
-<span class="kw">use</span> <span class="ident">codespan</span>::<span class="ident">FileId</span>;
+<span class="kw">use</span> <span class="ident">codespan::FileId</span>;
 
 <span class="doccomment">/// An identifier unique to each frame of computation</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">FrameId</span> <span class="op">=</span> <span class="ident">u32</span>;
@@ -1131,14 +1132,14 @@
     <span class="ident">last</span>: <span class="ident">FrameId</span>,
 }
 
-<span class="macro">lazy_static</span><span class="macro">!</span> {
-    <span class="kw">pub</span> <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">FRAME_ID_GEN</span>: <span class="ident">sync</span>::<span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">FrameIdGen</span><span class="op">&gt;</span> <span class="op">=</span>
-        <span class="ident">sync</span>::<span class="ident">Mutex</span>::<span class="ident">new</span>(<span class="ident">FrameIdGen</span> { <span class="ident">last</span>: <span class="number">10</span> });
+<span class="macro">lazy_static!</span> {
+    <span class="kw">pub</span> <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">FRAME_ID_GEN</span>: <span class="ident">sync::Mutex</span><span class="op">&lt;</span><span class="ident">FrameIdGen</span><span class="op">&gt;</span> <span class="op">=</span>
+        <span class="ident">sync::Mutex::new</span>(<span class="ident">FrameIdGen</span> { <span class="ident">last</span>: <span class="number">10</span> });
 }
 
 <span class="doccomment">/// Generate a new unique FrameID. This uses a static counter behind</span>
 <span class="doccomment">/// a mutex to guarantee a unique ID.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">gen_frame_id</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">FrameId</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">gen_frame_id</span>() -&gt; <span class="ident">FrameId</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">gen</span> <span class="op">=</span> <span class="ident">FRAME_ID_GEN</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
     <span class="kw">let</span> <span class="ident">old</span> <span class="op">=</span> <span class="ident">gen</span>.<span class="ident">last</span>;
     <span class="ident">gen</span>.<span class="ident">last</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
@@ -1163,7 +1164,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">DebugSymbol</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">file_id</span>: <span class="ident">FileId</span>, <span class="ident">location</span>: <span class="ident">Span</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">file_id</span>: <span class="ident">FileId</span>, <span class="ident">location</span>: <span class="ident">Span</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">DebugSymbol</span> { <span class="ident">file_id</span>, <span class="ident">location</span> }
     }
 }
@@ -1292,65 +1293,65 @@
     <span class="ident">debug</span>(<span class="ident">DebugSpanDescriptor</span>),
 }
 
-<span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">Op</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">Op</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Op</span>::<span class="ident">nop</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;nop&quot;</span>),
-            <span class="ident">Op</span>::<span class="ident">store</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;store\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
-            <span class="ident">Op</span>::<span class="ident">store_non_local</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;store_non_local\t{:?}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
-            <span class="ident">Op</span>::<span class="ident">load</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;load\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
-            <span class="ident">Op</span>::<span class="ident">load_non_local</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;load_non_local\t{:?}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
-            <span class="ident">Op</span>::<span class="ident">attach_ancestors</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;attach_ancestors&quot;</span>),
-            <span class="ident">Op</span>::<span class="ident">call_method</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;call_method\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
-            <span class="ident">Op</span>::<span class="ident">call_function</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;call_function\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
-            <span class="ident">Op</span>::<span class="ident">fmt_string</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;fmt_string\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
-            <span class="ident">Op</span>::<span class="ident">take_iter</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;take_iter\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
-            <span class="ident">Op</span>::<span class="ident">mklist</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;mklist\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
-            <span class="ident">Op</span>::<span class="ident">mktuple</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;mktuple\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
-            <span class="ident">Op</span>::<span class="ident">mkset</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;mkset\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
-            <span class="ident">Op</span>::<span class="ident">mkdict</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;mkdict\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
-            <span class="ident">Op</span>::<span class="ident">push_int</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;push_int\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
-            <span class="ident">Op</span>::<span class="ident">push_float</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;push_float\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
-            <span class="ident">Op</span>::<span class="ident">push_bool</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;push_bool\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
-            <span class="ident">Op</span>::<span class="ident">push_const</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;push_const\t{:?}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
-            <span class="ident">Op</span>::<span class="ident">push_const_clone</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;push_const_clone\t{:?}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
-            <span class="ident">Op</span>::<span class="ident">push_global_default</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;push_global_default\t{:?}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>())
+            <span class="ident">Op::nop</span> =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;nop&quot;</span>),
+            <span class="ident">Op::store</span>(<span class="ident">x</span>) =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format!</span>(<span class="string">&quot;store\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
+            <span class="ident">Op::store_non_local</span>(<span class="ident">x</span>) =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format!</span>(<span class="string">&quot;store_non_local\t{:?}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
+            <span class="ident">Op::load</span>(<span class="ident">x</span>) =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format!</span>(<span class="string">&quot;load\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
+            <span class="ident">Op::load_non_local</span>(<span class="ident">x</span>) =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format!</span>(<span class="string">&quot;load_non_local\t{:?}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
+            <span class="ident">Op::attach_ancestors</span> =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;attach_ancestors&quot;</span>),
+            <span class="ident">Op::call_method</span>(<span class="ident">x</span>) =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format!</span>(<span class="string">&quot;call_method\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
+            <span class="ident">Op::call_function</span>(<span class="ident">x</span>) =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format!</span>(<span class="string">&quot;call_function\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
+            <span class="ident">Op::fmt_string</span>(<span class="ident">x</span>) =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format!</span>(<span class="string">&quot;fmt_string\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
+            <span class="ident">Op::take_iter</span>(<span class="ident">x</span>) =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format!</span>(<span class="string">&quot;take_iter\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
+            <span class="ident">Op::mklist</span>(<span class="ident">x</span>) =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format!</span>(<span class="string">&quot;mklist\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
+            <span class="ident">Op::mktuple</span>(<span class="ident">x</span>) =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format!</span>(<span class="string">&quot;mktuple\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
+            <span class="ident">Op::mkset</span>(<span class="ident">x</span>) =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format!</span>(<span class="string">&quot;mkset\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
+            <span class="ident">Op::mkdict</span>(<span class="ident">x</span>) =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format!</span>(<span class="string">&quot;mkdict\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
+            <span class="ident">Op::push_int</span>(<span class="ident">x</span>) =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format!</span>(<span class="string">&quot;push_int\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
+            <span class="ident">Op::push_float</span>(<span class="ident">x</span>) =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format!</span>(<span class="string">&quot;push_float\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
+            <span class="ident">Op::push_bool</span>(<span class="ident">x</span>) =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format!</span>(<span class="string">&quot;push_bool\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
+            <span class="ident">Op::push_const</span>(<span class="ident">x</span>) =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format!</span>(<span class="string">&quot;push_const\t{:?}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
+            <span class="ident">Op::push_const_clone</span>(<span class="ident">x</span>) =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format!</span>(<span class="string">&quot;push_const_clone\t{:?}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
+            <span class="ident">Op::push_global_default</span>(<span class="ident">x</span>) =&gt; {
+                <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format!</span>(<span class="string">&quot;push_global_default\t{:?}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>())
             }
-            <span class="ident">Op</span>::<span class="ident">jmp</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;jmp\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
-            <span class="ident">Op</span>::<span class="ident">cond_jmp</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;cond_jmp\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
-            <span class="ident">Op</span>::<span class="ident">debug</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;debug\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
-            <span class="ident">Op</span>::<span class="ident">mod_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;mod&quot;</span>),
-            <span class="ident">Op</span>::<span class="ident">dup</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">pop</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">swap</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">sh</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">to_string</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">set_attr</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">get_attr</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">add</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">sub</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">mul</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">div</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">not</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">neg</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">or</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">and</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">bitor</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">bitand</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">bitxor</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">cmp_lt</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">cmp_gt</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">cmp_eq</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">cmp_neq</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">cmp_leq</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">cmp_geq</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">index_get</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">index_set</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">make_slice</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">push_unit</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">ret</span>
-            <span class="op">|</span> <span class="ident">Op</span>::<span class="ident">make_iter</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="self">self</span>).<span class="ident">as_ref</span>()),
+            <span class="ident">Op::jmp</span>(<span class="ident">x</span>) =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format!</span>(<span class="string">&quot;jmp\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
+            <span class="ident">Op::cond_jmp</span>(<span class="ident">x</span>) =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format!</span>(<span class="string">&quot;cond_jmp\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
+            <span class="ident">Op::debug</span>(<span class="ident">x</span>) =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format!</span>(<span class="string">&quot;debug\t{}&quot;</span>, <span class="ident">x</span>).<span class="ident">as_ref</span>()),
+            <span class="ident">Op::mod_</span> =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;mod&quot;</span>),
+            <span class="ident">Op::dup</span>
+            <span class="op">|</span> <span class="ident">Op::pop</span>
+            <span class="op">|</span> <span class="ident">Op::swap</span>
+            <span class="op">|</span> <span class="ident">Op::sh</span>
+            <span class="op">|</span> <span class="ident">Op::to_string</span>
+            <span class="op">|</span> <span class="ident">Op::set_attr</span>
+            <span class="op">|</span> <span class="ident">Op::get_attr</span>
+            <span class="op">|</span> <span class="ident">Op::add</span>
+            <span class="op">|</span> <span class="ident">Op::sub</span>
+            <span class="op">|</span> <span class="ident">Op::mul</span>
+            <span class="op">|</span> <span class="ident">Op::div</span>
+            <span class="op">|</span> <span class="ident">Op::not</span>
+            <span class="op">|</span> <span class="ident">Op::neg</span>
+            <span class="op">|</span> <span class="ident">Op::or</span>
+            <span class="op">|</span> <span class="ident">Op::and</span>
+            <span class="op">|</span> <span class="ident">Op::bitor</span>
+            <span class="op">|</span> <span class="ident">Op::bitand</span>
+            <span class="op">|</span> <span class="ident">Op::bitxor</span>
+            <span class="op">|</span> <span class="ident">Op::cmp_lt</span>
+            <span class="op">|</span> <span class="ident">Op::cmp_gt</span>
+            <span class="op">|</span> <span class="ident">Op::cmp_eq</span>
+            <span class="op">|</span> <span class="ident">Op::cmp_neq</span>
+            <span class="op">|</span> <span class="ident">Op::cmp_leq</span>
+            <span class="op">|</span> <span class="ident">Op::cmp_geq</span>
+            <span class="op">|</span> <span class="ident">Op::index_get</span>
+            <span class="op">|</span> <span class="ident">Op::index_set</span>
+            <span class="op">|</span> <span class="ident">Op::make_slice</span>
+            <span class="op">|</span> <span class="ident">Op::push_unit</span>
+            <span class="op">|</span> <span class="ident">Op::ret</span>
+            <span class="op">|</span> <span class="ident">Op::make_iter</span> =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="self">self</span>).<span class="ident">as_ref</span>()),
         }
     }
 }
@@ -1373,31 +1374,31 @@
     <span class="kw">pub</span> <span class="ident">locals</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;code</span> <span class="kw-2">mut</span> <span class="ident">MemoryManager</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;code</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">Frame</span><span class="op">&lt;</span><span class="lifetime">&#39;code</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
-        <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;Frame id: {}&quot;</span>, <span class="self">self</span>.<span class="ident">id</span>)<span class="question-mark">?</span>;
-        <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;Context id: {}&quot;</span>, <span class="self">self</span>.<span class="ident">context_id</span>)<span class="question-mark">?</span>;
-        <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;Code:&quot;</span>)<span class="question-mark">?</span>;
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;code</span><span class="op">&gt;</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">Frame</span><span class="op">&lt;</span><span class="lifetime">&#39;code</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
+        <span class="macro">writeln!</span>(<span class="ident">f</span>, <span class="string">&quot;Frame id: {}&quot;</span>, <span class="self">self</span>.<span class="ident">id</span>)<span class="question-mark">?</span>;
+        <span class="macro">writeln!</span>(<span class="ident">f</span>, <span class="string">&quot;Context id: {}&quot;</span>, <span class="self">self</span>.<span class="ident">context_id</span>)<span class="question-mark">?</span>;
+        <span class="macro">writeln!</span>(<span class="ident">f</span>, <span class="string">&quot;Code:&quot;</span>)<span class="question-mark">?</span>;
         <span class="kw">for</span> <span class="ident">op</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">code</span>.<span class="ident">iter</span>() {
-            <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">op</span>)<span class="question-mark">?</span>;
+            <span class="macro">writeln!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">op</span>)<span class="question-mark">?</span>;
         }
         <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">try_debug</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">this</span>: <span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">debug_symb</span>: <span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">weak_debug_symb</span>: <span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">expr</span>: <span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
+<span class="macro">macro_rules!</span> <span class="ident">try_debug</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">this</span>: <span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">debug_symb</span>: <span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">weak_debug_symb</span>: <span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">expr</span>: <span class="ident">expr</span>) =&gt; {
         <span class="macro-nonterminal">$</span><span class="macro-nonterminal">expr</span>.<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="kw">match</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">debug_symb</span> {
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RuntimeError</span>::<span class="ident">from</span>(<span class="ident">e</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">debug_symb</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">None</span> =&gt; <span class="ident">RuntimeError::from</span>(<span class="ident">e</span>),
+            <span class="prelude-val">Some</span>(<span class="ident">debug_symb</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">debug</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">this</span>.<span class="ident">global_context</span>.<span class="ident">debug_descriptors</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">debug_symb</span>);
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">debug</span>) <span class="op">=</span> <span class="ident">debug</span> {
-                    <span class="ident">RuntimeError</span>::<span class="ident">from</span>(<span class="ident">e</span>).<span class="ident">attach_span</span>(<span class="kw-2">*</span><span class="ident">debug</span>)
+                    <span class="ident">RuntimeError::from</span>(<span class="ident">e</span>).<span class="ident">attach_span</span>(<span class="kw-2">*</span><span class="ident">debug</span>)
                 } <span class="kw">else</span> {
-                    <span class="ident">RuntimeError</span>::<span class="ident">from</span>(<span class="ident">e</span>)
+                    <span class="ident">RuntimeError::from</span>(<span class="ident">e</span>)
                 }
             }
-        })<span class="question-mark">?</span>;
+        })<span class="question-mark">?</span>
     };
 }
 
@@ -1408,7 +1409,7 @@
         <span class="ident">globals</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">GlobalContext</span><span class="op">&gt;</span>,
         <span class="ident">least_ancestors</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">ContextId</span>, <span class="ident">FrameId</span><span class="op">&gt;</span>,
         <span class="ident">context_id</span>: <span class="ident">ContextId</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    ) -&gt; <span class="self">Self</span> {
         <span class="kw">let</span> <span class="ident">id</span> <span class="op">=</span> <span class="ident">gen_frame_id</span>();
         <span class="ident">locals</span>.<span class="ident">register_frame</span>(<span class="ident">id</span>, <span class="ident">context_id</span>);
         <span class="ident">Frame</span> {
@@ -1418,18 +1419,18 @@
             <span class="ident">code</span>,
             <span class="ident">curr_instruction</span>: <span class="number">0</span>,
             <span class="ident">locals</span>,
-            <span class="ident">stack</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="ident">stack</span>: <span class="macro">vec!</span>[],
             <span class="ident">least_ancestors</span>,
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">rt_context</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeContext</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">rt_context</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">RuntimeContext</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
         <span class="ident">RuntimeContext</span> {
             <span class="ident">memory</span>: <span class="self">self</span>.<span class="ident">locals</span>
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">default_namespace</span> <span class="op">=</span> <span class="ident">get_default_namespace</span>();
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stale_debug_symb</span> <span class="op">=</span> <span class="bool-val">false</span>;
@@ -1443,20 +1444,20 @@
             }
             <span class="kw">let</span> <span class="ident">instr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">code</span>.<span class="ident">get</span>(<span class="self">self</span>.<span class="ident">curr_instruction</span>);
             <span class="kw">if</span> <span class="ident">instr</span>.<span class="ident">is_none</span>() {
-                <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">UnitObject</span>::<span class="ident">new</span>());
+                <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">UnitObject::new</span>());
             }
             <span class="kw">let</span> <span class="ident">instr</span> <span class="op">=</span> <span class="ident">instr</span>.<span class="ident">unwrap</span>();
             <span class="kw">match</span> <span class="ident">instr</span> {
-                <span class="ident">Op</span>::<span class="ident">nop</span> <span class="op">=</span><span class="op">&gt;</span> {}
-                <span class="ident">Op</span>::<span class="ident">store</span>(<span class="ident">local_name</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::nop</span> =&gt; {}
+                <span class="ident">Op::store</span>(<span class="ident">local_name</span>) =&gt; {
                     <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>();
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=</span> <span class="ident">res</span> {
-                        <span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="self">self</span>.<span class="ident">locals</span>.<span class="ident">set</span>((<span class="self">self</span>.<span class="ident">id</span>, <span class="kw-2">*</span><span class="ident">local_name</span>), <span class="ident">val</span>));
+                        <span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="self">self</span>.<span class="ident">locals</span>.<span class="ident">set</span>((<span class="self">self</span>.<span class="ident">id</span>, <span class="kw-2">*</span><span class="ident">local_name</span>), <span class="ident">val</span>));
                     } <span class="kw">else</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(<span class="string">&quot;Stored an empty stack!&quot;</span>));
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(<span class="string">&quot;Stored an empty stack!&quot;</span>));
                     }
                 }
-                <span class="ident">Op</span>::<span class="ident">store_non_local</span>(<span class="ident">nl_name</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::store_non_local</span>(<span class="ident">nl_name</span>) =&gt; {
                     <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>();
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=</span> <span class="ident">res</span> {
                         <span class="self">self</span>.<span class="ident">locals</span>.<span class="ident">set</span>(
@@ -1464,15 +1465,15 @@
                             <span class="ident">val</span>,
                         )<span class="question-mark">?</span>;
                     } <span class="kw">else</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(<span class="string">&quot;Stored an empty stack!&quot;</span>));
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(<span class="string">&quot;Stored an empty stack!&quot;</span>));
                     }
                 }
-                <span class="ident">Op</span>::<span class="ident">load</span>(<span class="ident">local_name</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="kw">let</span> <span class="ident">local</span> <span class="op">=</span> <span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="self">self</span>.<span class="ident">locals</span>.<span class="ident">get</span>((<span class="self">self</span>.<span class="ident">id</span>, <span class="kw-2">*</span><span class="ident">local_name</span>)));
+                <span class="ident">Op::load</span>(<span class="ident">local_name</span>) =&gt; {
+                    <span class="kw">let</span> <span class="ident">local</span> <span class="op">=</span> <span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="self">self</span>.<span class="ident">locals</span>.<span class="ident">get</span>((<span class="self">self</span>.<span class="ident">id</span>, <span class="kw-2">*</span><span class="ident">local_name</span>)));
                     <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">local</span>);
                 }
-                <span class="ident">Op</span>::<span class="ident">load_non_local</span>(<span class="ident">nl_name</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="kw">let</span> <span class="ident">nl</span> <span class="op">=</span> <span class="macro">try_debug</span><span class="macro">!</span>(
+                <span class="ident">Op::load_non_local</span>(<span class="ident">nl_name</span>) =&gt; {
+                    <span class="kw">let</span> <span class="ident">nl</span> <span class="op">=</span> <span class="macro">try_debug!</span>(
                         <span class="self">self</span>,
                         <span class="ident">ds</span>,
                         <span class="ident">dsw</span>,
@@ -1481,54 +1482,54 @@
                     );
                     <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">nl</span>);
                 }
-                <span class="ident">Op</span>::<span class="ident">attach_ancestors</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::attach_ancestors</span> =&gt; {
                     <span class="kw">let</span> <span class="ident">top</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>();
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">top</span>) <span class="op">=</span> <span class="ident">top</span> {
                         <span class="kw">let</span> <span class="ident">top_any</span> <span class="op">=</span> <span class="ident">top</span>.<span class="ident">as_any</span>();
                         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">f</span>) <span class="op">=</span> <span class="ident">top_any</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">Function</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
                             <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">f</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;
                             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">la</span> <span class="op">=</span> <span class="ident">f</span>.<span class="ident">least_ancestors</span>.<span class="ident">write</span>();
-                            <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">la</span>.<span class="ident">is_none</span>());
+                            <span class="macro">assert!</span>(<span class="ident">la</span>.<span class="ident">is_none</span>());
                             <span class="kw-2">*</span><span class="ident">la</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">least_ancestors</span>.<span class="ident">clone</span>());
                         } <span class="kw">else</span> {
-                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                                 <span class="string">&quot;Tried to attach ancestors to non-function&quot;</span>,
                             ));
                         }
                         <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">top</span>);
                     } <span class="kw">else</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to attach ancestors to nothing&quot;</span>,
                         ));
                     }
                 }
-                <span class="ident">Op</span>::<span class="ident">swap</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::swap</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">2</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(<span class="string">&quot;Stack is too small to swap!&quot;</span>));
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(<span class="string">&quot;Stack is too small to swap!&quot;</span>));
                     }
                     <span class="kw">let</span> <span class="ident">top</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="ident">snd</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">top</span>);
                     <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">snd</span>);
                 }
-                <span class="ident">Op</span>::<span class="ident">pop</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::pop</span> =&gt; {
                     <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>();
                     <span class="kw">if</span> <span class="ident">res</span>.<span class="ident">is_none</span>() {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(<span class="string">&quot;Popped an empty stack!&quot;</span>));
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(<span class="string">&quot;Popped an empty stack!&quot;</span>));
                     }
                 }
-                <span class="ident">Op</span>::<span class="ident">dup</span> <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="kw">let</span> <span class="ident">dup</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">last</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">ObjectRef</span>::<span class="ident">clone</span>(<span class="ident">val</span>));
+                <span class="ident">Op::dup</span> =&gt; {
+                    <span class="kw">let</span> <span class="ident">dup</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">last</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">ObjectRef::clone</span>(<span class="ident">val</span>));
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=</span> <span class="ident">dup</span> {
                         <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">val</span>);
                     } <span class="kw">else</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(<span class="string">&quot;Dupped an empty stack!&quot;</span>));
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(<span class="string">&quot;Dupped an empty stack!&quot;</span>));
                     }
                 }
-                <span class="ident">Op</span>::<span class="ident">call_method</span>(<span class="ident">nargs</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::call_method</span>(<span class="ident">nargs</span>) =&gt; {
                     <span class="kw">let</span> <span class="ident">nargs</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">nargs</span> <span class="kw">as</span> <span class="ident">usize</span>;
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="ident">nargs</span> <span class="op">+</span> <span class="number">2</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Called method on too small a stack!&quot;</span>,
                         ));
                     }
@@ -1541,28 +1542,28 @@
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">method_name</span>) <span class="op">=</span> <span class="ident">name</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">StringObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
                         <span class="kw">let</span> <span class="ident">method_name</span> <span class="op">=</span> <span class="ident">method_name</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;
                         <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">method_name</span>.<span class="ident">val</span>;
-                        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">obj</span>.<span class="ident">call_method</span>(<span class="ident">val</span>.<span class="ident">as_ref</span>(), <span class="kw-2">&amp;</span><span class="ident">args</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">rt_context</span>()));
+                        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">obj</span>.<span class="ident">call_method</span>(<span class="ident">val</span>.<span class="ident">as_ref</span>(), <span class="kw-2">&amp;</span><span class="ident">args</span>, <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">rt_context</span>()));
                         <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">res</span>);
                     } <span class="kw">else</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(<span class="string">&quot;Method name not a string!&quot;</span>));
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(<span class="string">&quot;Method name not a string!&quot;</span>));
                     }
                 }
-                <span class="ident">Op</span>::<span class="ident">call_function</span>(<span class="ident">nargs</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::call_function</span>(<span class="ident">nargs</span>) =&gt; {
                     <span class="kw">let</span> <span class="ident">nargs</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">nargs</span> <span class="kw">as</span> <span class="ident">usize</span>;
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="ident">nargs</span> <span class="op">+</span> <span class="number">1</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Called function object on too small a stack!&quot;</span>,
                         ));
                     }
                     <span class="kw">let</span> <span class="ident">args</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> <span class="op">=</span>
                         <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">drain</span>((<span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="ident">nargs</span>)..).<span class="ident">collect</span>();
                     <span class="kw">let</span> <span class="ident">func</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
-                    <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">func</span>.<span class="ident">call</span>(<span class="kw-2">&amp;</span><span class="ident">args</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">rt_context</span>()));
+                    <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">func</span>.<span class="ident">call</span>(<span class="kw-2">&amp;</span><span class="ident">args</span>, <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">rt_context</span>()));
                     <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">res</span>);
                 }
-                <span class="ident">Op</span>::<span class="ident">get_attr</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::get_attr</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">2</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Too small a stack to perform get_attr!&quot;</span>,
                         ));
                     }
@@ -1573,15 +1574,15 @@
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">attr_name</span>) <span class="op">=</span> <span class="ident">attr</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">StringObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
                         <span class="kw">let</span> <span class="ident">attr_name</span> <span class="op">=</span> <span class="ident">attr_name</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;
                         <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">attr_name</span>.<span class="ident">val</span>;
-                        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">obj</span>.<span class="ident">get_attr</span>(<span class="ident">val</span>.<span class="ident">clone</span>(), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">rt_context</span>()));
+                        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">obj</span>.<span class="ident">get_attr</span>(<span class="ident">val</span>.<span class="ident">clone</span>(), <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">rt_context</span>()));
                         <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">res</span>);
                     } <span class="kw">else</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(<span class="string">&quot;Attribute name not a string!&quot;</span>));
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(<span class="string">&quot;Attribute name not a string!&quot;</span>));
                     }
                 }
-                <span class="ident">Op</span>::<span class="ident">set_attr</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::set_attr</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">3</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Too small a stack to perform set_attr!&quot;</span>,
                         ));
                     }
@@ -1593,30 +1594,30 @@
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">attr_name</span>) <span class="op">=</span> <span class="ident">attr</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">StringObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
                         <span class="kw">let</span> <span class="ident">attr_name</span> <span class="op">=</span> <span class="ident">attr_name</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;
                         <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">attr_name</span>.<span class="ident">val</span>;
-                        <span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">obj</span>.<span class="ident">set_attr</span>(<span class="ident">val</span>.<span class="ident">clone</span>(), <span class="ident">toset</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">rt_context</span>()));
+                        <span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">obj</span>.<span class="ident">set_attr</span>(<span class="ident">val</span>.<span class="ident">clone</span>(), <span class="ident">toset</span>, <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">rt_context</span>()));
                     } <span class="kw">else</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(<span class="string">&quot;Attribute name not a string!&quot;</span>));
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(<span class="string">&quot;Attribute name not a string!&quot;</span>));
                     }
                 }
-                <span class="ident">Op</span>::<span class="ident">to_string</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::to_string</span> =&gt; {
                     <span class="kw">let</span> <span class="ident">obj</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>();
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">obj</span>) <span class="op">=</span> <span class="ident">obj</span> {
-                        <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">StringObject</span>::<span class="ident">new</span>(<span class="macro">try_debug</span><span class="macro">!</span>(
+                        <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">StringObject::new</span>(<span class="macro">try_debug!</span>(
                             <span class="self">self</span>,
                             <span class="ident">ds</span>,
                             <span class="ident">dsw</span>,
                             <span class="ident">obj</span>.<span class="ident">to_string</span>()
                         )));
                     } <span class="kw">else</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;to_string called on an empty stack!&quot;</span>,
                         ));
                     }
                 }
-                <span class="ident">Op</span>::<span class="ident">fmt_string</span>(<span class="ident">num_args</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::fmt_string</span>(<span class="ident">num_args</span>) =&gt; {
                     <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">num_args</span> <span class="kw">as</span> <span class="ident">usize</span>;
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="ident">len</span> <span class="op">+</span> <span class="number">1</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to format a string with an incorrect number of args!&quot;</span>,
                         ));
                     }
@@ -1627,262 +1628,262 @@
                         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">string</span>) <span class="op">=</span>
                             <span class="ident">subs</span>.<span class="ident">as_any</span>().<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">StringObject</span><span class="op">&gt;</span><span class="op">&gt;</span>()
                         {
-                            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result_string</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
+                            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result_string</span> <span class="op">=</span> <span class="ident">String::new</span>();
                             <span class="kw">let</span> <span class="ident">string</span> <span class="op">=</span> <span class="ident">string</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>;
                             <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">string</span>.<span class="ident">val</span>;
                             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">chars</span> <span class="op">=</span> <span class="ident">val</span>.<span class="ident">chars</span>().<span class="ident">peekable</span>();
                             <span class="kw">loop</span> {
                                 <span class="kw">match</span> <span class="ident">chars</span>.<span class="ident">next</span>() {
-                                    <span class="prelude-val">Some</span>(<span class="string">&#39;\\&#39;</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                                        <span class="kw">if</span> <span class="ident">chars</span>.<span class="ident">peek</span>() <span class="op">=</span><span class="op">=</span> <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="string">&#39;{&#39;</span>) {
+                                    <span class="prelude-val">Some</span>(<span class="string">&#39;\\&#39;</span>) =&gt; {
+                                        <span class="kw">if</span> <span class="ident">chars</span>.<span class="ident">peek</span>() <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="string">&#39;{&#39;</span>) {
                                             <span class="ident">chars</span>.<span class="ident">next</span>();
                                             <span class="ident">result_string</span>.<span class="ident">push</span>(<span class="string">&#39;{&#39;</span>);
                                         } <span class="kw">else</span> {
                                             <span class="ident">result_string</span>.<span class="ident">push</span>(<span class="string">&#39;\\&#39;</span>);
                                         }
                                     }
-                                    <span class="prelude-val">Some</span>(<span class="string">&#39;{&#39;</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                                    <span class="prelude-val">Some</span>(<span class="string">&#39;{&#39;</span>) =&gt; {
                                         <span class="kw">let</span> <span class="ident">obj</span> <span class="op">=</span> <span class="ident">objs</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                                         <span class="ident">result_string</span>.<span class="ident">push_str</span>(<span class="ident">obj</span>.<span class="ident">to_string</span>()<span class="question-mark">?</span>.<span class="ident">as_ref</span>());
                                     }
-                                    <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">result_string</span>.<span class="ident">push</span>(<span class="ident">x</span>),
-                                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">break</span>,
+                                    <span class="prelude-val">Some</span>(<span class="ident">x</span>) =&gt; <span class="ident">result_string</span>.<span class="ident">push</span>(<span class="ident">x</span>),
+                                    <span class="prelude-val">None</span> =&gt; <span class="kw">break</span>,
                                 }
                             }
 
-                            <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">StringObject</span>::<span class="ident">new</span>(<span class="ident">result_string</span>));
+                            <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">StringObject::new</span>(<span class="ident">result_string</span>));
                         } <span class="kw">else</span> {
-                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                                 <span class="string">&quot;Tried to format a non-string!&quot;</span>,
                             ));
                         }
                     } <span class="kw">else</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to format an empty stack!&quot;</span>,
                         ));
                     }
                 }
-                <span class="ident">Op</span>::<span class="ident">add</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::add</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">2</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to add less than 2 things!&quot;</span>,
                         ));
                     }
                     <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="self">self</span>.<span class="ident">stack</span>
-                        .<span class="ident">push</span>(<span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins</span>::<span class="ident">add</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
+                        .<span class="ident">push</span>(<span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins::add</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
                 }
-                <span class="ident">Op</span>::<span class="ident">sub</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::sub</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">2</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to sub less than 2 things!&quot;</span>,
                         ));
                     }
                     <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="self">self</span>.<span class="ident">stack</span>
-                        .<span class="ident">push</span>(<span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins</span>::<span class="ident">sub</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
+                        .<span class="ident">push</span>(<span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins::sub</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
                 }
-                <span class="ident">Op</span>::<span class="ident">mul</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::mul</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">2</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to mul less than 2 things!&quot;</span>,
                         ));
                     }
                     <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="self">self</span>.<span class="ident">stack</span>
-                        .<span class="ident">push</span>(<span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins</span>::<span class="ident">mul</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
+                        .<span class="ident">push</span>(<span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins::mul</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
                 }
-                <span class="ident">Op</span>::<span class="ident">div</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::div</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">2</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to div less than 2 things!&quot;</span>,
                         ));
                     }
                     <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="self">self</span>.<span class="ident">stack</span>
-                        .<span class="ident">push</span>(<span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins</span>::<span class="ident">div</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
+                        .<span class="ident">push</span>(<span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins::div</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
                 }
-                <span class="ident">Op</span>::<span class="ident">mod_</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::mod_</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">2</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to mod less than 2 things!&quot;</span>,
                         ));
                     }
                     <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="self">self</span>.<span class="ident">stack</span>
-                        .<span class="ident">push</span>(<span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins</span>::<span class="ident">mod_</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
+                        .<span class="ident">push</span>(<span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins::mod_</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
                 }
-                <span class="ident">Op</span>::<span class="ident">not</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::not</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">is_empty</span>() {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(<span class="string">&quot;Tried to not nothing!&quot;</span>));
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(<span class="string">&quot;Tried to not nothing!&quot;</span>));
                     }
                     <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
-                    <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins</span>::<span class="ident">not</span>(<span class="ident">a</span>)));
+                    <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins::not</span>(<span class="ident">a</span>)));
                 }
-                <span class="ident">Op</span>::<span class="ident">neg</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::neg</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">is_empty</span>() {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(<span class="string">&quot;Tried to negate nothing!&quot;</span>));
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(<span class="string">&quot;Tried to negate nothing!&quot;</span>));
                     }
                     <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="self">self</span>.<span class="ident">stack</span>
-                        .<span class="ident">push</span>(<span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins</span>::<span class="ident">negate</span>(<span class="ident">a</span>)));
+                        .<span class="ident">push</span>(<span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins::negate</span>(<span class="ident">a</span>)));
                 }
-                <span class="ident">Op</span>::<span class="ident">or</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::or</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">2</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to or less than 2 things!&quot;</span>,
                         ));
                     }
                     <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="self">self</span>.<span class="ident">stack</span>
-                        .<span class="ident">push</span>(<span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins</span>::<span class="ident">or</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
+                        .<span class="ident">push</span>(<span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins::or</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
                 }
-                <span class="ident">Op</span>::<span class="ident">and</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::and</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">2</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to and less than 2 things!&quot;</span>,
                         ));
                     }
                     <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="self">self</span>.<span class="ident">stack</span>
-                        .<span class="ident">push</span>(<span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins</span>::<span class="ident">and</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
+                        .<span class="ident">push</span>(<span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins::and</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
                 }
-                <span class="ident">Op</span>::<span class="ident">bitor</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::bitor</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">2</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to bitor less than 2 things!&quot;</span>,
                         ));
                     }
                     <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="self">self</span>.<span class="ident">stack</span>
-                        .<span class="ident">push</span>(<span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins</span>::<span class="ident">bitor</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
+                        .<span class="ident">push</span>(<span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins::bitor</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
                 }
-                <span class="ident">Op</span>::<span class="ident">bitand</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::bitand</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">2</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to bitand less than 2 things!&quot;</span>,
                         ));
                     }
                     <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="self">self</span>.<span class="ident">stack</span>
-                        .<span class="ident">push</span>(<span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins</span>::<span class="ident">bitand</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
+                        .<span class="ident">push</span>(<span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins::bitand</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
                 }
-                <span class="ident">Op</span>::<span class="ident">bitxor</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::bitxor</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">2</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to bitxor less than 2 things!&quot;</span>,
                         ));
                     }
                     <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="self">self</span>.<span class="ident">stack</span>
-                        .<span class="ident">push</span>(<span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins</span>::<span class="ident">bitxor</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
+                        .<span class="ident">push</span>(<span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins::bitxor</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
                 }
-                <span class="ident">Op</span>::<span class="ident">cmp_lt</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::cmp_lt</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">2</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to compare less than 2 things!&quot;</span>,
                         ));
                     }
                     <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="self">self</span>.<span class="ident">stack</span>
-                        .<span class="ident">push</span>(<span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins</span>::<span class="ident">cmp_lt</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
+                        .<span class="ident">push</span>(<span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins::cmp_lt</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
                 }
-                <span class="ident">Op</span>::<span class="ident">cmp_gt</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::cmp_gt</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">2</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to compare less than 2 things!&quot;</span>,
                         ));
                     }
                     <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="self">self</span>.<span class="ident">stack</span>
-                        .<span class="ident">push</span>(<span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins</span>::<span class="ident">cmp_gt</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
+                        .<span class="ident">push</span>(<span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins::cmp_gt</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
                 }
-                <span class="ident">Op</span>::<span class="ident">cmp_eq</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::cmp_eq</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">2</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to compare less than 2 things!&quot;</span>,
                         ));
                     }
                     <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="self">self</span>.<span class="ident">stack</span>
-                        .<span class="ident">push</span>(<span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins</span>::<span class="ident">cmp_eq</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
+                        .<span class="ident">push</span>(<span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins::cmp_eq</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
                 }
-                <span class="ident">Op</span>::<span class="ident">cmp_neq</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::cmp_neq</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">2</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to compare less than 2 things!&quot;</span>,
                         ));
                     }
                     <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="self">self</span>.<span class="ident">stack</span>
-                        .<span class="ident">push</span>(<span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins</span>::<span class="ident">cmp_neq</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
+                        .<span class="ident">push</span>(<span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins::cmp_neq</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
                 }
-                <span class="ident">Op</span>::<span class="ident">cmp_leq</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::cmp_leq</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">2</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to compare less than 2 things!&quot;</span>,
                         ));
                     }
                     <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="self">self</span>.<span class="ident">stack</span>
-                        .<span class="ident">push</span>(<span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins</span>::<span class="ident">cmp_leq</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
+                        .<span class="ident">push</span>(<span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins::cmp_leq</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
                 }
-                <span class="ident">Op</span>::<span class="ident">cmp_geq</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::cmp_geq</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">2</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to compare less than 2 things!&quot;</span>,
                         ));
                     }
                     <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="self">self</span>.<span class="ident">stack</span>
-                        .<span class="ident">push</span>(<span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins</span>::<span class="ident">cmp_geq</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
+                        .<span class="ident">push</span>(<span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins::cmp_geq</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
                 }
-                <span class="ident">Op</span>::<span class="ident">index_get</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::index_get</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">2</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to index less than 2 things!&quot;</span>,
                         ));
                     }
                     <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="self">self</span>.<span class="ident">stack</span>
-                        .<span class="ident">push</span>(<span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins</span>::<span class="ident">index_get</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
+                        .<span class="ident">push</span>(<span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins::index_get</span>(<span class="ident">b</span>, <span class="ident">a</span>)))
                 }
-                <span class="ident">Op</span>::<span class="ident">index_set</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::index_set</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">3</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to index less than 2 things!&quot;</span>,
                         ));
                     }
                     <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
-                    <span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins</span>::<span class="ident">index_set</span>(<span class="ident">c</span>, <span class="ident">b</span>, <span class="ident">a</span>))
+                    <span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">builtins::index_set</span>(<span class="ident">c</span>, <span class="ident">b</span>, <span class="ident">a</span>))
                 }
-                <span class="ident">Op</span>::<span class="ident">make_slice</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::make_slice</span> =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">4</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to make a slice with too few arguments&quot;</span>,
                         ));
                     }
                     <span class="kw">let</span> <span class="ident">step</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
-                    <span class="kw">let</span> <span class="ident">step</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">step</span>.<span class="ident">as_any</span>().<span class="ident">type_id</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">TypeId</span>::<span class="ident">of</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">UnitObject</span><span class="op">&gt;</span><span class="op">&gt;</span>()
+                    <span class="kw">let</span> <span class="ident">step</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">step</span>.<span class="ident">as_any</span>().<span class="ident">type_id</span>() <span class="op">==</span> <span class="ident">TypeId::of</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">UnitObject</span><span class="op">&gt;</span><span class="op">&gt;</span>()
                     {
                         <span class="number">1</span>
                     } <span class="kw">else</span> {
@@ -1890,14 +1891,14 @@
                         {
                             <span class="ident">int_obj</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>.<span class="ident">to_i64</span>()<span class="question-mark">?</span>
                         } <span class="kw">else</span> {
-                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">type_error</span>(
+                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::type_error</span>(
                                 <span class="string">&quot;Slice created with non-integer argument&quot;</span>,
                             ));
                         }
                     };
                     <span class="kw">let</span> <span class="ident">stop</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stop</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">stop</span>.<span class="ident">as_any</span>().<span class="ident">type_id</span>()
-                        <span class="op">=</span><span class="op">=</span> <span class="ident">TypeId</span>::<span class="ident">of</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">UnitObject</span><span class="op">&gt;</span><span class="op">&gt;</span>()
+                        <span class="op">==</span> <span class="ident">TypeId::of</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">UnitObject</span><span class="op">&gt;</span><span class="op">&gt;</span>()
                     {
                         <span class="prelude-val">None</span>
                     } <span class="kw">else</span> {
@@ -1905,14 +1906,14 @@
                         {
                             <span class="prelude-val">Some</span>(<span class="ident">int_obj</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>.<span class="ident">to_i64</span>()<span class="question-mark">?</span>)
                         } <span class="kw">else</span> {
-                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">type_error</span>(
+                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::type_error</span>(
                                 <span class="string">&quot;Slice created with non-integer argument&quot;</span>,
                             ));
                         }
                     };
                     <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">start</span> <span class="op">=</span>
-                        <span class="kw">if</span> <span class="ident">start</span>.<span class="ident">as_any</span>().<span class="ident">type_id</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">TypeId</span>::<span class="ident">of</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">UnitObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
+                        <span class="kw">if</span> <span class="ident">start</span>.<span class="ident">as_any</span>().<span class="ident">type_id</span>() <span class="op">==</span> <span class="ident">TypeId::of</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">UnitObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
                             <span class="kw">if</span> <span class="ident">step</span> <span class="op">&lt;</span> <span class="number">0</span> {
                                 <span class="op">-</span><span class="number">1</span>
                             } <span class="kw">else</span> {
@@ -1924,13 +1925,13 @@
                             {
                                 <span class="ident">int_obj</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>.<span class="ident">to_i64</span>()<span class="question-mark">?</span>
                             } <span class="kw">else</span> {
-                                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">type_error</span>(
+                                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::type_error</span>(
                                     <span class="string">&quot;Slice created with non-integer argument&quot;</span>,
                                 ));
                             }
                         };
                     <span class="kw">let</span> <span class="ident">parent</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
-                    <span class="kw">let</span> <span class="ident">length</span> <span class="op">=</span> <span class="ident">conversion</span>::<span class="ident">to_int</span>(<span class="ident">parent</span>.<span class="ident">call_method</span>(<span class="string">&quot;length&quot;</span>, <span class="kw-2">&amp;</span>[], <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">rt_context</span>())<span class="question-mark">?</span>)<span class="question-mark">?</span>
+                    <span class="kw">let</span> <span class="ident">length</span> <span class="op">=</span> <span class="ident">conversion::to_int</span>(<span class="ident">parent</span>.<span class="ident">call_method</span>(<span class="string">&quot;length&quot;</span>, <span class="kw-2">&amp;</span>[], <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">rt_context</span>())<span class="question-mark">?</span>)<span class="question-mark">?</span>
                         .<span class="ident">to_i64</span>()
                         .<span class="ident">unwrap</span>();
                     <span class="comment">// Make slices like val[1:-1] work</span>
@@ -1951,24 +1952,24 @@
                         <span class="ident">stop</span>,
                         <span class="ident">step</span>,
                     };
-                    <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">slice</span>));
+                    <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">ObjectRef::new</span>(<span class="ident">slice</span>));
                 }
-                <span class="ident">Op</span>::<span class="ident">make_iter</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::make_iter</span> =&gt; {
                     <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>();
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=</span> <span class="ident">val</span> {
                         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">context</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">rt_context</span>();
-                        <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">val</span>.<span class="ident">make_iter</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">context</span>));
+                        <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">val</span>.<span class="ident">make_iter</span>(<span class="kw-2">&amp;mut</span> <span class="ident">context</span>));
                         <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">val</span>);
                     } <span class="kw">else</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to call make_iter on nothing!&quot;</span>,
                         ));
                     }
                 }
-                <span class="ident">Op</span>::<span class="ident">take_iter</span>(<span class="ident">offset</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::take_iter</span>(<span class="ident">offset</span>) =&gt; {
                     <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>();
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=</span> <span class="ident">val</span> {
-                        <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">val</span>.<span class="ident">take_iter</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">rt_context</span>()));
+                        <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">val</span>.<span class="ident">take_iter</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">rt_context</span>()));
                         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=</span> <span class="ident">val</span> {
                             <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">val</span>);
                         } <span class="kw">else</span> {
@@ -1983,35 +1984,35 @@
                             <span class="kw">continue</span>;
                         }
                     } <span class="kw">else</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to call make_iter on nothing!&quot;</span>,
                         ));
                     }
                 }
-                <span class="ident">Op</span>::<span class="ident">mklist</span>(<span class="ident">len</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::mklist</span>(<span class="ident">len</span>) =&gt; {
                     <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">len</span> <span class="kw">as</span> <span class="ident">usize</span>;
                     <span class="kw">let</span> <span class="ident">objs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> <span class="op">=</span>
                         <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">drain</span>((<span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="ident">len</span>)..).<span class="ident">collect</span>();
-                    <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">List</span> { <span class="ident">contents</span>: <span class="ident">objs</span> }));
+                    <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">ObjectRef::new</span>(<span class="ident">List</span> { <span class="ident">contents</span>: <span class="ident">objs</span> }));
                 }
-                <span class="ident">Op</span>::<span class="ident">mktuple</span>(<span class="ident">len</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::mktuple</span>(<span class="ident">len</span>) =&gt; {
                     <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">len</span> <span class="kw">as</span> <span class="ident">usize</span>;
                     <span class="kw">let</span> <span class="ident">objs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> <span class="op">=</span>
                         <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">drain</span>((<span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="ident">len</span>)..).<span class="ident">collect</span>();
-                    <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">Tuple</span> { <span class="ident">contents</span>: <span class="ident">objs</span> }));
+                    <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">ObjectRef::new</span>(<span class="ident">Tuple</span> { <span class="ident">contents</span>: <span class="ident">objs</span> }));
                 }
-                <span class="ident">Op</span>::<span class="ident">mkset</span>(<span class="ident">len</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::mkset</span>(<span class="ident">len</span>) =&gt; {
                     <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">len</span> <span class="kw">as</span> <span class="ident">usize</span>;
                     <span class="kw">let</span> <span class="ident">objs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> <span class="op">=</span>
                         <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">drain</span>((<span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="ident">len</span>)..).<span class="ident">collect</span>();
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">as_hashset</span> <span class="op">=</span> <span class="ident">HashSet</span>::<span class="ident">new</span>();
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">as_hashset</span> <span class="op">=</span> <span class="ident">HashSet::new</span>();
                     <span class="kw">for</span> <span class="ident">obj</span> <span class="kw">in</span> <span class="ident">objs</span>.<span class="ident">into_iter</span>() {
-                        <span class="kw">let</span> <span class="ident">hashable</span> <span class="op">=</span> <span class="macro">try_debug</span><span class="macro">!</span>(
+                        <span class="kw">let</span> <span class="ident">hashable</span> <span class="op">=</span> <span class="macro">try_debug!</span>(
                             <span class="self">self</span>,
                             <span class="ident">ds</span>,
                             <span class="ident">dsw</span>,
                             <span class="ident">obj</span>.<span class="ident">hashable</span>()
-                                .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">RuntimeError</span>::<span class="ident">type_error</span>(<span class="macro">format</span><span class="macro">!</span>(
+                                .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">RuntimeError::type_error</span>(<span class="macro">format!</span>(
                                     <span class="string">&quot;Object of type {} is not hashable&quot;</span>,
                                     <span class="ident">obj</span>.<span class="ident">technetium_type_name</span>()
                                 )))
@@ -2019,24 +2020,24 @@
                         <span class="ident">obj</span>.<span class="ident">lock_immutable</span>();
                         <span class="ident">as_hashset</span>.<span class="ident">insert</span>(<span class="ident">hashable</span>);
                     }
-                    <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">Set</span> {
+                    <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">ObjectRef::new</span>(<span class="ident">Set</span> {
                         <span class="ident">contents</span>: <span class="ident">as_hashset</span>,
                     }));
                 }
-                <span class="ident">Op</span>::<span class="ident">mkdict</span>(<span class="ident">len</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::mkdict</span>(<span class="ident">len</span>) =&gt; {
                     <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">len</span> <span class="kw">as</span> <span class="ident">usize</span>;
                     <span class="kw">let</span> <span class="ident">objs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ObjectRef</span><span class="op">&gt;</span> <span class="op">=</span>
                         <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">drain</span>((<span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">2</span> <span class="op">*</span> <span class="ident">len</span>)..).<span class="ident">collect</span>();
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">as_hashmap</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="ident">new</span>();
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">as_hashmap</span> <span class="op">=</span> <span class="ident">HashMap::new</span>();
                     <span class="kw">for</span> <span class="ident">objs</span> <span class="kw">in</span> <span class="ident">objs</span>.<span class="ident">chunks</span>(<span class="number">2</span>) {
-                        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">ObjectRef</span>::<span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="ident">objs</span>[<span class="number">0</span>]);
-                        <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="ident">ObjectRef</span>::<span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="ident">objs</span>[<span class="number">1</span>]);
-                        <span class="kw">let</span> <span class="ident">hashable</span> <span class="op">=</span> <span class="macro">try_debug</span><span class="macro">!</span>(
+                        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">ObjectRef::clone</span>(<span class="kw-2">&amp;</span><span class="ident">objs</span>[<span class="number">0</span>]);
+                        <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="ident">ObjectRef::clone</span>(<span class="kw-2">&amp;</span><span class="ident">objs</span>[<span class="number">1</span>]);
+                        <span class="kw">let</span> <span class="ident">hashable</span> <span class="op">=</span> <span class="macro">try_debug!</span>(
                             <span class="self">self</span>,
                             <span class="ident">ds</span>,
                             <span class="ident">dsw</span>,
                             <span class="ident">key</span>.<span class="ident">hashable</span>()
-                                .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">RuntimeError</span>::<span class="ident">type_error</span>(<span class="macro">format</span><span class="macro">!</span>(
+                                .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">RuntimeError::type_error</span>(<span class="macro">format!</span>(
                                     <span class="string">&quot;Object used as a key of type {} is not hashable&quot;</span>,
                                     <span class="ident">key</span>.<span class="ident">technetium_type_name</span>()
                                 )))
@@ -2044,58 +2045,58 @@
                         <span class="ident">key</span>.<span class="ident">lock_immutable</span>();
                         <span class="ident">as_hashmap</span>.<span class="ident">insert</span>(<span class="ident">hashable</span>, <span class="ident">val</span>);
                     }
-                    <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">ObjectRef</span>::<span class="ident">new</span>(<span class="ident">Dictionary</span> {
+                    <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">ObjectRef::new</span>(<span class="ident">Dictionary</span> {
                         <span class="ident">contents</span>: <span class="ident">as_hashmap</span>,
                     }));
                 }
-                <span class="ident">Op</span>::<span class="ident">push_int</span>(<span class="ident">int_val</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="kw">let</span> <span class="ident">obj</span> <span class="op">=</span> <span class="ident">IntObject</span>::<span class="ident">new</span>(<span class="kw-2">*</span><span class="ident">int_val</span> <span class="kw">as</span> <span class="ident">i64</span>);
+                <span class="ident">Op::push_int</span>(<span class="ident">int_val</span>) =&gt; {
+                    <span class="kw">let</span> <span class="ident">obj</span> <span class="op">=</span> <span class="ident">IntObject::new</span>(<span class="kw-2">*</span><span class="ident">int_val</span> <span class="kw">as</span> <span class="ident">i64</span>);
                     <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">obj</span>);
                 }
-                <span class="ident">Op</span>::<span class="ident">push_float</span>(<span class="ident">f_val</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="kw">let</span> <span class="ident">obj</span> <span class="op">=</span> <span class="ident">FloatObject</span>::<span class="ident">new</span>(<span class="kw-2">*</span><span class="ident">f_val</span> <span class="kw">as</span> <span class="ident">f64</span>);
+                <span class="ident">Op::push_float</span>(<span class="ident">f_val</span>) =&gt; {
+                    <span class="kw">let</span> <span class="ident">obj</span> <span class="op">=</span> <span class="ident">FloatObject::new</span>(<span class="kw-2">*</span><span class="ident">f_val</span> <span class="kw">as</span> <span class="ident">f64</span>);
                     <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">obj</span>);
                 }
-                <span class="ident">Op</span>::<span class="ident">push_bool</span>(<span class="ident">b_val</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="kw">let</span> <span class="ident">obj</span> <span class="op">=</span> <span class="ident">BoolObject</span>::<span class="ident">new</span>(<span class="kw-2">*</span><span class="ident">b_val</span>);
+                <span class="ident">Op::push_bool</span>(<span class="ident">b_val</span>) =&gt; {
+                    <span class="kw">let</span> <span class="ident">obj</span> <span class="op">=</span> <span class="ident">BoolObject::new</span>(<span class="kw-2">*</span><span class="ident">b_val</span>);
                     <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">obj</span>);
                 }
-                <span class="ident">Op</span>::<span class="ident">push_const</span>(<span class="ident">const_descr</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::push_const</span>(<span class="ident">const_descr</span>) =&gt; {
                     <span class="kw">let</span> <span class="ident">obj</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">global_context</span>.<span class="ident">constant_descriptors</span>.<span class="ident">get</span>(<span class="ident">const_descr</span>);
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">obj</span>) <span class="op">=</span> <span class="ident">obj</span> {
-                        <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">ObjectRef</span>::<span class="ident">clone</span>(<span class="ident">obj</span>));
+                        <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">ObjectRef::clone</span>(<span class="ident">obj</span>));
                     } <span class="kw">else</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Reference to constant that doesn&#39;t exist!&quot;</span>,
                         ));
                     }
                 }
-                <span class="ident">Op</span>::<span class="ident">push_const_clone</span>(<span class="ident">const_descr</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::push_const_clone</span>(<span class="ident">const_descr</span>) =&gt; {
                     <span class="kw">let</span> <span class="ident">obj</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">global_context</span>.<span class="ident">constant_descriptors</span>.<span class="ident">get</span>(<span class="ident">const_descr</span>);
                     <span class="kw">let</span> <span class="ident">obj_ref</span>: <span class="ident">ObjectRef</span>;
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">obj</span>) <span class="op">=</span> <span class="ident">obj</span> {
-                        <span class="ident">obj_ref</span> <span class="op">=</span> <span class="ident">ObjectRef</span>::<span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="ident">obj</span>);
+                        <span class="ident">obj_ref</span> <span class="op">=</span> <span class="ident">ObjectRef::clone</span>(<span class="kw-2">&amp;</span><span class="ident">obj</span>);
                     } <span class="kw">else</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Reference to constant that doesn&#39;t exist!&quot;</span>,
                         ));
                     }
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">context</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">rt_context</span>();
-                    <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="ident">obj_ref</span>.<span class="ident">technetium_clone</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">context</span>)<span class="question-mark">?</span>;
+                    <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="ident">obj_ref</span>.<span class="ident">technetium_clone</span>(<span class="kw-2">&amp;mut</span> <span class="ident">context</span>)<span class="question-mark">?</span>;
                     <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">val</span>);
                 }
-                <span class="ident">Op</span>::<span class="ident">push_global_default</span>(<span class="ident">const_descr</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::push_global_default</span>(<span class="ident">const_descr</span>) =&gt; {
                     <span class="kw">let</span> <span class="ident">obj</span> <span class="op">=</span> <span class="ident">default_namespace</span>.<span class="ident">get</span>(<span class="ident">const_descr</span>);
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">obj</span>) <span class="op">=</span> <span class="ident">obj</span> {
-                        <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">ObjectRef</span>::<span class="ident">clone</span>(<span class="ident">obj</span>));
+                        <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">ObjectRef::clone</span>(<span class="ident">obj</span>));
                     } <span class="kw">else</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Reference to a global default that doesn&#39;t exist!&quot;</span>,
                         ));
                     }
                 }
-                <span class="ident">Op</span>::<span class="ident">push_unit</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">UnitObject</span>::<span class="ident">new</span>()),
-                <span class="ident">Op</span>::<span class="ident">jmp</span>(<span class="ident">offset</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::push_unit</span> =&gt; <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">UnitObject::new</span>()),
+                <span class="ident">Op::jmp</span>(<span class="ident">offset</span>) =&gt; {
                     <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">offset</span> <span class="op">&gt;</span> <span class="number">0</span> {
                         <span class="kw">let</span> <span class="ident">offset</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">offset</span> <span class="kw">as</span> <span class="ident">u16</span> <span class="kw">as</span> <span class="ident">usize</span>;
                         <span class="self">self</span>.<span class="ident">curr_instruction</span> <span class="op">+</span><span class="op">=</span> <span class="ident">offset</span>;
@@ -2105,7 +2106,7 @@
                     }
                     <span class="kw">continue</span>;
                 }
-                <span class="ident">Op</span>::<span class="ident">cond_jmp</span>(<span class="ident">offset</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::cond_jmp</span>(<span class="ident">offset</span>) =&gt; {
                     <span class="kw">let</span> <span class="ident">obj</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>();
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">obj</span>) <span class="op">=</span> <span class="ident">obj</span> {
                         <span class="kw">if</span> <span class="ident">obj</span>.<span class="ident">truthy</span>() {
@@ -2119,30 +2120,30 @@
                             <span class="kw">continue</span>;
                         }
                     } <span class="kw">else</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(<span class="string">&quot;cond_jmp on an empty stack!&quot;</span>));
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(<span class="string">&quot;cond_jmp on an empty stack!&quot;</span>));
                     }
                 }
-                <span class="ident">Op</span>::<span class="ident">ret</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::ret</span> =&gt; {
                     <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>();
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=</span> <span class="ident">res</span> {
                         <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">val</span>);
                     } <span class="kw">else</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(<span class="string">&quot;Returned an empty stack!&quot;</span>));
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(<span class="string">&quot;Returned an empty stack!&quot;</span>));
                     }
                 }
-                <span class="ident">Op</span>::<span class="ident">sh</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::sh</span> =&gt; {
                     <span class="kw">let</span> <span class="ident">top</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>();
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">top</span>) <span class="op">=</span> <span class="ident">top</span> {
                         <span class="kw">let</span> <span class="ident">top</span> <span class="op">=</span> <span class="ident">top</span>.<span class="ident">as_any</span>();
                         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">top</span>) <span class="op">=</span> <span class="ident">top</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">ObjectCell</span><span class="op">&lt;</span><span class="ident">StringObject</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
                             <span class="kw">let</span> <span class="ident">arg</span> <span class="op">=</span> <span class="ident">top</span>.<span class="ident">try_borrow</span>()<span class="question-mark">?</span>.<span class="ident">val</span>.<span class="ident">clone</span>();
-                            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">command</span> <span class="op">=</span> <span class="ident">Command</span>::<span class="ident">new</span>(<span class="string">&quot;sh&quot;</span>);
-                            <span class="kw">let</span> <span class="ident">process</span> <span class="op">=</span> <span class="ident">command</span>.<span class="ident">stdin</span>(<span class="ident">Stdio</span>::<span class="ident">piped</span>()).<span class="ident">spawn</span>();
+                            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">command</span> <span class="op">=</span> <span class="ident">Command::new</span>(<span class="string">&quot;sh&quot;</span>);
+                            <span class="kw">let</span> <span class="ident">process</span> <span class="op">=</span> <span class="ident">command</span>.<span class="ident">stdin</span>(<span class="ident">Stdio::piped</span>()).<span class="ident">spawn</span>();
                             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="kw-2">mut</span> <span class="ident">child</span>) <span class="op">=</span> <span class="ident">process</span> {
                                 <span class="ident">child</span>.<span class="ident">stdin</span>.<span class="ident">as_mut</span>().<span class="ident">unwrap</span>().<span class="ident">write_all</span>(<span class="ident">arg</span>.<span class="ident">as_bytes</span>())<span class="question-mark">?</span>;
-                                <span class="kw">let</span> <span class="ident">exit_code</span> <span class="op">=</span> <span class="macro">try_debug</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">child</span>.<span class="ident">wait</span>());
+                                <span class="kw">let</span> <span class="ident">exit_code</span> <span class="op">=</span> <span class="macro">try_debug!</span>(<span class="self">self</span>, <span class="ident">ds</span>, <span class="ident">dsw</span>, <span class="ident">child</span>.<span class="ident">wait</span>());
                                 <span class="kw">if</span> <span class="op">!</span><span class="ident">exit_code</span>.<span class="ident">success</span>() {
-                                    <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">RuntimeError</span>::<span class="ident">child_process_error</span>(<span class="macro">format</span><span class="macro">!</span>(
+                                    <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">RuntimeError::child_process_error</span>(<span class="macro">format!</span>(
                                         <span class="string">&quot;Child process returned {}&quot;</span>,
                                         <span class="ident">exit_code</span>
                                     ));
@@ -2158,7 +2159,7 @@
                                     <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>);
                                 }
                             } <span class="kw">else</span> {
-                                <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">RuntimeError</span>::<span class="ident">child_process_error</span>(
+                                <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">RuntimeError::child_process_error</span>(
                                     <span class="string">&quot;Child process failed to start&quot;</span>,
                                 );
                                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ds</span>) <span class="op">=</span> <span class="ident">ds</span> {
@@ -2169,17 +2170,17 @@
                                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>);
                             }
                         } <span class="kw">else</span> {
-                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                                 <span class="string">&quot;Tried to call sh on a non-string!&quot;</span>,
                             ));
                         }
                     } <span class="kw">else</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError</span>::<span class="ident">internal_error</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">RuntimeError::internal_error</span>(
                             <span class="string">&quot;Tried to call sh on an empty stack!&quot;</span>,
                         ));
                     }
                 }
-                <span class="ident">Op</span>::<span class="ident">debug</span>(<span class="ident">symb</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Op::debug</span>(<span class="ident">symb</span>) =&gt; {
                     <span class="ident">ds</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="kw-2">*</span><span class="ident">symb</span>);
                     <span class="ident">stale_debug_symb</span> <span class="op">=</span> <span class="bool-val">false</span>;
                 }
@@ -2192,6 +2193,6 @@
         }
     }
 }
-</pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="runtime"></div>
-    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>
+</code></pre></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="runtime" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0 (7737e0b5c 2022-04-04)" ></div>
+</body></html>

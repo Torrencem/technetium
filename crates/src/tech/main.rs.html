@@ -1,7 +1,9 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/core/main.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>main.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
-<link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../tech/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
-                <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/core/main.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>main.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
+    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../tech/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
+        </a><h2 class="location"></h2>
+    </nav>
+    <nav class="sidebar"><a class="sidebar-logo" href="../../tech/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
+        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../tech/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -315,52 +317,51 @@
 <span id="312">312</span>
 <span id="313">313</span>
 <span id="314">314</span>
-</pre><div class="example-wrap"><pre class="rust ">
-<span class="attribute">#[<span class="ident">macro_use</span>]</span>
+</pre><pre class="rust"><code><span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">log</span>;
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">logging</span>;
 <span class="kw">use</span> <span class="ident">compile</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">lexer</span>::<span class="ident">error</span>::<span class="ident">parse_error_to_diagnostic</span>;
-<span class="kw">use</span> <span class="ident">lexer</span>::<span class="ident">Lexer</span>;
+<span class="kw">use</span> <span class="ident">lexer::error::parse_error_to_diagnostic</span>;
+<span class="kw">use</span> <span class="ident">lexer::Lexer</span>;
 <span class="kw">use</span> <span class="ident">runtime</span>;
-<span class="kw">use</span> <span class="ident">runtime</span>::<span class="ident">bytecode</span>;
-<span class="kw">use</span> <span class="ident">runtime</span>::<span class="ident">standard</span>::<span class="ident">STANDARD_CONTEXT_ID</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">borrow</span>::<span class="ident">Cow</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">process</span>::<span class="ident">exit</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">rc</span>::<span class="ident">Rc</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">env</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">path</span>::<span class="ident">PathBuf</span>;
+<span class="kw">use</span> <span class="ident">runtime::bytecode</span>;
+<span class="kw">use</span> <span class="ident">runtime::standard::STANDARD_CONTEXT_ID</span>;
+<span class="kw">use</span> <span class="ident">std::borrow::Cow</span>;
+<span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
+<span class="kw">use</span> <span class="ident">std::process::exit</span>;
+<span class="kw">use</span> <span class="ident">std::rc::Rc</span>;
+<span class="kw">use</span> <span class="ident">std::env</span>;
+<span class="kw">use</span> <span class="ident">std::path::PathBuf</span>;
 
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">clap</span>;
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">App</span>, <span class="ident">AppSettings</span>, <span class="ident">Arg</span>};
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::{<span class="self">self</span>, <span class="ident">Read</span>};
+<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="self">self</span>, <span class="ident">Read</span>};
 
-<span class="kw">use</span> <span class="ident">codespan</span>::<span class="ident">Files</span>;
-<span class="kw">use</span> <span class="ident">codespan_reporting</span>::<span class="ident">term</span>;
-<span class="kw">use</span> <span class="ident">codespan_reporting</span>::<span class="ident">term</span>::<span class="ident">termcolor</span>::{<span class="ident">ColorChoice</span>, <span class="ident">StandardStream</span>};
+<span class="kw">use</span> <span class="ident">codespan::Files</span>;
+<span class="kw">use</span> <span class="ident">codespan_reporting::term</span>;
+<span class="kw">use</span> <span class="ident">codespan_reporting::term::termcolor</span>::{<span class="ident">ColorChoice</span>, <span class="ident">StandardStream</span>};
 
-<span class="kw">use</span> <span class="ident">log</span>::<span class="ident">Level</span>;
+<span class="kw">use</span> <span class="ident">log::Level</span>;
 
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Display</span>;
+<span class="kw">use</span> <span class="ident">std::fmt::Display</span>;
 
-<span class="kw">fn</span> <span class="ident">fail</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Display</span>, <span class="ident">S</span>: <span class="ident">Display</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="ident">S</span>, <span class="ident">e</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="op">!</span> {
-    <span class="macro">eprintln</span><span class="macro">!</span>(<span class="string">&quot;{}: {}&quot;</span>, <span class="ident">message</span>, <span class="ident">e</span>);
+<span class="kw">fn</span> <span class="ident">fail</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Display</span>, <span class="ident">S</span>: <span class="ident">Display</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="ident">S</span>, <span class="ident">e</span>: <span class="ident">D</span>) -&gt; <span class="op">!</span> {
+    <span class="macro">eprintln!</span>(<span class="string">&quot;{}: {}&quot;</span>, <span class="ident">message</span>, <span class="ident">e</span>);
     <span class="ident">exit</span>(<span class="number">1</span>)
 }
 
-<span class="kw">fn</span> <span class="ident">recursive_make_script</span>(<span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dir</span> <span class="op">=</span> <span class="ident">env</span>::<span class="ident">current_dir</span>()<span class="question-mark">?</span>;
+<span class="kw">fn</span> <span class="ident">recursive_make_script</span>(<span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dir</span> <span class="op">=</span> <span class="ident">env::current_dir</span>()<span class="question-mark">?</span>;
 
     <span class="kw">loop</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">build_script</span> <span class="op">=</span> <span class="ident">dir</span>.<span class="ident">clone</span>();
         <span class="ident">build_script</span>.<span class="ident">push</span>(<span class="ident">name</span>);
         <span class="kw">if</span> <span class="ident">build_script</span>.<span class="ident">exists</span>() {
-            <span class="ident">runtime</span>::<span class="ident">INVOKE_ABSOLUTE_PARENT_DIR</span>.<span class="ident">set</span>(<span class="ident">dir</span>.<span class="ident">clone</span>().<span class="ident">canonicalize</span>().<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
-            <span class="ident">runtime</span>::<span class="ident">CURR_SCRIPT_PATH</span>.<span class="ident">set</span>(<span class="ident">build_script</span>.<span class="ident">canonicalize</span>().<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
-            <span class="ident">env</span>::<span class="ident">set_current_dir</span>(<span class="kw-2">&amp;</span><span class="ident">dir</span>).<span class="ident">unwrap</span>();
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">std</span>::<span class="ident">fs</span>::<span class="ident">read_to_string</span>(<span class="ident">build_script</span>)<span class="question-mark">?</span>));
+            <span class="ident">runtime::INVOKE_ABSOLUTE_PARENT_DIR</span>.<span class="ident">set</span>(<span class="ident">dir</span>.<span class="ident">clone</span>().<span class="ident">canonicalize</span>().<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
+            <span class="ident">runtime::CURR_SCRIPT_PATH</span>.<span class="ident">set</span>(<span class="ident">build_script</span>.<span class="ident">canonicalize</span>().<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
+            <span class="ident">env::set_current_dir</span>(<span class="kw-2">&amp;</span><span class="ident">dir</span>).<span class="ident">unwrap</span>();
+            <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">std::fs::read_to_string</span>(<span class="ident">build_script</span>)<span class="question-mark">?</span>));
         }
         <span class="kw">if</span> <span class="op">!</span><span class="ident">dir</span>.<span class="ident">pop</span>() {
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
@@ -370,30 +371,30 @@
 
 <span class="doccomment">/// The main application entry point</span>
 <span class="kw">fn</span> <span class="ident">main</span>() {
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">App</span>::<span class="ident">new</span>(<span class="string">&quot;technetium&quot;</span>)
-        .<span class="ident">version</span>(<span class="macro">env</span><span class="macro">!</span>(<span class="string">&quot;CARGO_PKG_VERSION&quot;</span>))
-        .<span class="ident">author</span>(<span class="macro">env</span><span class="macro">!</span>(<span class="string">&quot;CARGO_PKG_AUTHORS&quot;</span>))
-        .<span class="ident">about</span>(<span class="macro">env</span><span class="macro">!</span>(<span class="string">&quot;CARGO_PKG_DESCRIPTION&quot;</span>))
-        .<span class="ident">setting</span>(<span class="ident">AppSettings</span>::<span class="ident">TrailingVarArg</span>)
+    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">App::new</span>(<span class="string">&quot;technetium&quot;</span>)
+        .<span class="ident">version</span>(<span class="macro">env!</span>(<span class="string">&quot;CARGO_PKG_VERSION&quot;</span>))
+        .<span class="ident">author</span>(<span class="macro">env!</span>(<span class="string">&quot;CARGO_PKG_AUTHORS&quot;</span>))
+        .<span class="ident">about</span>(<span class="macro">env!</span>(<span class="string">&quot;CARGO_PKG_DESCRIPTION&quot;</span>))
+        .<span class="ident">setting</span>(<span class="ident">AppSettings::TrailingVarArg</span>)
         .<span class="ident">arg</span>(
-            <span class="ident">Arg</span>::<span class="ident">with_name</span>(<span class="string">&quot;INPUT&quot;</span>)
+            <span class="ident">Arg::with_name</span>(<span class="string">&quot;INPUT&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;Run file as a script (if not given, or &#39;-&#39;, will read from stdin). If INPUT is not given, and additional arguments must be passed to the script, use &#39;--&#39; before additional arguments&quot;</span>)
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg</span>::<span class="ident">with_name</span>(<span class="string">&quot;verbose&quot;</span>)
+            <span class="ident">Arg::with_name</span>(<span class="string">&quot;verbose&quot;</span>)
                 .<span class="ident">short</span>(<span class="string">&quot;v&quot;</span>)
                 .<span class="ident">long</span>(<span class="string">&quot;verbose&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;Set logging verbosity level&quot;</span>)
                 .<span class="ident">multiple</span>(<span class="bool-val">true</span>),
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg</span>::<span class="ident">with_name</span>(<span class="string">&quot;recursive&quot;</span>)
+            <span class="ident">Arg::with_name</span>(<span class="string">&quot;recursive&quot;</span>)
                 .<span class="ident">short</span>(<span class="string">&quot;r&quot;</span>)
                 .<span class="ident">long</span>(<span class="string">&quot;recursive&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;Search current directory and parents for a make file (default name: &#39;make.tc&#39;) and run it.&quot;</span>)
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg</span>::<span class="ident">with_name</span>(<span class="string">&quot;MAKE_FILE_NAME&quot;</span>)
+            <span class="ident">Arg::with_name</span>(<span class="string">&quot;MAKE_FILE_NAME&quot;</span>)
                 .<span class="ident">short</span>(<span class="string">&quot;bf&quot;</span>)
                 .<span class="ident">long</span>(<span class="string">&quot;make_file_name&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;Name of make file to search for. Requires &#39;-r&#39;. Can also be overridden using the environment variable &#39;TC_MAKE_FILE_NAME&#39;.&quot;</span>)
@@ -401,19 +402,19 @@
                 .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg</span>::<span class="ident">with_name</span>(<span class="string">&quot;COMMAND&quot;</span>)
+            <span class="ident">Arg::with_name</span>(<span class="string">&quot;COMMAND&quot;</span>)
                 .<span class="ident">short</span>(<span class="string">&quot;c&quot;</span>)
                 .<span class="ident">long</span>(<span class="string">&quot;command&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;Run COMMAND as a technetium script and exit&quot;</span>)
                 .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg</span>::<span class="ident">with_name</span>(<span class="string">&quot;args&quot;</span>)
+            <span class="ident">Arg::with_name</span>(<span class="string">&quot;args&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;Arguments to pass to script&quot;</span>)
                 .<span class="ident">multiple</span>(<span class="bool-val">true</span>)
         )
         .<span class="ident">arg</span>(
-            <span class="ident">Arg</span>::<span class="ident">with_name</span>(<span class="string">&quot;more_args&quot;</span>)
+            <span class="ident">Arg::with_name</span>(<span class="string">&quot;more_args&quot;</span>)
                 .<span class="ident">help</span>(<span class="string">&quot;Arguments to pass to script&quot;</span>)
                 .<span class="ident">multiple</span>(<span class="bool-val">true</span>)
                 .<span class="ident">last</span>(<span class="bool-val">true</span>)
@@ -422,16 +423,16 @@
         .<span class="ident">get_matches</span>();
 
     <span class="kw">let</span> <span class="ident">log_level</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">occurrences_of</span>(<span class="string">&quot;verbose&quot;</span>) {
-        <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Level</span>::<span class="ident">Error</span>,
-        <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Level</span>::<span class="ident">Warn</span>,
-        <span class="number">2</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Level</span>::<span class="ident">Info</span>,
-        <span class="number">3</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Level</span>::<span class="ident">Debug</span>,
-        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Level</span>::<span class="ident">Trace</span>,
+        <span class="number">0</span> =&gt; <span class="ident">Level::Error</span>,
+        <span class="number">1</span> =&gt; <span class="ident">Level::Warn</span>,
+        <span class="number">2</span> =&gt; <span class="ident">Level::Info</span>,
+        <span class="number">3</span> =&gt; <span class="ident">Level::Debug</span>,
+        <span class="kw">_</span> =&gt; <span class="ident">Level::Trace</span>,
     };
 
-    <span class="ident">logging</span>::<span class="ident">init</span>(<span class="ident">log_level</span>).<span class="ident">expect</span>(<span class="string">&quot;Error initializing logging&quot;</span>);
+    <span class="ident">logging::init</span>(<span class="ident">log_level</span>).<span class="ident">expect</span>(<span class="string">&quot;Error initializing logging&quot;</span>);
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">extra_args</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">extra_args</span> <span class="op">=</span> <span class="macro">vec!</span>[];
 
     <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;recursive&quot;</span>) {
         <span class="comment">// If recursive, first argument should be passed</span>
@@ -442,57 +443,57 @@
     }
 
     <span class="ident">extra_args</span>.<span class="ident">append</span>(
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">matches</span>
+        <span class="kw-2">&amp;mut</span> <span class="ident">matches</span>
             .<span class="ident">values_of</span>(<span class="string">&quot;args&quot;</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">to_owned</span>()).<span class="ident">collect</span>())
-            .<span class="ident">unwrap_or</span>(<span class="macro">vec</span><span class="macro">!</span>[]),
+            .<span class="ident">unwrap_or</span>(<span class="macro">vec!</span>[]),
     );
 
     <span class="ident">extra_args</span>.<span class="ident">append</span>(
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">matches</span>
+        <span class="kw-2">&amp;mut</span> <span class="ident">matches</span>
             .<span class="ident">values_of</span>(<span class="string">&quot;more_args&quot;</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">to_owned</span>()).<span class="ident">collect</span>())
-            .<span class="ident">unwrap_or</span>(<span class="macro">vec</span><span class="macro">!</span>[]),
+            .<span class="ident">unwrap_or</span>(<span class="macro">vec!</span>[]),
     );
 
-    <span class="ident">runtime</span>::<span class="ident">PARSED_CLARGS</span>.<span class="ident">set</span>(<span class="ident">extra_args</span>).<span class="ident">unwrap</span>();
+    <span class="ident">runtime::PARSED_CLARGS</span>.<span class="ident">set</span>(<span class="ident">extra_args</span>).<span class="ident">unwrap</span>();
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">files</span>: <span class="ident">Files</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Files</span>::<span class="ident">new</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">files</span>: <span class="ident">Files</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Files::new</span>();
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">input</span>: <span class="ident">String</span> <span class="op">=</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">cmd</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;COMMAND&quot;</span>) {
-            <span class="ident">runtime</span>::<span class="ident">INVOKE_ABSOLUTE_PARENT_DIR</span>.<span class="ident">set</span>(<span class="ident">env</span>::<span class="ident">current_dir</span>().<span class="ident">unwrap</span>().<span class="ident">canonicalize</span>().<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
+            <span class="ident">runtime::INVOKE_ABSOLUTE_PARENT_DIR</span>.<span class="ident">set</span>(<span class="ident">env::current_dir</span>().<span class="ident">unwrap</span>().<span class="ident">canonicalize</span>().<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
             <span class="ident">cmd</span>.<span class="ident">to_owned</span>()
         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;recursive&quot;</span>) {
-            <span class="kw">let</span> <span class="ident">make_script_name</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">env</span>::<span class="ident">var</span>(<span class="string">&quot;TC_MAKE_FILE_NAME&quot;</span>) {
-                <span class="prelude-val">Ok</span>(<span class="ident">variable</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">variable</span>,
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">matches</span>
+            <span class="kw">let</span> <span class="ident">make_script_name</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">env::var</span>(<span class="string">&quot;TC_MAKE_FILE_NAME&quot;</span>) {
+                <span class="prelude-val">Ok</span>(<span class="ident">variable</span>) =&gt; <span class="ident">variable</span>,
+                <span class="kw">_</span> =&gt; <span class="ident">matches</span>
                             .<span class="ident">value_of</span>(<span class="string">&quot;MAKE_FILE_NAME&quot;</span>)
                             .<span class="ident">unwrap_or</span>(<span class="string">&quot;make.tc&quot;</span>)
                             .<span class="ident">to_owned</span>(),
             };
             
             <span class="ident">recursive_make_script</span>(<span class="kw-2">&amp;</span><span class="ident">make_script_name</span>)
-                .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">fail</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;No build script found (&#39;{}&#39;) in current or any parent directory&quot;</span>, <span class="ident">make_script_name</span>), <span class="ident">e</span>))
+                .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">fail</span>(<span class="macro">format!</span>(<span class="string">&quot;No build script found (&#39;{}&#39;) in current or any parent directory&quot;</span>, <span class="ident">make_script_name</span>), <span class="ident">e</span>))
                 .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> {
-                    <span class="macro">eprintln</span><span class="macro">!</span>(<span class="string">&quot;No build script found (&#39;{}&#39;) in current or any parent directory&quot;</span>, <span class="ident">make_script_name</span>);
+                    <span class="macro">eprintln!</span>(<span class="string">&quot;No build script found (&#39;{}&#39;) in current or any parent directory&quot;</span>, <span class="ident">make_script_name</span>);
                     <span class="ident">exit</span>(<span class="number">1</span>)
                 })
         } <span class="kw">else</span> {
             <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;INPUT&quot;</span>) {
-                <span class="prelude-val">None</span> <span class="op">|</span> <span class="prelude-val">Some</span>(<span class="string">&quot;-&quot;</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="ident">runtime</span>::<span class="ident">INVOKE_ABSOLUTE_PARENT_DIR</span>.<span class="ident">set</span>(<span class="ident">env</span>::<span class="ident">current_dir</span>().<span class="ident">unwrap</span>().<span class="ident">canonicalize</span>().<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
-                    <span class="ident">io</span>::<span class="ident">stdin</span>()
-                        .<span class="ident">read_to_string</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buffer</span>)
+                <span class="prelude-val">None</span> <span class="op">|</span> <span class="prelude-val">Some</span>(<span class="string">&quot;-&quot;</span>) =&gt; {
+                    <span class="ident">runtime::INVOKE_ABSOLUTE_PARENT_DIR</span>.<span class="ident">set</span>(<span class="ident">env::current_dir</span>().<span class="ident">unwrap</span>().<span class="ident">canonicalize</span>().<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> <span class="op">=</span> <span class="ident">String::new</span>();
+                    <span class="ident">io::stdin</span>()
+                        .<span class="ident">read_to_string</span>(<span class="kw-2">&amp;mut</span> <span class="ident">buffer</span>)
                         .<span class="ident">expect</span>(<span class="string">&quot;Error reading stdin&quot;</span>);
                     <span class="ident">buffer</span>
                 }
-                <span class="prelude-val">Some</span>(<span class="ident">file_name</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">PathBuf</span>::<span class="ident">from</span>(<span class="ident">file_name</span>);
-                    <span class="ident">runtime</span>::<span class="ident">INVOKE_ABSOLUTE_PARENT_DIR</span>.<span class="ident">set</span>(<span class="ident">path</span>.<span class="ident">canonicalize</span>().<span class="ident">unwrap</span>().<span class="ident">parent</span>().<span class="ident">unwrap</span>().<span class="ident">to_path_buf</span>()).<span class="ident">unwrap</span>();
-                    <span class="ident">runtime</span>::<span class="ident">CURR_SCRIPT_PATH</span>.<span class="ident">set</span>(<span class="ident">path</span>.<span class="ident">canonicalize</span>().<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
-                    <span class="ident">std</span>::<span class="ident">fs</span>::<span class="ident">read_to_string</span>(<span class="ident">file_name</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">fail</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Error reading file &#39;{}&#39;&quot;</span>, <span class="ident">file_name</span>), <span class="ident">e</span>))
+                <span class="prelude-val">Some</span>(<span class="ident">file_name</span>) =&gt; {
+                    <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">PathBuf::from</span>(<span class="ident">file_name</span>);
+                    <span class="ident">runtime::INVOKE_ABSOLUTE_PARENT_DIR</span>.<span class="ident">set</span>(<span class="ident">path</span>.<span class="ident">canonicalize</span>().<span class="ident">unwrap</span>().<span class="ident">parent</span>().<span class="ident">unwrap</span>().<span class="ident">to_path_buf</span>()).<span class="ident">unwrap</span>();
+                    <span class="ident">runtime::CURR_SCRIPT_PATH</span>.<span class="ident">set</span>(<span class="ident">path</span>.<span class="ident">canonicalize</span>().<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
+                    <span class="ident">std::fs::read_to_string</span>(<span class="ident">file_name</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">fail</span>(<span class="macro">format!</span>(<span class="string">&quot;Error reading file &#39;{}&#39;&quot;</span>, <span class="ident">file_name</span>), <span class="ident">e</span>))
                 },
             }
         }
@@ -506,11 +507,11 @@
 
     <span class="kw">let</span> <span class="ident">file_id</span> <span class="op">=</span> <span class="ident">files</span>.<span class="ident">add</span>(
         <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;INPUT&quot;</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">file_name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">file_name</span>.<span class="ident">to_string</span>(),
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;recursive&quot;</span>) {
-                <span class="kw">match</span> <span class="ident">env</span>::<span class="ident">var</span>(<span class="string">&quot;TC_MAKE_FILE_NAME&quot;</span>) {
-                    <span class="prelude-val">Ok</span>(<span class="ident">variable</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">variable</span>,
-                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">matches</span>
+            <span class="prelude-val">Some</span>(<span class="ident">file_name</span>) =&gt; <span class="ident">file_name</span>.<span class="ident">to_string</span>(),
+            <span class="prelude-val">None</span> =&gt; <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;recursive&quot;</span>) {
+                <span class="kw">match</span> <span class="ident">env::var</span>(<span class="string">&quot;TC_MAKE_FILE_NAME&quot;</span>) {
+                    <span class="prelude-val">Ok</span>(<span class="ident">variable</span>) =&gt; <span class="ident">variable</span>,
+                    <span class="kw">_</span> =&gt; <span class="ident">matches</span>
                                 .<span class="ident">value_of</span>(<span class="string">&quot;MAKE_FILE_NAME&quot;</span>)
                                 .<span class="ident">unwrap_or</span>(<span class="string">&quot;make.tc&quot;</span>)
                                 .<span class="ident">to_owned</span>(),
@@ -519,27 +520,27 @@
                 <span class="string">&quot;&lt;anonymous&gt;&quot;</span>.<span class="ident">to_string</span>()
             },
         },
-        <span class="ident">Cow</span>::<span class="ident">from</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>),
+        <span class="ident">Cow::from</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>),
     );
 
-    <span class="kw">let</span> <span class="ident">err_writer</span> <span class="op">=</span> <span class="ident">StandardStream</span>::<span class="ident">stderr</span>(<span class="ident">ColorChoice</span>::<span class="ident">Always</span>);
-    <span class="kw">let</span> <span class="ident">err_config</span> <span class="op">=</span> <span class="ident">codespan_reporting</span>::<span class="ident">term</span>::<span class="ident">Config</span>::<span class="ident">default</span>();
+    <span class="kw">let</span> <span class="ident">err_writer</span> <span class="op">=</span> <span class="ident">StandardStream::stderr</span>(<span class="ident">ColorChoice::Always</span>);
+    <span class="kw">let</span> <span class="ident">err_config</span> <span class="op">=</span> <span class="ident">codespan_reporting::term::Config::default</span>();
 
-    <span class="kw">let</span> <span class="ident">lexer</span> <span class="op">=</span> <span class="ident">Lexer</span>::<span class="ident">new</span>(<span class="ident">input</span>.<span class="ident">as_ref</span>());
+    <span class="kw">let</span> <span class="ident">lexer</span> <span class="op">=</span> <span class="ident">Lexer::new</span>(<span class="ident">input</span>.<span class="ident">as_ref</span>());
 
-    <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;Beginning parsing stage&quot;</span>);
+    <span class="macro">trace!</span>(<span class="string">&quot;Beginning parsing stage&quot;</span>);
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">recoveries</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">recoveries</span> <span class="op">=</span> <span class="macro">vec!</span>[];
 
-    <span class="kw">let</span> <span class="ident">ast</span> <span class="op">=</span> <span class="ident">script</span>::<span class="ident">ProgramParser</span>::<span class="ident">new</span>()
-        .<span class="ident">parse</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">recoveries</span>, <span class="ident">lexer</span>)
+    <span class="kw">let</span> <span class="ident">ast</span> <span class="op">=</span> <span class="ident">script::ProgramParser::new</span>()
+        .<span class="ident">parse</span>(<span class="kw-2">&amp;mut</span> <span class="ident">recoveries</span>, <span class="ident">lexer</span>)
         .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
             <span class="kw">let</span> <span class="ident">diagnostic</span> <span class="op">=</span> <span class="ident">parse_error_to_diagnostic</span>(<span class="kw-2">&amp;</span><span class="ident">e</span>, <span class="ident">file_id</span>);
 
-            <span class="ident">term</span>::<span class="ident">emit</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">err_writer</span>.<span class="ident">lock</span>(), <span class="kw-2">&amp;</span><span class="ident">err_config</span>, <span class="kw-2">&amp;</span><span class="ident">files</span>, <span class="kw-2">&amp;</span><span class="ident">diagnostic</span>)
+            <span class="ident">term::emit</span>(<span class="kw-2">&amp;mut</span> <span class="ident">err_writer</span>.<span class="ident">lock</span>(), <span class="kw-2">&amp;</span><span class="ident">err_config</span>, <span class="kw-2">&amp;</span><span class="ident">files</span>, <span class="kw-2">&amp;</span><span class="ident">diagnostic</span>)
                 .<span class="ident">expect</span>(<span class="string">&quot;Error writing error message&quot;</span>);
 
-            <span class="macro">eprintln</span><span class="macro">!</span>(<span class="string">&quot;The above error could not be recovered from, and parsing stopped.&quot;</span>);
+            <span class="macro">eprintln!</span>(<span class="string">&quot;The above error could not be recovered from, and parsing stopped.&quot;</span>);
 
             <span class="ident">exit</span>(<span class="number">1</span>)
         });
@@ -548,24 +549,24 @@
         <span class="kw">for</span> <span class="ident">recovery</span> <span class="kw">in</span> <span class="ident">recoveries</span>.<span class="ident">iter</span>() {
             <span class="kw">let</span> <span class="ident">diagnostic</span> <span class="op">=</span> <span class="ident">parse_error_to_diagnostic</span>(<span class="kw-2">&amp;</span><span class="ident">recovery</span>.<span class="ident">error</span>, <span class="ident">file_id</span>);
 
-            <span class="ident">term</span>::<span class="ident">emit</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">err_writer</span>.<span class="ident">lock</span>(), <span class="kw-2">&amp;</span><span class="ident">err_config</span>, <span class="kw-2">&amp;</span><span class="ident">files</span>, <span class="kw-2">&amp;</span><span class="ident">diagnostic</span>)
+            <span class="ident">term::emit</span>(<span class="kw-2">&amp;mut</span> <span class="ident">err_writer</span>.<span class="ident">lock</span>(), <span class="kw-2">&amp;</span><span class="ident">err_config</span>, <span class="kw-2">&amp;</span><span class="ident">files</span>, <span class="kw-2">&amp;</span><span class="ident">diagnostic</span>)
                 .<span class="ident">expect</span>(<span class="string">&quot;Error writing error message&quot;</span>);
         }
 
-        <span class="macro">eprintln</span><span class="macro">!</span>(
+        <span class="macro">eprintln!</span>(
             <span class="string">&quot;Exiting without running due to previous {} parsing error{}&quot;</span>,
             <span class="ident">recoveries</span>.<span class="ident">len</span>(),
-            <span class="kw">if</span> <span class="ident">recoveries</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">1</span> { <span class="string">&quot;&quot;</span> } <span class="kw">else</span> { <span class="string">&quot;s&quot;</span> }
+            <span class="kw">if</span> <span class="ident">recoveries</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> { <span class="string">&quot;&quot;</span> } <span class="kw">else</span> { <span class="string">&quot;s&quot;</span> }
         );
 
         <span class="ident">exit</span>(<span class="number">1</span>)
     }
 
-    <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;Completed parsing. AST: {:?}&quot;</span>, <span class="ident">ast</span>);
+    <span class="macro">trace!</span>(<span class="string">&quot;Completed parsing. AST: {:?}&quot;</span>, <span class="ident">ast</span>);
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">manager</span> <span class="op">=</span> <span class="ident">CompileManager</span>::<span class="ident">new</span>(<span class="ident">file_id</span>);
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">manager</span> <span class="op">=</span> <span class="ident">CompileManager::new</span>(<span class="ident">file_id</span>);
 
-    <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;Compiling code into bytecode representation&quot;</span>);
+    <span class="macro">trace!</span>(<span class="string">&quot;Compiling code into bytecode representation&quot;</span>);
 
     <span class="kw">let</span> <span class="ident">code</span> <span class="op">=</span> <span class="ident">manager</span>.<span class="ident">compile_statement_list</span>(<span class="kw-2">&amp;</span><span class="ident">ast</span>);
 
@@ -574,62 +575,62 @@
     <span class="kw">let</span> <span class="ident">code</span> <span class="op">=</span> <span class="ident">code</span>.<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
         <span class="kw">let</span> <span class="ident">diagnostic</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">as_diagnostic</span>(<span class="ident">file_id</span>);
 
-        <span class="ident">term</span>::<span class="ident">emit</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">err_writer</span>.<span class="ident">lock</span>(), <span class="kw-2">&amp;</span><span class="ident">err_config</span>, <span class="kw-2">&amp;</span><span class="ident">files</span>, <span class="kw-2">&amp;</span><span class="ident">diagnostic</span>)
+        <span class="ident">term::emit</span>(<span class="kw-2">&amp;mut</span> <span class="ident">err_writer</span>.<span class="ident">lock</span>(), <span class="kw-2">&amp;</span><span class="ident">err_config</span>, <span class="kw-2">&amp;</span><span class="ident">files</span>, <span class="kw-2">&amp;</span><span class="ident">diagnostic</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;Error writing error message&quot;</span>);
         <span class="ident">exit</span>(<span class="number">1</span>)
     });
 
-    <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;Bytecode succesfully compiled. Creating Frame&quot;</span>);
+    <span class="macro">trace!</span>(<span class="string">&quot;Bytecode succesfully compiled. Creating Frame&quot;</span>);
 
-    <span class="kw">let</span> <span class="ident">global_context</span> <span class="op">=</span> <span class="ident">bytecode</span>::<span class="ident">GlobalContext</span> {
+    <span class="kw">let</span> <span class="ident">global_context</span> <span class="op">=</span> <span class="ident">bytecode::GlobalContext</span> {
         <span class="ident">constant_descriptors</span>: <span class="ident">compile_context</span>.<span class="ident">constant_descriptors</span>,
         <span class="ident">debug_descriptors</span>: <span class="ident">compile_context</span>.<span class="ident">debug_symbol_descriptors</span>,
     };
 
-    <span class="macro">trace</span><span class="macro">!</span>(
+    <span class="macro">trace!</span>(
         <span class="string">&quot;Constant Descriptors: {:#?}&quot;</span>,
         <span class="ident">global_context</span>.<span class="ident">constant_descriptors</span>
     );
-    <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;Debug Descriptors: {:#?}&quot;</span>, <span class="ident">global_context</span>.<span class="ident">debug_descriptors</span>);
+    <span class="macro">trace!</span>(<span class="string">&quot;Debug Descriptors: {:#?}&quot;</span>, <span class="ident">global_context</span>.<span class="ident">debug_descriptors</span>);
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">frame</span> <span class="op">=</span> <span class="ident">bytecode</span>::<span class="ident">Frame</span>::<span class="ident">new</span>(
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">frame</span> <span class="op">=</span> <span class="ident">bytecode::Frame::new</span>(
         <span class="kw-2">&amp;</span><span class="ident">code</span>,
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">manager</span>.<span class="ident">memory_manager</span>,
-        <span class="ident">Rc</span>::<span class="ident">new</span>(<span class="ident">global_context</span>),
-        <span class="ident">HashMap</span>::<span class="ident">new</span>(),
+        <span class="kw-2">&amp;mut</span> <span class="ident">manager</span>.<span class="ident">memory_manager</span>,
+        <span class="ident">Rc::new</span>(<span class="ident">global_context</span>),
+        <span class="ident">HashMap::new</span>(),
         <span class="ident">STANDARD_CONTEXT_ID</span> <span class="op">+</span> <span class="number">1</span>,
     );
 
-    <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">frame</span>);
+    <span class="macro">trace!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">frame</span>);
 
-    <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;Running frame&quot;</span>);
+    <span class="macro">trace!</span>(<span class="string">&quot;Running frame&quot;</span>);
 
     <span class="kw">let</span> <span class="ident">computation</span> <span class="op">=</span> <span class="ident">frame</span>.<span class="ident">run</span>();
 
     <span class="kw">let</span> <span class="ident">computation</span> <span class="op">=</span> <span class="ident">computation</span>.<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
         <span class="kw">let</span> <span class="ident">primary_diagnostic</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">as_diagnostic</span>();
 
-        <span class="ident">term</span>::<span class="ident">emit</span>(
-            <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">err_writer</span>.<span class="ident">lock</span>(),
+        <span class="ident">term::emit</span>(
+            <span class="kw-2">&amp;mut</span> <span class="ident">err_writer</span>.<span class="ident">lock</span>(),
             <span class="kw-2">&amp;</span><span class="ident">err_config</span>,
             <span class="kw-2">&amp;</span><span class="ident">files</span>,
             <span class="kw-2">&amp;</span><span class="ident">primary_diagnostic</span>,
         )
         .<span class="ident">expect</span>(<span class="string">&quot;Error writing error message&quot;</span>);
 
-        <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Stack trace:&quot;</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;Stack trace:&quot;</span>);
         <span class="kw">let</span> <span class="ident">secondary_diagnostics</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">stack_trace</span>(<span class="kw-2">&amp;</span><span class="ident">files</span>);
         <span class="kw">for</span> <span class="ident">secondary</span> <span class="kw">in</span> <span class="ident">secondary_diagnostics</span>.<span class="ident">iter</span>() {
-            <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">secondary</span>);
+            <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">secondary</span>);
         }
 
         <span class="ident">exit</span>(<span class="number">1</span>)
     });
 
-    <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;Run completed successfully&quot;</span>);
+    <span class="macro">trace!</span>(<span class="string">&quot;Run completed successfully&quot;</span>);
 
-    <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;Computation returned: {:?}&quot;</span>, <span class="ident">computation</span>);
+    <span class="macro">debug!</span>(<span class="string">&quot;Computation returned: {:?}&quot;</span>, <span class="ident">computation</span>);
 }
-</pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="tech"></div>
-    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>
+</code></pre></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="tech" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0 (7737e0b5c 2022-04-04)" ></div>
+</body></html>

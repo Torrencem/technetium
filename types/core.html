@@ -4,11 +4,12 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Core Types &#8212; technetium 0.1.0 documentation</title>
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
@@ -32,7 +33,7 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="core-types">
+  <section id="core-types">
 <span id="core"></span><h1>Core Types<a class="headerlink" href="#core-types" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <p class="topic-title">Contents</p>
@@ -71,210 +72,223 @@
 <li><p><a class="reference internal" href="#anonymous-functions" id="id17">Anonymous Functions</a></p></li>
 </ul>
 </div>
-<div class="section" id="string">
+<section id="string">
 <h2><a class="toc-backref" href="#id1">String</a><a class="headerlink" href="#string" title="Permalink to this headline">¶</a></h2>
 <p>Strings are created through literals surrounded by quotes <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>, format literals <code class="docutils literal notranslate"><span class="pre">~&quot;&quot;</span></code>, or through the <code class="docutils literal notranslate"><span class="pre">string</span></code> conversion function.</p>
-<div class="section" id="format-literals">
+<section id="format-literals">
 <h3><a class="toc-backref" href="#id2">Format Literals</a><a class="headerlink" href="#format-literals" title="Permalink to this headline">¶</a></h3>
 <p>A format literal is a string literal with a tilde <code class="docutils literal notranslate"><span class="pre">~</span></code> in front. Format literals can contain code surrounded by braces <code class="docutils literal notranslate"><span class="pre">{}</span></code> that will be evaluated and placed in the appropriate place in the string. The evaluated expressions are converted to strings using the conversion function <code class="docutils literal notranslate"><span class="pre">string</span></code>:</p>
 <div class="highlight-technetium notranslate"><div class="highlight"><pre><span></span><span class="n">my_name</span> <span class="o">=</span> <span class="s">&quot;Matt&quot;</span>
 <span class="n">my_favorite_num</span> <span class="o">=</span> <span class="m">123</span> <span class="o">*</span> <span class="m">345</span> <span class="o">+</span> <span class="m">2</span>
-<span class="n">print</span><span class="p">(</span><span class="o">~</span><span class="s">&quot;{my_name}&#39;s favorite number is {my_favorite_num}&quot;</span><span class="p">)</span>
+<span class="n">println</span><span class="p">(</span><span class="o">~</span><span class="s">&quot;{my_name}&#39;s favorite number is {my_favorite_num}&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="string-methods">
+</section>
+<section id="string-methods">
 <h3><a class="toc-backref" href="#id3">String Methods</a><a class="headerlink" href="#string-methods" title="Permalink to this headline">¶</a></h3>
 <dl class="py function">
-<dt>
-<code class="sig-name descname"><span class="pre">[string].length()</span>&#160; <span class="pre">[int]</span></code></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">[string].length()</span>&#160; <span class="pre">[int]</span></span></dt>
 <dd><p>Returns the length of the string.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt>
-<code class="sig-name descname"><span class="pre">[string].contains([char])</span>&#160; <span class="pre">[bool]</span></code></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">[string].contains([char])</span>&#160; <span class="pre">[bool]</span></span></dt>
 <dd><p>Check if the string contains a given character</p>
 </dd></dl>
 
 <dl class="py function">
-<dt>
-<code class="sig-name descname"><span class="pre">[string].chars()</span>&#160; <span class="pre">[chars]</span></code></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">[string].chars()</span>&#160; <span class="pre">[chars]</span></span></dt>
 <dd><p>Returns an iterator over the characters in the string.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt>
-<code class="sig-name descname"><span class="pre">[string].lines()</span>&#160; <span class="pre">[lines]</span></code></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">[string].lines()</span>&#160; <span class="pre">[lines]</span></span></dt>
 <dd><p>Returns an iterator over the lines in the string. The lines can be seperated by either ‘\n’ or ‘\n\r’, and the strings returned will not contain any newlines.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt>
-<code class="sig-name descname"><span class="pre">[string].escape()</span>&#160; <span class="pre">[string]</span></code></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">[string].escape()</span>&#160; <span class="pre">[string]</span></span></dt>
 <dd><p>Returns an “escaped” version of this string. The escaped version will replace non-printable characters such as newlines and tabs with escape codes such as ‘\n’ and ‘\t’ respectively.</p>
 </dd></dl>
 
-</div>
-</div>
-<div class="section" id="list">
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">strip_prefix(base:</span> <span class="pre">[string],</span> <span class="pre">prefix:</span> <span class="pre">[string])</span> <span class="pre">[string</span> <span class="pre">or</span> <span class="pre">unit]</span></span></dt>
+<dd><p>Removes a prefix from a string. Returns unit if the string does not contain the prefix.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">strip_suffix(base:</span> <span class="pre">[string],</span> <span class="pre">prefix:</span> <span class="pre">[string])</span> <span class="pre">[string</span> <span class="pre">or</span> <span class="pre">unit]</span></span></dt>
+<dd><p>Removes a suffix from a string. Returns unit if the string does not contain the suffix.</p>
+</dd></dl>
+
+<p>TODO: Wrap a bunch of Rust string methods</p>
+</section>
+</section>
+<section id="list">
 <h2><a class="toc-backref" href="#id4">List</a><a class="headerlink" href="#list" title="Permalink to this headline">¶</a></h2>
 <p>Lists are created through square bracket <code class="docutils literal notranslate"><span class="pre">[]</span></code> literals, or through the <code class="docutils literal notranslate"><span class="pre">list</span></code> conversion function. Lists can be iterated over through for loops:</p>
 <div class="highlight-technetium notranslate"><div class="highlight"><pre><span></span><span class="n">l</span> <span class="o">=</span> <span class="o">[</span><span class="s">&quot;alpha&quot;</span><span class="p">,</span> <span class="m">123</span><span class="p">,</span> <span class="m">3.14</span><span class="o">]</span>
 
 <span class="k">for</span> <span class="n">val</span> <span class="k">in</span> <span class="n">l</span> <span class="p">{</span>
-    <span class="n">print</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+    <span class="n">println</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<div class="section" id="list-methods">
+<section id="list-methods">
 <h3><a class="toc-backref" href="#id5">List Methods</a><a class="headerlink" href="#list-methods" title="Permalink to this headline">¶</a></h3>
 <dl class="py function">
-<dt>
-<code class="sig-name descname"><span class="pre">[list].length()</span>&#160; <span class="pre">[int]</span></code></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">[list].length()</span>&#160; <span class="pre">[int]</span></span></dt>
 <dd><p>Returns the length of the list</p>
 </dd></dl>
 
 <dl class="py function">
-<dt>
-<code class="sig-name descname"><span class="pre">[list].contains([object])</span>&#160; <span class="pre">[bool]</span></code></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">[list].contains([object])</span>&#160; <span class="pre">[bool]</span></span></dt>
 <dd><p>Check if the list contains a given object</p>
 </dd></dl>
 
 <dl class="py function">
-<dt>
-<code class="sig-name descname"><span class="pre">[list].push([object])</span>&#160; <span class="pre">[void]</span></code></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">[list].push([object])</span>&#160; <span class="pre">[void]</span></span></dt>
 <dd><p>Push an object on the end of the list</p>
 </dd></dl>
 
 <dl class="py function">
-<dt>
-<code class="sig-name descname"><span class="pre">[list].pop()</span>&#160; <span class="pre">[object]</span></code></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">[list].pop()</span>&#160; <span class="pre">[object]</span></span></dt>
 <dd><p>Remove and return the object at the end of the list</p>
 </dd></dl>
 
 <dl class="py function">
-<dt>
-<code class="sig-name descname"><span class="pre">[list].append([iter])</span>&#160; <span class="pre">[void]</span></code></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">[list].append([iter])</span>&#160; <span class="pre">[void]</span></span></dt>
 <dd><p>Append all of the elements from an iterable to the list</p>
 </dd></dl>
 
-</div>
-</div>
-<div class="section" id="tuple">
+</section>
+</section>
+<section id="tuple">
 <h2><a class="toc-backref" href="#id6">Tuple</a><a class="headerlink" href="#tuple" title="Permalink to this headline">¶</a></h2>
 <p>Tuples are similar to lists, except that they are immutable. A tuple is typically expected to be a fixed length container, where the type of each part is known in advanced, but this is not enforced. Tuples are constructed through parenthetic <code class="docutils literal notranslate"><span class="pre">()</span></code> literals, similar to lists, and can similarly be indexed, but cannot be changed once constructed.</p>
-<div class="section" id="tuple-methods">
+<section id="tuple-methods">
 <h3><a class="toc-backref" href="#id7">Tuple Methods</a><a class="headerlink" href="#tuple-methods" title="Permalink to this headline">¶</a></h3>
 <dl class="py function">
-<dt>
-<code class="sig-name descname"><span class="pre">[tuple].length()</span>&#160; <span class="pre">[int]</span></code></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">[tuple].length()</span>&#160; <span class="pre">[int]</span></span></dt>
 <dd><p>Returns the number of elements in the tuple</p>
 </dd></dl>
 
 <dl class="py function">
-<dt>
-<code class="sig-name descname"><span class="pre">[tuple].contains([object])</span>&#160; <span class="pre">[bool]</span></code></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">[tuple].contains([object])</span>&#160; <span class="pre">[bool]</span></span></dt>
 <dd><p>Check if the tuple contains a given object</p>
 </dd></dl>
 
-</div>
-</div>
-<div class="section" id="set">
+</section>
+</section>
+<section id="set">
 <h2><a class="toc-backref" href="#id8">Set</a><a class="headerlink" href="#set" title="Permalink to this headline">¶</a></h2>
 <p>Sets are containers of hashable objects that ignore duplicates. Sets are constructed through bracket <code class="docutils literal notranslate"><span class="pre">{}</span></code> literals, or through the <code class="docutils literal notranslate"><span class="pre">set</span></code> conversion function, similar to lists. Note that elements inside sets must be hashable and immutable. As all objects are essentially mutable, any objects added to the set will be “locked” immutable, so further changes to these objects will throw an error.</p>
-<div class="section" id="set-methods">
+<section id="set-methods">
 <h3><a class="toc-backref" href="#id9">Set Methods</a><a class="headerlink" href="#set-methods" title="Permalink to this headline">¶</a></h3>
 <dl class="py function">
-<dt>
-<code class="sig-name descname"><span class="pre">[set].length()</span>&#160; <span class="pre">[int]</span></code></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">[set].length()</span>&#160; <span class="pre">[int]</span></span></dt>
 <dd><p>Returns the number of elements in the set</p>
 </dd></dl>
 
 <dl class="py function">
-<dt>
-<code class="sig-name descname"><span class="pre">[set].contains([object])</span>&#160; <span class="pre">[bool]</span></code></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">[set].contains([object])</span>&#160; <span class="pre">[bool]</span></span></dt>
 <dd><p>Check if the set contains a given object</p>
 </dd></dl>
 
 <dl class="py function">
-<dt>
-<code class="sig-name descname"><span class="pre">[set].add([object])</span></code></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">[set].add([object])</span></span></dt>
 <dd><p>Add an object to the set. Locks the given object as immutable. Will throw an error if the object is not hashable</p>
 </dd></dl>
 
 <dl class="py function">
-<dt>
-<code class="sig-name descname"><span class="pre">[set].remove([object])</span>&#160; <span class="pre">[bool]</span></code></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">[set].remove([object])</span>&#160; <span class="pre">[bool]</span></span></dt>
 <dd><p>Remove an object from the set. Will throw an error if the object is not hashable. Returns whether or not anything was found and removed from the set</p>
 </dd></dl>
 
-</div>
-</div>
-<div class="section" id="dictionary">
+</section>
+</section>
+<section id="dictionary">
 <h2><a class="toc-backref" href="#id10">Dictionary</a><a class="headerlink" href="#dictionary" title="Permalink to this headline">¶</a></h2>
 <p>Dictionaries are mappings from hashable and immutable key values to objects. Dictionaries are constructed through bracket literals. Dictionaries are primarily useful through the square indexing brackets <code class="docutils literal notranslate"><span class="pre">[]</span></code>:</p>
 <div class="highlight-technetium notranslate"><div class="highlight"><pre><span></span><span class="n">my_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;name&quot;</span><span class="o">:</span> <span class="s">&quot;Matthew&quot;</span><span class="p">,</span> <span class="s">&quot;favorite number&quot;</span><span class="o">:</span> <span class="m">123</span><span class="p">}</span>
 
-<span class="n">print</span><span class="p">(</span><span class="n">my_dict</span><span class="o">[</span><span class="s">&quot;name&quot;</span><span class="o">]</span><span class="p">)</span>
+<span class="n">println</span><span class="p">(</span><span class="n">my_dict</span><span class="o">[</span><span class="s">&quot;name&quot;</span><span class="o">]</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Dictionaries throw an error if accessed with a key that either doesn’t exist, or isn’t hashable.</p>
 <p>Note that syntatically, dictionaries are allowed to span multiple lines. Sets, although very similar in form, are not, due to parsing restrictions.</p>
-<div class="section" id="dictionary-methods">
+<section id="dictionary-methods">
 <h3><a class="toc-backref" href="#id11">Dictionary Methods</a><a class="headerlink" href="#dictionary-methods" title="Permalink to this headline">¶</a></h3>
 <dl class="py function">
-<dt>
-<code class="sig-name descname"><span class="pre">[dictionary].length()</span>&#160; <span class="pre">[int]</span></code></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">[dictionary].length()</span>&#160; <span class="pre">[int]</span></span></dt>
 <dd><p>Returns the number of key value pairs in the dictionary</p>
 </dd></dl>
 
-</div>
-</div>
-<div class="section" id="numeric-types-float-and-int">
+</section>
+</section>
+<section id="numeric-types-float-and-int">
 <h2><a class="toc-backref" href="#id12">Numeric Types (float and int)</a><a class="headerlink" href="#numeric-types-float-and-int" title="Permalink to this headline">¶</a></h2>
 <p>Numerical types can be constructed through literals, or through their respective <code class="docutils literal notranslate"><span class="pre">float</span></code> and <code class="docutils literal notranslate"><span class="pre">int</span></code> conversion functions. Integers and floats can be operated together, and the result will be a float. Floats are internally 64-bit double precision floating point numbers, and integers are arbitrary sized. Using an integer that is outside the set of values representable by a 64-bit integer as an index or in a slice will throw an error.</p>
-</div>
-<div class="section" id="boolean">
+</section>
+<section id="boolean">
 <h2><a class="toc-backref" href="#id13">Boolean</a><a class="headerlink" href="#boolean" title="Permalink to this headline">¶</a></h2>
 <p>Everything in technetium is either truthy or falsey, in addition to the boolean type. Booleans can either be created through the <code class="docutils literal notranslate"><span class="pre">true</span></code> and <code class="docutils literal notranslate"><span class="pre">false</span></code> literals, or through the conversion function <code class="docutils literal notranslate"><span class="pre">bool</span></code>. The conversion function returns <code class="docutils literal notranslate"><span class="pre">true</span></code> when it’s argument is truthy, and false otherwise.</p>
-</div>
-<div class="section" id="unit">
+</section>
+<section id="unit">
 <h2><a class="toc-backref" href="#id14">Unit</a><a class="headerlink" href="#unit" title="Permalink to this headline">¶</a></h2>
 <p>The unit type has only one member, <code class="docutils literal notranslate"><span class="pre">unit</span></code>. This type is implicitly returned from all functions which don’t return anything else, and is useful as a generic <code class="docutils literal notranslate"><span class="pre">None</span></code> object:</p>
-<div class="highlight-technetium notranslate"><div class="highlight"><pre><span></span><span class="n">print</span><span class="p">(</span><span class="n">print</span><span class="p">(</span><span class="m">5</span><span class="p">)</span> <span class="o">==</span> <span class="k">unit</span><span class="p">)</span>  <span class="c"># Prints 5, then true</span>
+<div class="highlight-technetium notranslate"><div class="highlight"><pre><span></span><span class="n">println</span><span class="p">(</span><span class="n">println</span><span class="p">(</span><span class="m">5</span><span class="p">)</span> <span class="o">==</span> <span class="k">unit</span><span class="p">)</span>  <span class="c"># Prints 5, then true</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="char">
+</section>
+<section id="char">
 <h2><a class="toc-backref" href="#id15">Char</a><a class="headerlink" href="#char" title="Permalink to this headline">¶</a></h2>
 <p>A char is a ‘Unicode scalar value’ which mirrors <a class="reference external" href="https://doc.rust-lang.org/std/primitive.char.html">the “char” type in Rust</a>. Char’s can either be constructed through char literals in single quotes <code class="docutils literal notranslate"><span class="pre">''</span></code>, by indexing a string, or through the conversion function <code class="docutils literal notranslate"><span class="pre">char</span></code>. Through string indexing, specific characters can be set in a string, even though strings internally are rerpresented as valid UTF-8:</p>
 <div class="highlight-technetium notranslate"><div class="highlight"><pre><span></span><span class="n">my_utf8_char</span> <span class="o">=</span> <span class="sc">&#39;ℝ&#39;</span>
 <span class="n">my_phrase</span> <span class="o">=</span> <span class="s">&quot;The real numbers are sometimes called _&quot;</span>
 <span class="n">my_phrase</span><span class="o">[-</span><span class="m">1</span><span class="o">]</span> <span class="o">=</span> <span class="n">my_utf8_char</span>
-<span class="n">print</span><span class="p">(</span><span class="n">my_phrase</span><span class="p">)</span>
+<span class="n">println</span><span class="p">(</span><span class="n">my_phrase</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="slice">
+</section>
+<section id="slice">
 <h2><a class="toc-backref" href="#id16">Slice</a><a class="headerlink" href="#slice" title="Permalink to this headline">¶</a></h2>
 <p>Slices are references to sections in a list or string. Slices can be constructed with range syntax the same as that of python (see <a class="reference external" href="https://docs.python.org/3/tutorial/introduction.html">this python tutorial</a> for some examples):</p>
 <div class="highlight-technetium notranslate"><div class="highlight"><pre><span></span><span class="n">my_phrase</span> <span class="o">=</span> <span class="s">&quot;i like to eat Σ π&quot;</span>
 <span class="n">a_slice</span> <span class="o">=</span> <span class="n">my_phrase</span><span class="o">[:</span><span class="m">6</span><span class="o">]</span>
 <span class="n">my_phrase</span><span class="o">[</span><span class="m">0</span><span class="o">]</span> <span class="o">=</span> <span class="sc">&#39;I&#39;</span>
-<span class="n">print</span><span class="p">(</span><span class="n">a_slice</span><span class="p">)</span>
+<span class="n">println</span><span class="p">(</span><span class="n">a_slice</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="anonymous-functions">
+</section>
+<section id="anonymous-functions">
 <h2><a class="toc-backref" href="#id17">Anonymous Functions</a><a class="headerlink" href="#anonymous-functions" title="Permalink to this headline">¶</a></h2>
 <p>Anonymous functions, also sometimes known as “lambda functions”, are unnamed function objects that have condensed definition syntax:</p>
 <div class="highlight-technetium notranslate"><div class="highlight"><pre><span></span><span class="n">add_a</span> <span class="o">=</span> <span class="o">\</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
 <span class="n">add_b</span> <span class="o">=</span> <span class="o">\</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">{</span>
     <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
 <span class="p">}</span>
-<span class="n">print</span><span class="p">(</span><span class="n">add_a</span><span class="p">(</span><span class="m">10</span><span class="p">,</span> <span class="m">5</span><span class="p">))</span>
-<span class="n">print</span><span class="p">(</span><span class="n">add_b</span><span class="p">(</span><span class="m">10</span><span class="p">,</span> <span class="m">5</span><span class="p">))</span>
+<span class="n">println</span><span class="p">(</span><span class="n">add_a</span><span class="p">(</span><span class="m">10</span><span class="p">,</span> <span class="m">5</span><span class="p">))</span>
+<span class="n">println</span><span class="p">(</span><span class="n">add_b</span><span class="p">(</span><span class="m">10</span><span class="p">,</span> <span class="m">5</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>Anonymous functions are written as a backslash followed by either the name of a single argument, or a parenthesized list of arguments, followed by an arrow, then either a function block or a single expression. They also can capture their environment:</p>
@@ -283,7 +297,7 @@
 <span class="p">}</span>
 
 <span class="n">f</span> <span class="o">=</span> <span class="n">make_adder</span><span class="p">(</span><span class="m">100</span><span class="p">)</span>
-<span class="n">print</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="m">25</span><span class="p">))</span>
+<span class="n">println</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="m">25</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>To create an anonymous function with no arguments, use an empty list of arguments:</p>
@@ -291,12 +305,12 @@
 
 <span class="n">f</span> <span class="o">=</span> <span class="o">\</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">counter</span><span class="o">++</span>
 
-<span class="n">print</span><span class="p">(</span><span class="n">f</span><span class="p">())</span>  <span class="c"># 1</span>
-<span class="n">print</span><span class="p">(</span><span class="n">f</span><span class="p">())</span>  <span class="c"># 2</span>
+<span class="n">println</span><span class="p">(</span><span class="n">f</span><span class="p">())</span>  <span class="c"># 1</span>
+<span class="n">println</span><span class="p">(</span><span class="n">f</span><span class="p">())</span>  <span class="c"># 2</span>
 </pre></div>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
           </div>
@@ -315,7 +329,7 @@
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction to Technetium</a></li>
@@ -353,7 +367,7 @@
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -375,7 +389,7 @@
       &copy;2020, Matt Torrence.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.5.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

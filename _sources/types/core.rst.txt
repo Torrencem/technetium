@@ -22,7 +22,7 @@ A format literal is a string literal with a tilde ``~`` in front. Format literal
 
     my_name = "Matt"
     my_favorite_num = 123 * 345 + 2
-    print(~"{my_name}'s favorite number is {my_favorite_num}")
+    println(~"{my_name}'s favorite number is {my_favorite_num}")
 
 String Methods
 ^^^^^^^^^^^^^^
@@ -47,6 +47,15 @@ String Methods
 
     Returns an "escaped" version of this string. The escaped version will replace non-printable characters such as newlines and tabs with escape codes such as '\\n' and '\\t' respectively.
 
+.. function:: strip_prefix(base: [string], prefix: [string]) [string or unit]
+
+    Removes a prefix from a string. Returns unit if the string does not contain the prefix.
+    
+.. function:: strip_suffix(base: [string], prefix: [string]) [string or unit]
+
+    Removes a suffix from a string. Returns unit if the string does not contain the suffix.
+
+TODO: Wrap a bunch of Rust string methods
 
 List
 ----
@@ -56,7 +65,7 @@ Lists are created through square bracket ``[]`` literals, or through the ``list`
     l = ["alpha", 123, 3.14]
 
     for val in l {
-        print(val)
+        println(val)
     }
 
 List Methods
@@ -129,7 +138,7 @@ Dictionaries are mappings from hashable and immutable key values to objects. Dic
 
         my_dict = {"name": "Matthew", "favorite number": 123}
 
-        print(my_dict["name"])
+        println(my_dict["name"])
 
 Dictionaries throw an error if accessed with a key that either doesn't exist, or isn't hashable.
 
@@ -159,7 +168,7 @@ Unit
 
 The unit type has only one member, ``unit``. This type is implicitly returned from all functions which don't return anything else, and is useful as a generic ``None`` object::
 
-    print(print(5) == unit)  # Prints 5, then true
+    println(println(5) == unit)  # Prints 5, then true
 
 
 Char
@@ -170,7 +179,7 @@ A char is a 'Unicode scalar value' which mirrors `the "char" type in Rust <https
     my_utf8_char = 'ℝ'
     my_phrase = "The real numbers are sometimes called _"
     my_phrase[-1] = my_utf8_char
-    print(my_phrase)
+    println(my_phrase)
 
 
 Slice
@@ -181,7 +190,7 @@ Slices are references to sections in a list or string. Slices can be constructed
     my_phrase = "i like to eat Σ π"
     a_slice = my_phrase[:6]
     my_phrase[0] = 'I'
-    print(a_slice)
+    println(a_slice)
 
 
 Anonymous Functions
@@ -193,8 +202,8 @@ Anonymous functions, also sometimes known as "lambda functions", are unnamed fun
     add_b = \(x, y) -> {
         return x + y
     }
-    print(add_a(10, 5))
-    print(add_b(10, 5))
+    println(add_a(10, 5))
+    println(add_b(10, 5))
 
 Anonymous functions are written as a backslash followed by either the name of a single argument, or a parenthesized list of arguments, followed by an arrow, then either a function block or a single expression. They also can capture their environment::
 
@@ -203,7 +212,7 @@ Anonymous functions are written as a backslash followed by either the name of a 
     }
 
     f = make_adder(100)
-    print(f(25))
+    println(f(25))
 
 To create an anonymous function with no arguments, use an empty list of arguments::
 
@@ -211,5 +220,5 @@ To create an anonymous function with no arguments, use an empty list of argument
 
     f = \() -> counter++
 
-    print(f())  # 1
-    print(f())  # 2
+    println(f())  # 1
+    println(f())  # 2

@@ -1,7 +1,9 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/runtime/src/error.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>error.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
-<link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../runtime/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
-                <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/runtime/src/error.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>error.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
+    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../runtime/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
+        </a><h2 class="location"></h2>
+    </nav>
+    <nav class="sidebar"><a class="sidebar-logo" href="../../runtime/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
+        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../runtime/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -253,22 +255,21 @@
 <span id="250">250</span>
 <span id="251">251</span>
 <span id="252">252</span>
-</pre><div class="example-wrap"><pre class="rust ">
-<span class="doccomment">//! Runtime errors for technetium</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Runtime errors for technetium</span>
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">bytecode</span>::<span class="ident">DebugSymbol</span>;
-<span class="kw">use</span> <span class="ident">codespan</span>::<span class="ident">FileId</span>;
-<span class="kw">use</span> <span class="ident">codespan</span>::<span class="ident">Files</span>;
-<span class="kw">use</span> <span class="ident">codespan_reporting</span>::<span class="ident">diagnostic</span>::{<span class="ident">Diagnostic</span>, <span class="ident">Label</span>};
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">borrow</span>::<span class="ident">Cow</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cell</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::bytecode::DebugSymbol</span>;
+<span class="kw">use</span> <span class="ident">codespan::FileId</span>;
+<span class="kw">use</span> <span class="ident">codespan::Files</span>;
+<span class="kw">use</span> <span class="ident">codespan_reporting::diagnostic</span>::{<span class="ident">Diagnostic</span>, <span class="ident">Label</span>};
+<span class="kw">use</span> <span class="ident">std::borrow::Cow</span>;
+<span class="kw">use</span> <span class="ident">std::cell</span>;
+<span class="kw">use</span> <span class="ident">std::fmt</span>;
+<span class="kw">use</span> <span class="ident">std::sync</span>;
 <span class="kw">use</span> <span class="ident">sys_info</span>;
 <span class="kw">use</span> <span class="ident">opener</span>;
 
 <span class="doccomment">/// The result of a computation on the technetium runtime</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">std</span>::<span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">RuntimeError</span><span class="op">&gt;</span>;
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">RuntimeResult</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">std::result::Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">RuntimeError</span><span class="op">&gt;</span>;
 
 <span class="doccomment">/// An error from a computation on the technetium runtime</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
@@ -280,9 +281,9 @@
     <span class="kw">pub</span> <span class="ident">symbols</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">DebugSymbol</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">RuntimeError</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
-        <span class="macro">write</span><span class="macro">!</span>(<span class="ident">fmt</span>, <span class="string">&quot;{:?}: {}&quot;</span>, <span class="self">self</span>.<span class="ident">err</span>, <span class="self">self</span>.<span class="ident">help</span>)
+<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">RuntimeError</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
+        <span class="macro">write!</span>(<span class="ident">fmt</span>, <span class="string">&quot;{:?}: {}&quot;</span>, <span class="self">self</span>.<span class="ident">err</span>, <span class="self">self</span>.<span class="ident">help</span>)
     }
 }
 
@@ -313,158 +314,158 @@
     <span class="ident">AssertionError</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">sys_info</span>::<span class="ident">Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">RuntimeError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">sys_info</span>::<span class="ident">Error</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">sys_info::Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">RuntimeError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">sys_info::Error</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">RuntimeError</span> {
-            <span class="ident">err</span>: <span class="ident">RuntimeErrorType</span>::<span class="ident">SysInfoError</span>,
+            <span class="ident">err</span>: <span class="ident">RuntimeErrorType::SysInfoError</span>,
             <span class="ident">help</span>: <span class="ident">error</span>.<span class="ident">to_string</span>(),
-            <span class="ident">symbols</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="ident">symbols</span>: <span class="macro">vec!</span>[],
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">RuntimeError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">Error</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">std::io::Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">RuntimeError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">std::io::Error</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">RuntimeError</span> {
-            <span class="ident">err</span>: <span class="ident">RuntimeErrorType</span>::<span class="ident">IOError</span>,
+            <span class="ident">err</span>: <span class="ident">RuntimeErrorType::IOError</span>,
             <span class="ident">help</span>: <span class="ident">error</span>.<span class="ident">to_string</span>(),
-            <span class="ident">symbols</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="ident">symbols</span>: <span class="macro">vec!</span>[],
         }
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">sync</span>::<span class="ident">PoisonError</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">RuntimeError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">sync</span>::<span class="ident">PoisonError</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">sync::PoisonError</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">RuntimeError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">sync::PoisonError</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">RuntimeError</span> {
-            <span class="ident">err</span>: <span class="ident">RuntimeErrorType</span>::<span class="ident">PoisonError</span>,
+            <span class="ident">err</span>: <span class="ident">RuntimeErrorType::PoisonError</span>,
             <span class="ident">help</span>: <span class="ident">error</span>.<span class="ident">to_string</span>(),
-            <span class="ident">symbols</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="ident">symbols</span>: <span class="macro">vec!</span>[],
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">cell</span>::<span class="ident">BorrowError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">RuntimeError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">cell</span>::<span class="ident">BorrowError</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">cell::BorrowError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">RuntimeError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">cell::BorrowError</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">RuntimeError</span> {
-            <span class="ident">err</span>: <span class="ident">RuntimeErrorType</span>::<span class="ident">BorrowError</span>,
+            <span class="ident">err</span>: <span class="ident">RuntimeErrorType::BorrowError</span>,
             <span class="ident">help</span>: <span class="ident">error</span>.<span class="ident">to_string</span>(),
-            <span class="ident">symbols</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="ident">symbols</span>: <span class="macro">vec!</span>[],
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">cell</span>::<span class="ident">BorrowMutError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">RuntimeError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">cell</span>::<span class="ident">BorrowMutError</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">cell::BorrowMutError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">RuntimeError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">cell::BorrowMutError</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">RuntimeError</span> {
-            <span class="ident">err</span>: <span class="ident">RuntimeErrorType</span>::<span class="ident">BorrowMutError</span>,
+            <span class="ident">err</span>: <span class="ident">RuntimeErrorType::BorrowMutError</span>,
             <span class="ident">help</span>: <span class="ident">error</span>.<span class="ident">to_string</span>(),
-            <span class="ident">symbols</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="ident">symbols</span>: <span class="macro">vec!</span>[],
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">mlrefcell</span>::<span class="ident">BorrowMutError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">RuntimeError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">mlrefcell</span>::<span class="ident">BorrowMutError</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">mlrefcell::BorrowMutError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">RuntimeError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">mlrefcell::BorrowMutError</span>) -&gt; <span class="self">Self</span> {
         <span class="kw">match</span> <span class="ident">error</span> {
-            <span class="ident">mlrefcell</span>::<span class="ident">BorrowMutError</span>::<span class="ident">AlreadyBorrowed</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RuntimeError</span> {
-                <span class="ident">err</span>: <span class="ident">RuntimeErrorType</span>::<span class="ident">BorrowMutError</span>,
+            <span class="ident">mlrefcell::BorrowMutError::AlreadyBorrowed</span> =&gt; <span class="ident">RuntimeError</span> {
+                <span class="ident">err</span>: <span class="ident">RuntimeErrorType::BorrowMutError</span>,
                 <span class="ident">help</span>: <span class="string">&quot;tried to mutate and read from the same object&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="ident">symbols</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+                <span class="ident">symbols</span>: <span class="macro">vec!</span>[],
             },
-            <span class="ident">mlrefcell</span>::<span class="ident">BorrowMutError</span>::<span class="ident">Locked</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RuntimeError</span> {
-                <span class="ident">err</span>: <span class="ident">RuntimeErrorType</span>::<span class="ident">MutateImmutableError</span>,
-                <span class="ident">help</span>: <span class="string">&quot;tried to mutate value that was forced to be immutable&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="ident">symbols</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="ident">mlrefcell::BorrowMutError::Locked</span> =&gt; <span class="ident">RuntimeError</span> {
+                <span class="ident">err</span>: <span class="ident">RuntimeErrorType::MutateImmutableError</span>,
+                <span class="ident">help</span>: <span class="string">&quot;tried to mutate value that was locked&quot;</span>.<span class="ident">to_string</span>(),
+                <span class="ident">symbols</span>: <span class="macro">vec!</span>[],
             },
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">opener</span>::<span class="ident">OpenError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">RuntimeError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">opener</span>::<span class="ident">OpenError</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">opener::OpenError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">RuntimeError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">opener::OpenError</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">RuntimeError</span> {
-            <span class="ident">err</span>: <span class="ident">RuntimeErrorType</span>::<span class="ident">OpenError</span>,
+            <span class="ident">err</span>: <span class="ident">RuntimeErrorType::OpenError</span>,
             <span class="ident">help</span>: <span class="ident">error</span>.<span class="ident">to_string</span>(),
-            <span class="ident">symbols</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="ident">symbols</span>: <span class="macro">vec!</span>[],
         }
     }
 }
 
 <span class="kw">impl</span> <span class="ident">RuntimeError</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_error</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">ToString</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_error</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">ToString</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="ident">S</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">RuntimeError</span> {
-            <span class="ident">err</span>: <span class="ident">RuntimeErrorType</span>::<span class="ident">TypeError</span>,
+            <span class="ident">err</span>: <span class="ident">RuntimeErrorType::TypeError</span>,
             <span class="ident">help</span>: <span class="ident">message</span>.<span class="ident">to_string</span>(),
-            <span class="ident">symbols</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="ident">symbols</span>: <span class="macro">vec!</span>[],
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">attribute_error</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">ToString</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">attribute_error</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">ToString</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="ident">S</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">RuntimeError</span> {
-            <span class="ident">err</span>: <span class="ident">RuntimeErrorType</span>::<span class="ident">AttributeError</span>,
+            <span class="ident">err</span>: <span class="ident">RuntimeErrorType::AttributeError</span>,
             <span class="ident">help</span>: <span class="ident">message</span>.<span class="ident">to_string</span>(),
-            <span class="ident">symbols</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="ident">symbols</span>: <span class="macro">vec!</span>[],
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">key_error</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">ToString</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">key_error</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">ToString</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="ident">S</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">RuntimeError</span> {
-            <span class="ident">err</span>: <span class="ident">RuntimeErrorType</span>::<span class="ident">KeyError</span>,
+            <span class="ident">err</span>: <span class="ident">RuntimeErrorType::KeyError</span>,
             <span class="ident">help</span>: <span class="ident">message</span>.<span class="ident">to_string</span>(),
-            <span class="ident">symbols</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="ident">symbols</span>: <span class="macro">vec!</span>[],
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">internal_error</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">ToString</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">internal_error</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">ToString</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="ident">S</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">RuntimeError</span> {
-            <span class="ident">err</span>: <span class="ident">RuntimeErrorType</span>::<span class="ident">InternalError</span>,
+            <span class="ident">err</span>: <span class="ident">RuntimeErrorType::InternalError</span>,
             <span class="ident">help</span>: <span class="ident">message</span>.<span class="ident">to_string</span>(),
-            <span class="ident">symbols</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="ident">symbols</span>: <span class="macro">vec!</span>[],
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">variable_undefined_error</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">ToString</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">variable_undefined_error</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">ToString</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="ident">S</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">RuntimeError</span> {
-            <span class="ident">err</span>: <span class="ident">RuntimeErrorType</span>::<span class="ident">VariableUndefinedError</span>,
+            <span class="ident">err</span>: <span class="ident">RuntimeErrorType::VariableUndefinedError</span>,
             <span class="ident">help</span>: <span class="ident">message</span>.<span class="ident">to_string</span>(),
-            <span class="ident">symbols</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="ident">symbols</span>: <span class="macro">vec!</span>[],
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">index_oob_error</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">ToString</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">index_oob_error</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">ToString</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="ident">S</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">RuntimeError</span> {
-            <span class="ident">err</span>: <span class="ident">RuntimeErrorType</span>::<span class="ident">IndexOutOfBounds</span>,
+            <span class="ident">err</span>: <span class="ident">RuntimeErrorType::IndexOutOfBounds</span>,
             <span class="ident">help</span>: <span class="ident">message</span>.<span class="ident">to_string</span>(),
-            <span class="ident">symbols</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="ident">symbols</span>: <span class="macro">vec!</span>[],
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">index_too_big_error</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">ToString</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">index_too_big_error</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">ToString</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="ident">S</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">RuntimeError</span> {
-            <span class="ident">err</span>: <span class="ident">RuntimeErrorType</span>::<span class="ident">IntegerTooBigError</span>,
+            <span class="ident">err</span>: <span class="ident">RuntimeErrorType::IntegerTooBigError</span>,
             <span class="ident">help</span>: <span class="ident">message</span>.<span class="ident">to_string</span>(),
-            <span class="ident">symbols</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="ident">symbols</span>: <span class="macro">vec!</span>[],
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">child_process_error</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">ToString</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">child_process_error</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">ToString</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="ident">S</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">RuntimeError</span> {
-            <span class="ident">err</span>: <span class="ident">RuntimeErrorType</span>::<span class="ident">ChildProcessError</span>,
+            <span class="ident">err</span>: <span class="ident">RuntimeErrorType::ChildProcessError</span>,
             <span class="ident">help</span>: <span class="ident">message</span>.<span class="ident">to_string</span>(),
-            <span class="ident">symbols</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="ident">symbols</span>: <span class="macro">vec!</span>[],
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">assertion_error</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">ToString</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">assertion_error</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">ToString</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">RuntimeError</span> {
-            <span class="ident">err</span>: <span class="ident">RuntimeErrorType</span>::<span class="ident">AssertionError</span>,
-            <span class="ident">help</span>: <span class="ident">message</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">to_string</span>()).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;Assertion failed&quot;</span>)),
-            <span class="ident">symbols</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="ident">err</span>: <span class="ident">RuntimeErrorType::AssertionError</span>,
+            <span class="ident">help</span>: <span class="ident">message</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">to_string</span>()).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">String::from</span>(<span class="string">&quot;Assertion failed&quot;</span>)),
+            <span class="ident">symbols</span>: <span class="macro">vec!</span>[],
         }
     }
 
     <span class="doccomment">/// Attach a code location to an error, for reporting diagnostics to the user</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">attach_span</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">debug</span>: <span class="ident">DebugSymbol</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">attach_span</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">debug</span>: <span class="ident">DebugSymbol</span>) -&gt; <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">symbols</span>.<span class="ident">push</span>(<span class="ident">debug</span>);
         <span class="ident">RuntimeError</span> {
             <span class="ident">err</span>: <span class="self">self</span>.<span class="ident">err</span>,
@@ -474,19 +475,19 @@
     }
 
     <span class="doccomment">/// Create a diagnostic message from an error, for reporting to the user</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_diagnostic</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Diagnostic</span><span class="op">&lt;</span><span class="ident">FileId</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_diagnostic</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Diagnostic</span><span class="op">&lt;</span><span class="ident">FileId</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">symbols</span>.<span class="ident">get</span>(<span class="number">0</span>) {
-            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">symbol</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Diagnostic</span>::<span class="ident">error</span>()
-                .<span class="ident">with_message</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Runtime Error: {:?}&quot;</span>, <span class="self">self</span>.<span class="ident">err</span>))
-                .<span class="ident">with_labels</span>(<span class="macro">vec</span><span class="macro">!</span>[
-                    <span class="ident">Label</span>::<span class="ident">primary</span>(<span class="ident">symbol</span>.<span class="ident">file_id</span>, <span class="ident">symbol</span>.<span class="ident">location</span>).<span class="ident">with_message</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">help</span>)
+            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">symbol</span>) =&gt; <span class="ident">Diagnostic::error</span>()
+                .<span class="ident">with_message</span>(<span class="macro">format!</span>(<span class="string">&quot;Runtime Error: {:?}&quot;</span>, <span class="self">self</span>.<span class="ident">err</span>))
+                .<span class="ident">with_labels</span>(<span class="macro">vec!</span>[
+                    <span class="ident">Label::primary</span>(<span class="ident">symbol</span>.<span class="ident">file_id</span>, <span class="ident">symbol</span>.<span class="ident">location</span>).<span class="ident">with_message</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">help</span>)
                 ]),
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Diagnostic</span>::<span class="ident">error</span>().<span class="ident">with_message</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">help</span>),
+            <span class="prelude-val">None</span> =&gt; <span class="ident">Diagnostic::error</span>().<span class="ident">with_message</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">help</span>),
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stack_trace</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">files</span>: <span class="kw-2">&amp;</span><span class="ident">Files</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stack_trace</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">files</span>: <span class="kw-2">&amp;</span><span class="ident">Files</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro">vec!</span>[];
         <span class="kw">for</span> <span class="ident">symbol</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">symbols</span>.<span class="ident">iter</span>() {
             <span class="kw">let</span> <span class="ident">slice</span> <span class="op">=</span> <span class="ident">files</span>
                 .<span class="ident">source_slice</span>(<span class="ident">symbol</span>.<span class="ident">file_id</span>, <span class="ident">symbol</span>.<span class="ident">location</span>)
@@ -494,18 +495,18 @@
             <span class="kw">let</span> <span class="ident">location</span> <span class="op">=</span> <span class="ident">files</span>
                 .<span class="ident">location</span>(<span class="ident">symbol</span>.<span class="ident">file_id</span>, <span class="ident">symbol</span>.<span class="ident">location</span>.<span class="ident">start</span>())
                 .<span class="ident">map_or</span>(<span class="string">&quot;??&quot;</span>.<span class="ident">to_string</span>(), <span class="op">|</span><span class="ident">location</span><span class="op">|</span> {
-                    <span class="macro">format</span><span class="macro">!</span>(
+                    <span class="macro">format!</span>(
                         <span class="string">&quot;line {}, col {}&quot;</span>,
                         <span class="ident">location</span>.<span class="ident">line</span>.<span class="ident">number</span>(),
                         <span class="ident">location</span>.<span class="ident">column</span>.<span class="ident">number</span>()
                     )
                 });
             <span class="kw">let</span> <span class="ident">fname</span> <span class="op">=</span> <span class="ident">files</span>.<span class="ident">name</span>(<span class="ident">symbol</span>.<span class="ident">file_id</span>).<span class="ident">to_string_lossy</span>();
-            <span class="ident">res</span>.<span class="ident">push</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{} at {}: \&quot;{}\&quot;&quot;</span>, <span class="ident">fname</span>, <span class="ident">location</span>, <span class="ident">slice</span>));
+            <span class="ident">res</span>.<span class="ident">push</span>(<span class="macro">format!</span>(<span class="string">&quot;{} at {}: \&quot;{}\&quot;&quot;</span>, <span class="ident">fname</span>, <span class="ident">location</span>, <span class="ident">slice</span>));
         }
         <span class="ident">res</span>
     }
 }
-</pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="runtime"></div>
-    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>
+</code></pre></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="runtime" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0 (7737e0b5c 2022-04-04)" ></div>
+</body></html>

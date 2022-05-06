@@ -1,0 +1,1 @@
+window.ALL_CRATES = ["compile","lexer","mlrefcell","runtime","tech"];

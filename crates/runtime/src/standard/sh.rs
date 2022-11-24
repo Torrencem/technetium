@@ -146,16 +146,8 @@ impl Object for ObjectCell<ShObject> {
 
     fn call_method(&self, method: &str, args: &[ObjectRef], context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let mut this = self.try_borrow_mut()?;
-        
-        match method {
-            "env" => {
-                // Set the environment of this subprocess
-                // Decipher the env from args[0]
-                if !args.len() == 1 {
-                    return Err(RuntimeError::type_error(
-                        "Unexpected arguments to env method call of sh object"
-                    ));
-                }
+        tech_methods!((self, method, args) {
+            "env"; (; arg) => {
                 if this.child.is_some() {
                     return Err(RuntimeError::type_error(
                         "Process is currently running, env cannot be set"
@@ -163,7 +155,7 @@ impl Object for ObjectCell<ShObject> {
                 }
                 // Try to convert to a dict
                 let d = ObjectCell::new(Dict_);
-                let dargs = vec![args[0].clone()];
+                let dargs = vec![arg.clone()];
                 let d = d.call(&dargs, context)?;
                 // Now we should have a dictionary d
                 downcast!((d : Dictionary = d) -> {
@@ -187,49 +179,30 @@ impl Object for ObjectCell<ShObject> {
                 } else {
                     unreachable!("dict() should always return a dictionary")
                 });
-                return Ok(ObjectRef::new_from_cell(self.clone()));
+                Ok(ObjectRef::new_from_cell(self.clone()))
             },
-            "cwd" => {
-                if !args.len() == 1 {
-                    return Err(RuntimeError::type_error(
-                        "Unexpected arguments to cwd method call of sh object"
-                    ));
-                }
+            "cwd" ; (; arg) => {
                 if this.child.is_some() {
                     return Err(RuntimeError::type_error(
                         "Process is currently running, cwd cannot be set"
                     ));
                 }
-                downcast!((dir: StringObject = args[0]) -> {
+                downcast!((dir: StringObject = arg) -> {
                     this.cwd = Some(dir.val.clone());
                 } else {
                     return Err(RuntimeError::type_error(
                         "Expected string as argument to cwd method call of sh object"
                     ));
                 });
-                return Ok(ObjectRef::new_from_cell(self.clone()));
+                Ok(ObjectRef::new_from_cell(self.clone()))
             },
-            _ => {}
-        }
-
-        // The rest require no arguments
-        if !args.is_empty() {
-            return Err(RuntimeError::type_error(
-                "Unexpected arguments to method call of sh object",
-            ));
-        }
-
-        match method {
-            "spawn" => this.spawn()?,
-            "join" => this.join()?,
-            "stdout" => return Ok(this.stdout()?),
-            "stderr" => return Ok(this.stderr()?),
-            "exit_code" => return Ok(this.exit_code()?),
-            "kill" => this.kill()?,
-            _ => return Err(RuntimeError::type_error("Unknown method")),
-        }
-
-        Ok(ObjectRef::new_from_cell(self.clone()))
+            "spawn"; () => {this.spawn()?; Ok(ObjectRef::new_from_cell(self.clone()))},
+            "join"; () => {this.join()?; Ok(ObjectRef::new_from_cell(self.clone()))},
+            "stdout"; () => {this.stdout()},
+            "stderr"; () => {this.stderr()},
+            "exit_code"; () => {this.exit_code()},
+            "kill"; () => {this.kill()?; Ok(ObjectRef::new_from_cell(self.clone()))}
+        })
     }
 }
 

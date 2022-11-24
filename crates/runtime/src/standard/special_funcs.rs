@@ -174,25 +174,15 @@ impl Object for ObjectCell<Range> {
 
     fn call_method(&self, method: &str, args: &[ObjectRef], _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
-        match method {
-            "length" => {
-                if args.len() > 0 {
-                    return Err(RuntimeError::type_error("Expected no arguments to range.len()"));
-                }
+        tech_methods!((self, method, args) {
+            "length"; () => {
                 Ok(IntObject::new(
                     std::cmp::max(0,
                             (this.end - this.start) / this.step
                     )
                 ))
             }
-            _ => {
-                Err(RuntimeError::attribute_error(format!(
-                    "Cannot call method {} of {}",
-                    method,
-                    self.technetium_type_name()
-                )))
-            }
-        }
+        })
     }
 }
 

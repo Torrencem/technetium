@@ -259,58 +259,27 @@ impl Object for ObjectCell<StringObject> {
 
     fn call_method(&self, method: &str, args: &[ObjectRef], _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
-        match method {
-            "length" => {
-                if !args.is_empty() {
-                    Err(RuntimeError::type_error("length expects 0 args"))
-                } else {
-                    Ok(IntObject::new(this.val.len() as i64))
-                }
+        tech_methods!((self, method, args) {
+            "length"; () => {
+                Ok(IntObject::new(this.val.len() as i64))
+            },
+            "escape"; () => {
+                Ok(StringObject::new(this.val.escape_default().collect()))
+            },
+            "contains"; (arg: CharObject) => {
+                Ok(BoolObject::new(this.val.contains(|c| c == arg.val)))
+            },
+            "lines"; () => {
+                Ok(ObjectRef::new(standard::string::Lines {
+                    parent: ObjectCell::clone(self),
+                }))
+            },
+            "chars"; () => {
+                Ok(ObjectRef::new(standard::string::Chars {
+                    parent: ObjectCell::clone(self),
+                }))
             }
-            "contains" => {
-                let this = self.try_borrow()?;
-                if args.len() != 1 {
-                    Err(RuntimeError::type_error("contains expects 1 arg"))
-                } else if let Some(arg) = args[0].as_any().downcast_ref::<ObjectCell<CharObject>>()
-                {
-                    let arg = arg.try_borrow()?;
-                    Ok(BoolObject::new(this.val.contains(|c| c == arg.val)))
-                } else {
-                    Err(RuntimeError::type_error(
-                        "string contains expects a character as an argument",
-                    ))
-                }
-            }
-            "escape" => {
-                if !args.is_empty() {
-                    Err(RuntimeError::type_error("length expects 0 args"))
-                } else {
-                    Ok(StringObject::new(this.val.escape_default().collect()))
-                }
-            }
-            "lines" => {
-                if !args.is_empty() {
-                    Err(RuntimeError::type_error("lines expects 0 args"))
-                } else {
-                    Ok(ObjectRef::new(standard::string::Lines {
-                        parent: ObjectCell::clone(self),
-                    }))
-                }
-            }
-            "chars" => {
-                if !args.is_empty() {
-                    Err(RuntimeError::type_error("chars expects 0 args"))
-                } else {
-                    Ok(ObjectRef::new(standard::string::Chars {
-                        parent: ObjectCell::clone(self),
-                    }))
-                }
-            }
-            _ => Err(RuntimeError::type_error(format!(
-                "string has no method {}",
-                method
-            ))),
-        }
+        })
     }
 
     fn technetium_eq(&self, other: ObjectRef) -> Option<bool> {
@@ -745,27 +714,14 @@ impl Object for ObjectCell<Tuple> {
 
     fn call_method(&self, method: &str, args: &[ObjectRef], _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
         let this = self.try_borrow()?;
-        match method {
-            "length" => {
-                if !args.is_empty() {
-                    Err(RuntimeError::type_error("length expects 0 args"))
-                } else {
-                    Ok(IntObject::new(this.contents.len() as i64))
-                }
+        tech_methods!((self, method, args) {
+            "length"; () => {
+                Ok(IntObject::new(this.contents.len() as i64))
+            },
+            "contains"; (; arg) => {
+                Ok(BoolObject::new(this.contents.contains(arg)))
             }
-            "contains" => {
-                let this = self.try_borrow()?;
-                if args.len() != 1 {
-                    Err(RuntimeError::type_error("contains expects 1 arg"))
-                } else {
-                    Ok(BoolObject::new(this.contents.contains(&args[0])))
-                }
-            }
-            _ => Err(RuntimeError::type_error(format!(
-                "list has no method {}",
-                method
-            ))),
-        }
+        })
     }
 
     fn technetium_eq(&self, other: ObjectRef) -> Option<bool> {
@@ -880,54 +836,34 @@ impl Object for ObjectCell<Set> {
     }
 
     fn call_method(&self, method: &str, args: &[ObjectRef], _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
-        match method {
-            "length" => {
+        tech_methods!((self, method, args) {
+            "length"; () => {
                 let this = self.try_borrow()?;
-                if !args.is_empty() {
-                    Err(RuntimeError::type_error("length expects 0 args"))
-                } else {
-                    Ok(IntObject::new(this.contents.len() as i64))
-                }
-            }
-            "contains" => {
+                Ok(IntObject::new(this.contents.len() as i64))
+            },
+            "contains"; (; arg) => {
                 let this = self.try_borrow()?;
-                if args.len() != 1 {
-                    Err(RuntimeError::type_error("contains expects 1 arg"))
-                } else {
-                    let hashable = args[0].hashable().ok_or_else(|| {
-                        RuntimeError::type_error("value must be hashable to check for containment")
-                    })?;
-                    Ok(BoolObject::new(this.contents.contains(&hashable)))
-                }
-            }
-            "add" => {
+                let hashable = arg.hashable().ok_or_else(|| {
+                    RuntimeError::type_error("value must be hashable to check for containment")
+                })?;
+                Ok(BoolObject::new(this.contents.contains(&hashable)))
+            },
+            "add"; (; arg) => {
                 let mut this = self.try_borrow_mut()?;
-                if args.len() != 1 {
-                    Err(RuntimeError::type_error("add expects 1 arg"))
-                } else {
-                    this.contents.insert(args[0].hashable().ok_or_else(|| {
-                        RuntimeError::type_error("value must be hashable to be added to a set")
-                    })?);
-                    args[0].lock_immutable();
-                    Ok(UnitObject::new())
-                }
-            }
-            "remove" => {
+                this.contents.insert(arg.hashable().ok_or_else(|| {
+                    RuntimeError::type_error("value must be hashable to be added to a set")
+                })?);
+                arg.lock_immutable();
+                Ok(UnitObject::new())
+            },
+            "remove"; (; arg) => {
                 let mut this = self.try_borrow_mut()?;
-                if args.len() != 1 {
-                    Err(RuntimeError::type_error("add expects 1 arg"))
-                } else {
-                    let res = this.contents.remove(&args[0].hashable().ok_or_else(|| {
-                        RuntimeError::type_error("value must be hashable to be added to a set")
-                    })?);
-                    Ok(BoolObject::new(res))
-                }
+                let res = this.contents.remove(&arg.hashable().ok_or_else(|| {
+                    RuntimeError::type_error("value must be hashable to be added to a set")
+                })?);
+                Ok(BoolObject::new(res))
             }
-            _ => Err(RuntimeError::type_error(format!(
-                "set has no method {}",
-                method
-            ))),
-        }
+        })
     }
 
     fn technetium_eq(&self, other: ObjectRef) -> Option<bool> {
@@ -1022,20 +958,12 @@ impl Object for ObjectCell<Dictionary> {
     }
 
     fn call_method(&self, method: &str, args: &[ObjectRef], _context: &mut RuntimeContext<'_>) -> RuntimeResult<ObjectRef> {
-        match method {
-            "length" => {
-                let this = self.try_borrow()?;
-                if !args.is_empty() {
-                    Err(RuntimeError::type_error("length expects 0 args"))
-                } else {
-                    Ok(IntObject::new(this.contents.len() as i64))
-                }
+        let this = self.try_borrow()?;
+        tech_methods!((self, method, args) {
+            "length"; () => {
+                Ok(IntObject::new(this.contents.len() as i64))
             }
-            _ => Err(RuntimeError::type_error(format!(
-                "dictionary has no method {}",
-                method
-            ))),
-        }
+        })
     }
 
     fn technetium_eq(&self, other: ObjectRef) -> Option<bool> {

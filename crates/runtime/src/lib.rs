@@ -83,6 +83,60 @@ macro_rules! match_tech_types {
     }};
 }
 
+/// Perform method typechecking / control flow boilerplate automatically
+#[macro_export]
+macro_rules! tech_methods {
+    (($this:expr, $method:expr, $args:expr) { $($s:expr ; ($($v1:ident : $t1:ty),* $(; $($v2:ident),*)?) => $b1:block),* }) => {{
+        match ($method) {
+            $(
+                $s => {
+                    let mut _i = 0;
+                    $(
+                        let argi__ = match $args.get(_i) {
+                            Some(argi__) => argi__,
+                            None => {
+                                return Err(RuntimeError::type_error(format!("expected more args in call to method {} of {}",
+                                        $method, $this.technetium_type_name())))
+                            }
+                        };
+                        let $v1 = (if let Some(arg__) = argi__.as_any().downcast_ref::<ObjectCell<$t1>>() {
+                            arg__.try_borrow()?
+                        } else {
+                            return Err(RuntimeError::type_error(
+                                format!("in method {} of {}, expected arg {} of {} to be of type {}", 
+                                $method, $this.technetium_type_name(), _i, $s, stringify!($t1))));
+                        });
+                        _i += 1;
+                    )*
+                    $($(
+                        let argi__ = match $args.get(_i) {
+                            Some(argi__) => argi__,
+                            None => {
+                                return Err(RuntimeError::type_error(format!("expected more args in call to method {} of {}",
+                                        $method, $this.technetium_type_name())))
+                            }
+                        };
+                        let $v2 = argi__;
+                        _i += 1;
+                    )*)?
+                    if _i != $args.len() {
+                        return Err(RuntimeError::type_error(format!("expected {} args in call to method {} of {}",
+                                _i, $method, $this.technetium_type_name())))
+                    }
+                    $b1
+                }
+            ),*
+            _ => {
+                Err(RuntimeError::type_error(format!(
+                    "{} has no method {}",
+                    $this.technetium_type_name(),
+                    $method
+                )))
+            }
+        }
+    }};
+}
+
 pub static DEFAULT_FLOAT_FMT: FmtFloatConfig = FmtFloatConfig::default();
 
 pub static PARSED_CLARGS: OnceCell<Vec<String>> = OnceCell::new();
